@@ -1,0 +1,945 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
+
+<book id="UBootSTDIO">
+ <bookinfo>
+  <title>The U-Boot STDIO subsystem</title>
+
+  <legalnotice>
+   <para>
+     This documentation is free software; you can redistribute
+     it and/or modify it under the terms of the GNU General Public
+     License as published by the Free Software Foundation; either
+     version 2 of the License, or (at your option) any later
+     version.
+   </para>
+
+   <para>
+     This program is distributed in the hope that it will be
+     useful, but WITHOUT ANY WARRANTY; without even the implied
+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     See the GNU General Public License for more details.
+   </para>
+
+   <para>
+     You should have received a copy of the GNU General Public
+     License along with this program; if not, write to the Free
+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+     MA 02111-1307 USA
+   </para>
+
+   <para>
+     For more details see the file COPYING in the source
+     distribution of U-Boot Bootloader.
+   </para>
+  </legalnotice>
+ </bookinfo>
+
+<toc></toc>
+
+  <chapter id="adt">
+     <title>U-Boot Serial subsystem</title>
+<!-- drivers/serial/serial.c -->
+<refentry id="API-serial-null">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_null</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_null</refname>
+ <refpurpose>
+  Void registration routine of a serial driver
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_null </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This routine implements a void registration routine of a serial
+   driver. The registration routine of a particular driver is aliased
+   to this empty function in case the driver is not compiled into
+   U-Boot.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-on-baudrate">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>on_baudrate</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>on_baudrate</refname>
+ <refpurpose>
+     Update the actual baudrate when the env var changes
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>on_baudrate </function></funcdef>
+   <paramdef>const char * <parameter>name</parameter></paramdef>
+   <paramdef>const char * <parameter>value</parameter></paramdef>
+   <paramdef>enum env_op <parameter>op</parameter></paramdef>
+   <paramdef>int <parameter>flags</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>name</parameter></term>
+   <listitem>
+    <para>
+     -- undescribed --
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>value</parameter></term>
+   <listitem>
+    <para>
+     -- undescribed --
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>op</parameter></term>
+   <listitem>
+    <para>
+     -- undescribed --
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>flags</parameter></term>
+   <listitem>
+    <para>
+     -- undescribed --
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This will check for a valid baudrate and only apply it if valid.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-initfunc">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_initfunc</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_initfunc</refname>
+ <refpurpose>
+     Forward declare of driver registration routine
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef> <function>serial_initfunc </function></funcdef>
+   <paramdef> <parameter>name</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>name</parameter></term>
+   <listitem>
+    <para>
+     Name of the real driver registration routine.
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This macro expands onto forward declaration of a driver registration
+   routine, which is then used below in <function>serial_initialize</function> function.
+   The declaration is made weak and aliases to <function>serial_null</function> so in case
+   the driver is not compiled in, the function is still declared and can
+   be used, but aliases to <function>serial_null</function> and thus is optimized away.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-register">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_register</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_register</refname>
+ <refpurpose>
+     Register serial driver with serial driver core
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_register </function></funcdef>
+   <paramdef>struct serial_device * <parameter>dev</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>dev</parameter></term>
+   <listitem>
+    <para>
+     Pointer to the serial driver structure
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function registers the serial driver supplied via <parameter>dev</parameter> with
+   serial driver core, thus making U-Boot aware of it and making it
+   available for U-Boot to use. On platforms that still require manual
+   relocation of constant variables, relocation of the supplied structure
+   is performed.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-initialize">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_initialize</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_initialize</refname>
+ <refpurpose>
+     Register all compiled-in serial port drivers
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_initialize </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function registers all serial port drivers that are compiled
+   into the U-Boot binary with the serial core, thus making them
+   available to U-Boot to use. Lastly, this function assigns a default
+   serial port to the serial core. That serial port is then used as a
+   default output.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-stdio-init">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_stdio_init</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_stdio_init</refname>
+ <refpurpose>
+     Register serial ports with STDIO core
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_stdio_init </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function generates a proxy driver for each serial port driver.
+   These proxy drivers then register with the STDIO core, making the
+   serial drivers available as STDIO devices.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-assign">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_assign</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_assign</refname>
+ <refpurpose>
+     Select the serial output device by name
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>serial_assign </function></funcdef>
+   <paramdef>const char * <parameter>name</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>name</parameter></term>
+   <listitem>
+    <para>
+     Name of the serial driver to be used as default output
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function configures the serial output multiplexing by
+   selecting which serial device will be used as default. In case
+   the STDIO <quote>serial</quote> device is selected as stdin/stdout/stderr,
+   the serial device previously configured by this function will be
+   used for the particular operation.
+   </para><para>
+
+   Returns 0 on success, negative on error.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-reinit-all">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_reinit_all</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_reinit_all</refname>
+ <refpurpose>
+     Reinitialize all compiled-in serial ports
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_reinit_all </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function reinitializes all serial ports that are compiled
+   into U-Boot by calling their <function>serial_start</function> functions.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-get-current">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>get_current</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>get_current</refname>
+ <refpurpose>
+     Return pointer to currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>struct serial_device * <function>get_current </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function returns a pointer to currently selected serial port.
+   The currently selected serial port is altered by <function>serial_assign</function>
+   function.
+   </para><para>
+
+   In case this function is called before relocation or before any serial
+   port is configured, this function calls <function>default_serial_console</function> to
+   determine the serial port. Otherwise, the configured serial port is
+   returned.
+   </para><para>
+
+   Returns pointer to the currently selected serial port on success,
+   NULL on error.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-init">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_init</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_init</refname>
+ <refpurpose>
+     Initialize currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>serial_init </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function initializes the currently selected serial port. This
+   usually involves setting up the registers of that particular port,
+   enabling clock and such. This function uses the <function>get_current</function> call
+   to determine which port is selected.
+   </para><para>
+
+   Returns 0 on success, negative on error.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-setbrg">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_setbrg</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_setbrg</refname>
+ <refpurpose>
+     Configure baud-rate of currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_setbrg </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function configures the baud-rate of the currently selected
+   serial port. The baud-rate is retrieved from global data within
+   the serial port driver. This function uses the <function>get_current</function> call
+   to determine which port is selected.
+   </para><para>
+
+   Returns 0 on success, negative on error.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-getc">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_getc</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_getc</refname>
+ <refpurpose>
+     Read character from currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>serial_getc </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function retrieves a character from currently selected serial
+   port. In case there is no character waiting on the serial port,
+   this function will block and wait for the character to appear. This
+   function uses the <function>get_current</function> call to determine which port is
+   selected.
+   </para><para>
+
+   Returns the character on success, negative on error.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-tstc">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_tstc</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_tstc</refname>
+ <refpurpose>
+     Test if data is available on currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>serial_tstc </function></funcdef>
+   <paramdef> <parameter>void</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>void</parameter></term>
+   <listitem>
+    <para>
+     no arguments
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   </para><para>
+
+   This function tests if one or more characters are available on
+   currently selected serial port. This function never blocks. This
+   function uses the <function>get_current</function> call to determine which port is
+   selected.
+   </para><para>
+
+   Returns positive if character is available, zero otherwise.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-putc">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_putc</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_putc</refname>
+ <refpurpose>
+     Output character via currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_putc </function></funcdef>
+   <paramdef>const char <parameter>c</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>c</parameter></term>
+   <listitem>
+    <para>
+     Single character to be output from the serial port.
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function outputs a character via currently selected serial
+   port. This character is passed to the serial port driver responsible
+   for controlling the hardware. The hardware may still be in process
+   of transmitting another character, therefore this function may block
+   for a short amount of time. This function uses the <function>get_current</function>
+   call to determine which port is selected.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-serial-puts">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>serial_puts</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>serial_puts</refname>
+ <refpurpose>
+     Output string via currently selected serial port
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>serial_puts </function></funcdef>
+   <paramdef>const char * <parameter>s</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>s</parameter></term>
+   <listitem>
+    <para>
+     Zero-terminated string to be output from the serial port.
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function outputs a zero-terminated string via currently
+   selected serial port. This function behaves as an accelerator
+   in case the hardware can queue multiple characters for transfer.
+   The whole string that is to be output is available to the function
+   implementing the hardware manipulation. Transmitting the whole
+   string may take some time, thus this function may block for some
+   amount of time. This function uses the <function>get_current</function> call to
+   determine which port is selected.
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-default-serial-puts">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>default_serial_puts</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>default_serial_puts</refname>
+ <refpurpose>
+     Output string by calling <function>serial_putc</function> in loop
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>void <function>default_serial_puts </function></funcdef>
+   <paramdef>const char * <parameter>s</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>s</parameter></term>
+   <listitem>
+    <para>
+     Zero-terminated string to be output from the serial port.
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function outputs a zero-terminated string by calling <function>serial_putc</function>
+   in a loop. Most drivers do not support queueing more than one byte for
+   transfer, thus this function precisely implements their <function>serial_puts</function>.
+   </para><para>
+
+   To optimize the number of <function>get_current</function> calls, this function only
+   calls <function>get_current</function> once and then directly accesses the <function>putc</function> call
+   of the <structname>struct serial_device</structname> .
+</para>
+</refsect1>
+</refentry>
+
+<refentry id="API-uart-post-test">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>uart_post_test</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>uart_post_test</refname>
+ <refpurpose>
+     Test the currently selected serial port using POST
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef>int <function>uart_post_test </function></funcdef>
+   <paramdef>int <parameter>flags</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>flags</parameter></term>
+   <listitem>
+    <para>
+     POST framework flags
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   Do a loopback test of the currently selected serial port. This
+   function is only useful in the context of the POST testing framwork.
+   The serial port is firstly configured into loopback mode and then
+   characters are sent through it.
+   </para><para>
+
+   Returns 0 on success, value otherwise.
+</para>
+</refsect1>
+</refentry>
+
+  </chapter>
+
+</book>

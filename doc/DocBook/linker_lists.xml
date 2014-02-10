@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
+
+<book id="UBootLGArrays">
+ <bookinfo>
+  <title>The U-Boot Linker-Generated Arrays</title>
+
+  <legalnotice>
+   <para>
+     This documentation is free software; you can redistribute
+     it and/or modify it under the terms of the GNU General Public
+     License as published by the Free Software Foundation; either
+     version 2 of the License, or (at your option) any later
+     version.
+   </para>
+
+   <para>
+     This program is distributed in the hope that it will be
+     useful, but WITHOUT ANY WARRANTY; without even the implied
+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+     See the GNU General Public License for more details.
+   </para>
+
+   <para>
+     You should have received a copy of the GNU General Public
+     License along with this program; if not, write to the Free
+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
+     MA 02111-1307 USA
+   </para>
+
+   <para>
+     For more details see the file COPYING in the source
+     distribution of U-Boot Bootloader.
+   </para>
+  </legalnotice>
+ </bookinfo>
+
+<toc></toc>
+
+  <chapter id="adt">
+     <title>Linker-Generated Arrays</title>
+<!-- include/linker_lists.h -->
+<refentry id="API-ll-entry-declare">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>ll_entry_declare</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>ll_entry_declare</refname>
+ <refpurpose>
+  Declare linker-generated array entry
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef> <function>ll_entry_declare </function></funcdef>
+   <paramdef> <parameter>_type</parameter></paramdef>
+   <paramdef> <parameter>_name</parameter></paramdef>
+   <paramdef> <parameter>_section_u</parameter></paramdef>
+   <paramdef> <parameter>_section_d</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>_type</parameter></term>
+   <listitem>
+    <para>
+     Data type of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_name</parameter></term>
+   <listitem>
+    <para>
+     Name of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_section_u</parameter></term>
+   <listitem>
+    <para>
+     Subsection of u_boot_list in which this entry is placed
+     (with underscores instead of dots, for name concatenation)
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_section_d</parameter></term>
+   <listitem>
+    <para>
+     Subsection of u_boot_list in which this entry is placed
+     (with dots, for section concatenation)
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This macro declares a variable that is placed into a linker-generated
+   array. This is a basic building block for more advanced use of linker-
+   generated arrays. The user is expected to build their own macro wrapper
+   around this one.
+   </para><para>
+
+   A variable declared using this macro must be compile-time initialized
+   and is as such placed into subsection of special section, .u_boot_list.
+   The subsection is specified by the _section_[u,d] parameter, see below.
+   The base name of the variable is _name, yet the actual variable is
+   declared as concatenation of
+   </para><para>
+
+   <constant>_u_boot_list_</constant> + <parameter>_section_u</parameter> + _ + <parameter>_name</parameter>
+   </para><para>
+
+   which ensures name uniqueness. This variable shall never be refered
+   directly though.
+</para>
+</refsect1>
+<refsect1>
+<title>Special precaution must be made when using this macro</title>
+<para>
+   1) The _type must not contain the <quote>static</quote> keyword, otherwise the entry
+   is not generated.
+   </para><para>
+
+   2) The <parameter>_section_u</parameter> and <parameter>_section_d</parameter> variables must match, the only difference
+   is that in <parameter>_section_u</parameter> is every dot <quote>.</quote> character present in <parameter>_section_d</parameter>
+   replaced by a single underscore <quote>_</quote> character in <parameter>_section_u</parameter>. The actual
+   purpose of these parameters is to select proper subsection in the global
+   .u_boot_list section.
+   </para><para>
+
+   3) In case a section is declared that contains some array elements AND a
+   subsection of this section is declared and contains some elements, it is
+   imperative that the elements are of the same type.
+   </para><para>
+
+   4) In case an outer section is declared that contains some array elements
+   AND am inner subsection of this section is declared and contains some
+   elements, then when traversing the outer section, even the elements of
+   the inner sections are present in the array.
+</para>
+</refsect1>
+<refsect1>
+<title>Example</title>
+<informalexample><programlisting>
+    ll_entry_declare(struct my_sub_cmd, my_sub_cmd, cmd_sub, cmd.sub) = {
+            .x = 3,
+            .y = 4,
+    };
+</programlisting></informalexample>
+</refsect1>
+</refentry>
+
+<refentry id="API-ll-entry-start">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>ll_entry_start</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>ll_entry_start</refname>
+ <refpurpose>
+     Point to first entry of linker-generated array
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef> <function>ll_entry_start </function></funcdef>
+   <paramdef> <parameter>_type</parameter></paramdef>
+   <paramdef> <parameter>_section_u</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>_type</parameter></term>
+   <listitem>
+    <para>
+     Data type of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_section_u</parameter></term>
+   <listitem>
+    <para>
+     Subsection of u_boot_list in which this entry is placed
+     (with underscores instead of dots)
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function returns (_type *) pointer to the very first entry of a
+   linker-generated array placed into subsection of .u_boot_list section
+   specified by _section_u argument.
+</para>
+</refsect1>
+<refsect1>
+<title>Example</title>
+<informalexample><programlisting>
+    struct my_sub_cmd *msc = ll_entry_start(struct my_sub_cmd, cmd_sub);
+</programlisting></informalexample>
+</refsect1>
+</refentry>
+
+<refentry id="API-ll-entry-count">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>ll_entry_count</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>ll_entry_count</refname>
+ <refpurpose>
+     Return the number of elements in linker-generated array
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef> <function>ll_entry_count </function></funcdef>
+   <paramdef> <parameter>_type</parameter></paramdef>
+   <paramdef> <parameter>_section_u</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>_type</parameter></term>
+   <listitem>
+    <para>
+     Data type of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_section_u</parameter></term>
+   <listitem>
+    <para>
+     Subsection of u_boot_list in which this entry is placed
+     (with underscores instead of dots)
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function returns the number of elements of a linker-generated array
+   placed into subsection of .u_boot_list section specified by _section_u
+   argument. The result is of an unsigned int type.
+</para>
+</refsect1>
+<refsect1>
+<title>Example</title>
+<informalexample><programlisting>
+    int i;
+    const unsigned int count = ll_entry_count(struct my_sub_cmd, cmd_sub);
+    struct my_sub_cmd *msc = ll_entry_start(struct my_sub_cmd, cmd_sub);
+    for (i = 0; i &lt; count; i++, msc++)
+            printf(<quote>Entry <constant>i</constant>, x=<constant>i</constant> y=<constant>i</constant>\n</quote>, i, msc-&gt;x, msc-&gt;y);
+</programlisting></informalexample>
+</refsect1>
+</refentry>
+
+<refentry id="API-ll-entry-get">
+<refentryinfo>
+ <title>U-BOOT</title>
+ <productname>Bootloader Hackers Manual</productname>
+ <date>July 2013</date>
+</refentryinfo>
+<refmeta>
+ <refentrytitle><phrase>ll_entry_get</phrase></refentrytitle>
+ <manvolnum>9</manvolnum>
+ <refmiscinfo class="version">2013.01.01</refmiscinfo>
+</refmeta>
+<refnamediv>
+ <refname>ll_entry_get</refname>
+ <refpurpose>
+     Retrieve entry from linker-generated array by name
+ </refpurpose>
+</refnamediv>
+<refsynopsisdiv>
+ <title>Synopsis</title>
+  <funcsynopsis><funcprototype>
+   <funcdef> <function>ll_entry_get </function></funcdef>
+   <paramdef> <parameter>_type</parameter></paramdef>
+   <paramdef> <parameter>_name</parameter></paramdef>
+   <paramdef> <parameter>_section_u</parameter></paramdef>
+  </funcprototype></funcsynopsis>
+</refsynopsisdiv>
+<refsect1>
+ <title>Arguments</title>
+ <variablelist>
+  <varlistentry>
+   <term><parameter>_type</parameter></term>
+   <listitem>
+    <para>
+     Data type of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_name</parameter></term>
+   <listitem>
+    <para>
+     Name of the entry
+    </para>
+   </listitem>
+  </varlistentry>
+  <varlistentry>
+   <term><parameter>_section_u</parameter></term>
+   <listitem>
+    <para>
+     Subsection of u_boot_list in which this entry is placed
+     (with underscores instead of dots)
+    </para>
+   </listitem>
+  </varlistentry>
+ </variablelist>
+</refsect1>
+<refsect1>
+<title>Description</title>
+<para>
+   This function returns a pointer to a particular entry in LG-array
+   identified by the subsection of u_boot_list where the entry resides
+   and it's name.
+</para>
+</refsect1>
+<refsect1>
+<title>Example</title>
+<informalexample><programlisting>
+    ll_entry_declare(struct my_sub_cmd, my_sub_cmd, cmd_sub, cmd.sub) = {
+            .x = 3,
+            .y = 4,
+    };
+    ...
+    struct my_sub_cmd *c = ll_entry_get(struct my_sub_cmd, my_sub_cmd, cmd_sub);
+</programlisting></informalexample>
+</refsect1>
+</refentry>
+
+  </chapter>
+
+</book>
