@@ -531,7 +531,7 @@
 #if defined(CONFIG_FASTBOOT)
 // #include <fastboot.h>
 #define CFG_FASTBOOT_TRANSFER_BUFFER            (0x42000000)
-#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE       (0x20000000)   /* 512 */
+#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE       (0x30000000)   /* 512 */
 #define CFG_FASTBOOT_ADDR_KERNEL                (0x40008000)
 #define CFG_FASTBOOT_ADDR_RAMDISK               (0x40800000)
 #define CFG_FASTBOOT_PAGESIZE                   (2048)  // Page size of booting device
