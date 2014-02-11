@@ -128,11 +128,17 @@ static int muic_chrg_get_type(struct pmic *p)
 	if (pmic_probe(p))
 		return CHARGER_NO;
 
+	/* Set GPIO4 Condition */
+	pmic_reg_read(p, NXE2000_REG_IOOUT, &tmp);
+	val = (tmp & ~0x10) & 0xFF;	// Low
+	pmic_reg_write(p, NXE2000_REG_IOOUT, val);
+
 #if defined(CONFIG_OTG_PHY_NEXELL)
-    otg_phy_off();
     otg_clk_disable();
+    otg_phy_off();
 #endif
 
+#if !defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
 reset_priority:
     if (recheck)
     {
@@ -152,6 +158,13 @@ reset_priority:
         recheck--;
         goto reset_priority;
     }
+#else
+
+    val = (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+        | (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+    pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+    mdelay(1);
+#endif
 
     tmp = 0;
 
@@ -164,7 +177,7 @@ reset_priority:
         case NXE2000_GCHGDET_VBUS_TYPE_CDP:
         case NXE2000_GCHGDET_VBUS_TYPE_DCP:
             tmp     = (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-    		charger = CHARGER_TA;
+            charger = CHARGER_TA;
             break;
         case NXE2000_GCHGDET_VBUS_TYPE_SDP:
         default:
@@ -211,11 +224,23 @@ charger = CHARGER_TA;
 
     if ( !tmp )
         val = 0;
+
+#if defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
+    if (charger & (chg_state >> 6)) {
+        pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+    }
+#else
     pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+#endif
+
+    /* Set GPIO4 Condition */
+    pmic_reg_read(p, NXE2000_REG_IOOUT, &tmp);
+    val = (tmp | 0x10) & 0xFF;	// High(Hi-Z)
+    pmic_reg_write(p, NXE2000_REG_IOOUT, val);
 
 #if defined(CONFIG_OTG_PHY_NEXELL)
-    otg_clk_enable();
     otg_phy_init();
+    otg_clk_enable();
 #endif
 
 	return charger;

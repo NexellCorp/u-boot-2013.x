@@ -254,15 +254,15 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 	DBGOUT("%s\n", __func__);
 
-	/* Set GPIO4 Direction */
-	nxe2000_i2c_read(NXE2000_REG_IOSEL, &temp, power);
-	temp |= 0x10;	// output
-	nxe2000_i2c_write(NXE2000_REG_IOSEL, temp, power);
-
 	/* Set GPIO4 Condition */
 	nxe2000_i2c_read(NXE2000_REG_IOOUT, &temp, power);
 	temp |= 0x10;	// High(Hi-Z)
 	nxe2000_i2c_write(NXE2000_REG_IOOUT, temp, power);
+
+	/* Set GPIO4 Direction */
+	nxe2000_i2c_read(NXE2000_REG_IOSEL, &temp, power);
+	temp |= 0x10;	// output
+	nxe2000_i2c_write(NXE2000_REG_IOSEL, temp, power);
 
 	nxe2000_i2c_read(NXE2000_REG_CHGSTATE	, &cache[NXE2000_REG_CHGSTATE]	, power);
 	nxe2000_i2c_read(NXE2000_REG_PWRONTIMSET, &cache[NXE2000_REG_PWRONTIMSET], power);
@@ -528,8 +528,9 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_CHGISET	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET1	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET2	, 0, power);
+#if !defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
-
+#endif
 	nxe2000_i2c_write(NXE2000_REG_FG_CTRL	, cache[NXE2000_REG_FG_CTRL]	, power);
 
 	do {
@@ -596,7 +597,7 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 
 #if defined(CONFIG_HAVE_BATTERY)
 	/* Set charge control register. */
-	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+//	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
 	nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
 

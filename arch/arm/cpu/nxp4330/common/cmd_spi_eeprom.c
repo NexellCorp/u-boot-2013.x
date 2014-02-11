@@ -28,6 +28,7 @@
 #include <command.h>
 #include <malloc.h>
 #include <spi.h>
+#include "secondboot.h"
 
 extern int  eeprom_write (unsigned dev_addr, unsigned offset,
                uchar *buffer, unsigned cnt);
@@ -178,9 +179,6 @@ int do_update(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		for (i = 0; i<CONFIG_2STBOOT_SIZE-16; i++ )
 			crc = get_fcs(crc,  buf[i]);
 
-		//printf(" CRC = %8x \n", crc);
-		//printf(" MEM = %8p \n", buf);
-
 		memcpy(buf + CONFIG_2STBOOT_SIZE -16, &crc,4);
 
 		offs[0] = 0;
@@ -196,36 +194,45 @@ int do_update(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 		}	
 		
 		else if (strcmp(cmd, "uboot") == 0) {
+
+		struct NX_SecondBootInfo *bootheader = (struct NX_SecondBootInfo *)malloc(sizeof(struct NX_SecondBootInfo));
+
+		memset(bootheader, 0xff,512);
+
 		maxsize = CONFIG_UBOOT_SIZE;
 		offset  = CONFIG_UBOOT_OFFSET;
 
 		spi_init_f();
 
-		U8 *buf = (uchar *)malloc(CONFIG_UBOOT_SIZE );
-		memcpy(buf, (uchar *)addr, size);
+		U8 *buf = (uchar *)malloc(CONFIG_UBOOT_SIZE);
 		
-		for (i = 0; i<CONFIG_UBOOT_SIZE; i++ )
-			crc = get_fcs(crc ,  buf[i]);
+		memcpy(buf, (uchar *)addr, size);
+		crc=0;
+		for (i = 0; i<size; i++ )
+			crc = get_fcs(crc , buf[i]);
 
-		//printf("get fsc : %x \n",crc );
-		//printf(" MEM = %8p \n", buf);
+		bootheader->DBI.SPIBI.CRC32	= crc;
+		bootheader->LOADSIZE	= (int)size; 
+		bootheader->LOADADDR	= (U32)_TEXT_BASE;
+		bootheader->LAUNCHADDR	= (U32)_TEXT_BASE;
+		bootheader->SIGNATURE	= HEADER_ID;
 
-		memcpy(buf + CONFIG_UBOOT_SIZE , &crc, 4);
+		memcpy(buf, (uchar *)bootheader, 512);
+		memcpy(buf+512, (uchar *)addr, size);
 
 		offset = CONFIG_UBOOT_OFFSET;
 
 		offs[0] = (offset >>  16);
 		offs[1] = (offset >>   8);
 		offs[2] = (offset & 0xFF);
-
-		
 		
 		spi_write(offs, 3, (uchar*)buf, CONFIG_UBOOT_SIZE );
 
 		free(buf);
+		free(bootheader);
 
-			printf(" eeprom update u-boot 0x%08x, mem 0x%08x, size %d\n", offset, addr, size);
-			return 0;
+		printf(" eeprom update u-boot 0x%08x, mem 0x%08x, size %d\n", offset, addr, size);
+		return 0;
 		}
 
 		else if (strcmp(cmd, "2nd") == 0) {

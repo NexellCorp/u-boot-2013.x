@@ -341,6 +341,7 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
+#define CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE
 //#define CONFIG_PMIC_NXE2000_ADP_CHARGER_ONLY_MODE
 #define CONFIG_NXP_RTC_USE
 #endif
@@ -531,7 +532,7 @@
 #if defined(CONFIG_FASTBOOT)
 // #include <fastboot.h>
 #define CFG_FASTBOOT_TRANSFER_BUFFER            (0x42000000)
-#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE       (0x20000000)   /* 512 */
+#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE       (0x30000000)   /* 512 */
 #define CFG_FASTBOOT_ADDR_KERNEL                (0x40008000)
 #define CFG_FASTBOOT_ADDR_RAMDISK               (0x40800000)
 #define CFG_FASTBOOT_PAGESIZE                   (2048)  // Page size of booting device

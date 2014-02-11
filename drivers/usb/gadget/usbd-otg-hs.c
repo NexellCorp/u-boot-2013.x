@@ -1947,6 +1947,8 @@ int s3c_udc_int_hndlr(void)
 		s3c_usb_transfer();
 		ret = OK;
 	}
+
+	flush_dcache_all();
 	return ret;
 }
 
