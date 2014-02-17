@@ -1,0 +1,9 @@
+*.map
+.boards.*
+.depend*
+*.o
+*.su
+generated
+asm-offsets.s
+u-boot
+u-boot.*
