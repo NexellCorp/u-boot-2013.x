@@ -75,15 +75,15 @@ static void cpu_bus_init(void)
 	/*
 	 * NAND Bus config
 	 */
-#if 0
+#if 1
 	NX_MCUS_SetNANDBUSConfig
 	(
 		0, /* NF */
-		CFG_SYS_NAND_TACS,		// tACS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCAH,		// tCAH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOS,		// tCOS  ( 0 ~ 3 )
-		CFG_SYS_NAND_TCOH,		// tCOH  ( 0 ~ 3 )
-		CFG_SYS_NAND_TACC		// tACC  ( 1 ~ 16)
+		0x0,//CFG_SYS_NAND_TACS,		// tACS  ( 0 ~ 3 )
+		0x0,//CFG_SYS_NAND_TCAH,		// tCAH  ( 0 ~ 3 )
+		0x6,//CFG_SYS_NAND_TCOS,		// tCOS  ( 0 ~ 3 )
+		0x6,//CFG_SYS_NAND_TCOH,		// tCOH  ( 0 ~ 3 )
+		0x10//CFG_SYS_NAND_TACC		// tACC  ( 1 ~ 16)
 	);
 #endif
 

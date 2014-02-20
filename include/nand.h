@@ -52,6 +52,9 @@ typedef struct mtd_info nand_info_t;
 
 extern int nand_curr_device;
 extern nand_info_t nand_info[];
+#ifdef CONFIG_NAND_RANDOMIZER			/* freestyle@2014.02.14 */
+extern int no_nand_randomize;
+#endif
 
 static inline int nand_read(nand_info_t *info, loff_t ofs, size_t *len, u_char *buf)
 {

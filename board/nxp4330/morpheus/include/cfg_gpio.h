@@ -113,7 +113,7 @@
 #define PAD_GPIOC4      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[4]  ,1: GPIO                ,2: UART1_DCD           ,3: SDMMC0_CARD_nint    =
 #define PAD_GPIOC5      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[5]  ,1: GPIO                ,2: UART1_CTS           ,3: SDMMC0_WP           =
 #define PAD_GPIOC6      (PAD_MODE_OUT  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[6]  ,1: GPIO                ,2: UART1_RTS           ,3: SDMMC0_DETECT       =
-#define PAD_GPIOC7      (PAD_MODE_INT  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[7]  ,1: GPIO                ,2: UART1_DSR           ,3: SDMMC1_nRST         = SD0_MSD_DET
+#define PAD_GPIOC7      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[7]  ,1: GPIO                ,2: UART1_DSR           ,3: SDMMC1_nRST         = SD0_MSD_DET
 #define PAD_GPIOC8      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[8]  ,1: GPIO                ,2: UART1_DTR           ,3: SDMMC1_CARD_nint    =
 #define PAD_GPIOC9      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[9]  ,1: GPIO                ,2: SSP2_CLK_IO         ,3: PDM_STROBE          =
 #define PAD_GPIOC10     (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[10] ,1: GPIO                ,2: SSP2_FSS            ,3: MCUS_nNCS[2]        =
@@ -233,7 +233,6 @@
 #define PAD_GPIOALV5    (PAD_MODE_IN  | PAD_LEVEL_LOW   | PAD_PULLUP_ON )				//
 #define PAD_GPIOALV6    (PAD_MODE_IN  | PAD_LEVEL_LOW   | PAD_PULLUP_OFF)				//
 #define PAD_GPIOALV7    (PAD_MODE_IN  | PAD_LEVEL_LOW   | PAD_PULLUP_OFF)				//
-
 
 #endif	/* __CFG_GPIO_H__ */
 

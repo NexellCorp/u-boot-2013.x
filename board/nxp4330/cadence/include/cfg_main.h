@@ -55,7 +55,11 @@
  */
 #define CFG_NAND_ECC_BYTES 						512
 #define CFG_NAND_ECC_BITS               		8			/* 4,8,16 */
-#define CFG_NAND_ECC_LIMIT             			(CFG_NAND_ECC_BITS)			/* ecc correction limit */
+
+/*------------------------------------------------------------------------------
+ *	Nand (GPIO)
+ */
+#define CFG_IO_NAND_nWP							(PAD_GPIO_C + 27)		/* GPIO */
 
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)

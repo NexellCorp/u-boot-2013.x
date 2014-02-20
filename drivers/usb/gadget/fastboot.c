@@ -12,6 +12,7 @@
  */
 
 #include <fastboot.h>
+#include "nand.h"
 
 #if defined(CONFIG_FASTBOOT)
 

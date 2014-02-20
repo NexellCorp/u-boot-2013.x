@@ -220,8 +220,8 @@ struct fastboot_ptentry
 /* Write the file with write */
 #define FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL           0x00100000
 
-/* Write the file with nand_update */
-#define FASTBOOT_PTENTRY_FLAGS_USE_NAND_UPDATE        0x00200000
+/* Write the file with update_nand */
+#define FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND        0x00200000
 
 /* Status values */
 #define FASTBOOT_OK			0
