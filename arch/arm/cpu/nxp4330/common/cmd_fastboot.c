@@ -155,6 +155,7 @@ static const char *f_reserve_part[] = {
  * device partition functions
  */
 static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2], int *count);
+static void print_dev_parts(struct fastboot_device *fd);
 
 #ifdef CONFIG_CMD_MMC
 extern ulong mmc_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
@@ -188,16 +189,21 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	char cmd[32];
 	int i = 0, ret = 0;
 
+	sprintf(cmd, "mmc dev %d", dev);
+
 	debug("** mmc.%d partition %s (%s)**\n",
 		dev, fpart->partition, fpart->fs_type&FASTBOOT_FS_EXT4?"FS":"Image");
 
 	/* set mmc devicee */
 	if (0 > get_device("mmc", simple_itoa(dev), &desc)) {
-		sprintf(cmd, "mmc dev %d", dev);
-    	if ((0 > run_command(cmd, 0)) ||
-    		(0 > run_command("mmc rescan", 0)))
+    	if (0 > run_command(cmd, 0))
+    		return -1;
+    	if (0 > run_command("mmc rescan", 0))
     		return -1;
 	}
+
+	if (0 > run_command(cmd, 0))	/* mmc device */
+		return -1;
 
 	if (fpart->fs_type == FASTBOOT_FS_2NDBOOT ||
 		fpart->fs_type == FASTBOOT_FS_BOOT) {
@@ -227,9 +233,19 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 			if (parts[i][0] == fpart->start &&
 				parts[i][1] == fpart->length)
 				break;
+			/* when last partition set value is zero,
+			   set avaliable length */
+			if ((num-1) == i &&
+				0 == fpart->length) {
+				fpart->length = parts[i][1];
+				break;
+			}
 		}
 
 		if (i == num) {	/* new partition */
+			printf("Warn  : [%s] invalid, make new partitions ....\n", fpart->partition);
+			print_dev_parts(fpart->fd);
+
 			get_parts_from_lists(fpart, parts, &num);
 			ret = mmc_make_parts(dev, parts, num);
 			if (0 > ret) {
@@ -249,7 +265,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	blk = fpart->start/blk_size ;
 	cnt = (length/blk_size) + ((length & (blk_size-1)) ? 1 : 0);
 
-	debug("write image to 0x%llx(0x%x), 0x%llx(0x%x)\n",
+	printf("write image to 0x%llx(0x%x), 0x%llx(0x%x)\n",
 		fpart->start, (unsigned int)blk, length, (unsigned int)blk);
 
 	ret = mmc_bwrite(dev, blk, cnt, buf);
@@ -725,6 +741,23 @@ static void print_part_lists(void)
 	printf("\n\n");
 }
 
+static void print_dev_parts(struct fastboot_device *fd)
+{
+	struct fastboot_part *fp;
+	struct list_head *entry, *n;
+
+	printf("Device: %s\n", fd->device);
+	struct list_head *head = &fd->link;
+	if (!list_empty(head)) {
+		list_for_each_safe(entry, n, head) {
+			fp = list_entry(entry, struct fastboot_part, link);
+			printf(" %s.%d: %s, %s : 0x%llx, 0x%llx\n",
+				fd->device, fp->dev_no, fp->partition,
+				FASTBOOT_FS_MASK&fp->fs_type?"fs":"img", fp->start, fp->length);
+		}
+	}
+}
+
 static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2], int *count)
 {
 	struct fastboot_part *fp = fpart;
@@ -936,7 +969,9 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	debug("getvar = %s\n", cmd);
 
 	if (!strncmp(cmd, "partition-type:", strlen("partition-type:"))) {
+
 		s += strlen("partition-type:");
+		printf("\nReady : [%s]\n", s);
 		fboot_lcd_part(s, "wait...");
 		goto var_done;
 	}
@@ -987,7 +1022,7 @@ static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_st
 
 	memset((char*)clear, 0x0, 16);	/* clear buffer for string parsing */
 
-	printf("\nStarting download of %lld bytes\n", fst->image_size);
+	printf("Starting download of %lld bytes\n", fst->image_size);
 
 	if (0 == fst->image_size) {
 		sprintf(resp, "FAIL data invalid size");	/* bad user input */
@@ -1103,7 +1138,7 @@ err_flash:
 	printf("-- Fail: %s partition does not exist --\n", cmd);
 
 done_flash:
-	printf("Flash : %s [%s]\n", 0 > err ? "FAIL":"DONE", cmd);
+	printf("Flash : [%s] %s\n", cmd, 0 > err ? "FAIL":"DONE");
 	fboot_lcd_flash((char*)cmd, 0 > err ? "fail":"done");
 
 	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
@@ -1342,7 +1377,10 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 				}
 			} /* while (1) */
 		}
+
 		fastboot_shutdown();
+		mdelay(10);
+
 	} while (f_connect);
 
 	fboot_lcd_stop();

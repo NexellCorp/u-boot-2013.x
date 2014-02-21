@@ -428,6 +428,10 @@ int board_late_init(void)
 	int power_key_depth = 0;
     u32 time_key_pev = 0;
 
+	char boot[16];
+	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+	run_command(boot, 0);
+
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
     if (power_key_depth)
@@ -729,6 +733,10 @@ enter_shutdown:
 
 int board_late_init(void)
 {
+	char boot[16];
+	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+	run_command(boot, 0);
+
 #if defined(CONFIG_DISPLAY_OUT)
 	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 

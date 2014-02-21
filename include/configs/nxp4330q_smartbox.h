@@ -114,7 +114,7 @@
 #define CONFIG_BOOTFILE					"uImage"		/* File to load	*/
 
 /* Image - external sd card */
-#define CONFIG_BOOTCOMMAND				"ext4load mmc 0:1 0x42000000 uImage;ext4load mmc 0:1 0x43000000 root.img.gz;bootm 0x42000000"
+#define CONFIG_BOOTCOMMAND				"ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -416,12 +416,13 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024										/* 0x00080000 */
 	#define CONFIG_ENV_SIZE           	16*1024											/* 1 block size */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 4 							/* avoid bad block */
-	#define CONFIG_SYS_MMC_ENV_DEV  1
+	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
 	#endif
 #endif
 

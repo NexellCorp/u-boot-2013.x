@@ -114,7 +114,7 @@
 #define CONFIG_BOOTFILE					"uImage"		/* File to load	*/
 
 /* Image - NFS */
-#define CONFIG_BOOTCOMMAND				"fatload mmc 0 0x42000000 /uImage;fatload mmc 0 0x43000000 /ramdisk.gz;bootm 0x42000000"
+#define CONFIG_BOOTCOMMAND				"fatload mmc 0 0x48000000 /uImage;fatload mmc 0 0x49000000 /ramdisk.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -437,12 +437,13 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
 	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block)  */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 	/* avoid bad block */
-	#define CONFIG_SYS_MMC_ENV_DEV  1
+	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
 	#endif
 #endif
 

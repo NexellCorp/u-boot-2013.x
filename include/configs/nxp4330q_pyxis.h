@@ -113,7 +113,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND				"ext4load mmc 1:1 0x44000000 uImage;ext4load mmc 1:1 0x45000000 root.img.gz;bootm 0x44000000"
+#define CONFIG_BOOTCOMMAND				"ext4load mmc 1:1 0x48000000 uImage;ext4load mmc 1:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -452,12 +452,13 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
 	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block)  */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 	/* avoid bad block */
-	#define CONFIG_SYS_MMC_ENV_DEV  1
+	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
 	#endif
 #endif
 
@@ -521,10 +522,10 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,0:data:ext4:0x02CF00000,0x21000000;"	\
-			"flash=mmc,0:cache:ext4:0x4df00000,0x0;"
+			"flash=mmc,1:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,1:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,1:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,1:userdata:ext4:0x4df00000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------

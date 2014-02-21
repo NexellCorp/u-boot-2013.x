@@ -59,6 +59,7 @@ int check_compress_ext4(char *img_base, unsigned long long parti_size) {
 		printf("Invalid Volume Size! Image is bigger than partition size!\n");
 		printf("partion size %lld , image size %d \n",
 			(parti_size/file_header->block_size), file_header->total_blocks);
+		printf("Hang...\n");
 		while(1);
 	}
 
