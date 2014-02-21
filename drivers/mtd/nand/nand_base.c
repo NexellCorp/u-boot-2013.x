@@ -667,6 +667,7 @@ static void nand_command_lp(struct mtd_info *mtd, unsigned int command,
 
 		/* Serially input address */
 		if (column != -1) {
+			// printk ("  column: %02x %02x\n", (column >> 8) & 0xff, column & 0xff);
 			/* Adjust columns for 16 bit buswidth */
 			if (chip->options & NAND_BUSWIDTH_16)
 				column >>= 1;
@@ -675,6 +676,7 @@ static void nand_command_lp(struct mtd_info *mtd, unsigned int command,
 			chip->cmd_ctrl(mtd, column >> 8, ctrl);
 		}
 		if (page_addr != -1) {
+			// printk ("  page: %02x %02x %02x\n", (page_addr >> 16) & 0xff, (page_addr >> 8) & 0xff, page_addr & 0xff);
 			chip->cmd_ctrl(mtd, page_addr, ctrl);
 			chip->cmd_ctrl(mtd, page_addr >> 8,
 				       NAND_NCE | NAND_ALE);
@@ -793,10 +795,12 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
 	else
 		timeo = (CONFIG_SYS_HZ * 20) / 1000;
 
+#if 0
 	if ((state == FL_ERASING) && (chip->options & NAND_IS_AND))
 		chip->cmdfunc(mtd, NAND_CMD_STATUS_MULTI, -1, -1);
 	else
 		chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+#endif
 
 	time_start = get_timer(0);
 
@@ -814,6 +818,10 @@ static int nand_wait(struct mtd_info *mtd, struct nand_chip *chip)
 				break;
 		}
 	}
+
+#if 1
+	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+#endif
 #ifdef PPCHAMELON_NAND_TIMER_HACK
 	time_start = get_timer(0);
 	while (get_timer(time_start) < 10)
@@ -1312,6 +1320,20 @@ static int nand_do_read_ops(struct mtd_info *mtd, loff_t from,
 					oobreadlen -= toread;
 				}
 			}
+
+			if (!(chip->options & NAND_NO_READRDY)) {
+				/*
+				 * Apply delay or wait for ready/busy pin. Do
+				 * this before the AUTOINCR check, so no
+				 * problems arise if a chip which does auto
+				 * increment is marked as NOAUTOINCR by the
+				 * board driver.
+				 */
+				if (!chip->dev_ready)
+					udelay(chip->chip_delay);
+				else
+					nand_wait_ready(mtd);
+			}
 		} else {
 			memcpy(buf, chip->buffers->databuf + col, bytes);
 			buf += bytes;
@@ -1576,6 +1598,14 @@ static int nand_do_read_oob(struct mtd_info *mtd, loff_t from,
 
 		len = min(len, readlen);
 		buf = nand_transfer_oob(chip, buf, ops, len);
+
+		if (!(chip->options & NAND_NO_READRDY)) {
+			/* Apply delay or wait for ready/busy pin */
+			if (!chip->dev_ready)
+				udelay(chip->chip_delay);
+			else
+				nand_wait_ready(mtd);
+		}
 
 		readlen -= len;
 		if (!readlen)
@@ -2134,7 +2164,9 @@ static int nand_do_write_oob(struct mtd_info *mtd, loff_t to,
 	 * if we don't do this. I have no clue why, but I seem to have 'fixed'
 	 * it in the doc2000 driver in August 1999.  dwmw2.
 	 */
+#if 0
 	chip->cmdfunc(mtd, NAND_CMD_RESET, -1, -1);
+#endif
 
 	/* Check, if it is write protected */
 	if (nand_check_wp(mtd))
@@ -2917,6 +2949,9 @@ static void nand_decode_id(struct mtd_info *mtd, struct nand_chip *chip,
 	mtd->oobsize = mtd->writesize / 32;
 	*busw = type->options & NAND_BUSWIDTH_16;
 
+	/* All legacy ID NAND are small-page, SLC */
+	chip->bits_per_cell = 1;
+
 	/*
 	 * Check for Spansion/AMD ID + repeating 5th, 6th byte since
 	 * some Spansion chips have erasesize that conflicts with size
@@ -2953,11 +2988,11 @@ static void nand_decode_bbm_options(struct mtd_info *mtd,
 	 * Micron devices with 2KiB pages and on SLC Samsung, Hynix, Toshiba,
 	 * AMD/Spansion, and Macronix.  All others scan only the first page.
 	 */
-	if ((chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
+	if (!nand_is_slc(chip) &&
 			(maf_id == NAND_MFR_SAMSUNG ||
 			 maf_id == NAND_MFR_HYNIX))
 		chip->bbt_options |= NAND_BBT_SCANLASTPAGE;
-	else if ((!(chip->cellinfo & NAND_CI_CELLTYPE_MSK) &&
+	else if ((nand_is_slc(chip) &&
 				(maf_id == NAND_MFR_SAMSUNG ||
 				 maf_id == NAND_MFR_HYNIX ||
 				 maf_id == NAND_MFR_TOSHIBA ||
@@ -3189,7 +3224,7 @@ int nand_scan_ident(struct mtd_info *mtd, int maxchips,
  * all the uninitialized function pointers with the defaults and scans for a
  * bad block table if appropriate.
  */
-extern int nand_ecc_layout_check(struct mtd_info *mtd);	// add by jhkim
+extern int nand_ecc_post_scan(struct mtd_info *mtd);		// added by freestyle
 
 int nand_scan_tail(struct mtd_info *mtd)
 {
@@ -3202,7 +3237,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 
 	if (!(chip->options & NAND_OWN_BUFFERS))
 		chip->buffers = memalign(ARCH_DMA_MINALIGN,
-					 sizeof(*chip->buffers));
+					sizeof(*chip->buffers));
 	if (!chip->buffers)
 		return -ENOMEM;
 
@@ -3467,7 +3502,7 @@ int nand_scan_tail(struct mtd_info *mtd)
 		chip->options |= NAND_BBT_SCANNED;
 
 #if (1)
-	return nand_ecc_layout_check(mtd);	// add by jhkim
+	return nand_ecc_post_scan(mtd);
 #else
 	return 0;
 #endif

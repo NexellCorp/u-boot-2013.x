@@ -179,6 +179,12 @@ typedef enum {
  * This happens with the Renesas AG-AND chips, possibly others.
  */
 #define BBT_AUTO_REFRESH	0x00000080
+/*
+ * Chip does not require ready check on read. True
+ * for all large page devices, as they do not support
+ * autoincrement.
+ */
+#define NAND_NO_READRDY		0x00000100
 /* Chip does not allow subpage writes */
 #define NAND_NO_SUBPAGE_WRITE	0x00000200
 
@@ -460,7 +466,6 @@ struct nand_buffers {
  *			bad block marker position; i.e., BBM == 11110111b is
  *			not bad when badblockbits == 7
  * @bits_per_cell:	[INTERN] number of bits per cell. i.e., 1 means SLC.
- * @cellinfo:		[INTERN] MLC/multichip data from chip ident
  * @numchips:		[INTERN] number of physical chips
  * @chipsize:		[INTERN] the size of one chip for multichip arrays
  * @pagemask:		[INTERN] page number mask = number of (pages / chip) - 1
@@ -536,7 +541,6 @@ struct nand_chip {
 	unsigned int pagebuf_bitflips;
 	int subpagesize;
 	uint8_t bits_per_cell;
-	uint8_t cellinfo;
 	int badblockpos;
 	int badblockbits;
 

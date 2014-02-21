@@ -114,8 +114,11 @@ int do_bootm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
 /* Use do_onenand for fastboot's flash commands */
 extern int do_onenand(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
 #elif defined(CFG_FASTBOOT_NANDBSP)
+#if !defined (CONFIG_CMD_NAND) || !defined (CONFIG_CMD_UPDATE_NAND)
+#error "need nand command..."
+#endif
 #define CFG_FASTBOOT_FLASHCMD			do_nand
-#define CFG_FASTBOOT_FLASHUPCMD			do_nand_update
+#define CFG_FASTBOOT_FLASHUPCMD			do_update_nand
 /* Use do_nand for fastboot's flash commands */
 extern int do_nand(cmd_tbl_t * cmdtp, int flag, int argc, char *argv[]);
 extern int get_mmc_part_info(char *device_name, int part_num, unsigned long long *block_start, unsigned long long *block_count, unsigned char *part_Id);
@@ -455,11 +458,12 @@ static int write_to_ptn(struct fastboot_ptentry *ptn, unsigned int addr, unsigne
 	printf("flashing '%s'\n", ptn->name);
 	fastboot_lcd_update(ptn->name, "flashing");
 
-	if (ptn->flags & FASTBOOT_PTENTRY_FLAGS_USE_NAND_UPDATE)
+	if (ptn->flags & FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND)
 	{
+#ifdef CONFIG_CMD_UPDATE_NAND
 		argv_write[0] = command;
 
-		sprintf(command, "nand_update");
+		sprintf(command, "update_nand");
 		sprintf(write_type, "write");
 		sprintf(wbuffer, "0x%x", addr);
 		sprintf(wstart, "0x%llx", ptn->start);
@@ -467,6 +471,7 @@ static int write_to_ptn(struct fastboot_ptentry *ptn, unsigned int addr, unsigne
 
 		ret = CFG_FASTBOOT_FLASHUPCMD (NULL, 0, 5, argv_write);
 		goto write_done;
+#endif
 	}
 
 	sprintf(start, "0x%llx", ptn->start);
@@ -1004,13 +1009,15 @@ static int rx_handler (const unsigned char *buffer, unsigned int buffer_size)
 				sprintf(start, "0x%llx", ptn->start);
 				sprintf(length, "0x%llx", ptn->length);
 
-				if (ptn->flags & FASTBOOT_PTENTRY_FLAGS_USE_NAND_UPDATE)
+				if (ptn->flags & FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND)
 				{
+#ifdef CONFIG_CMD_UPDATE_NAND
 					argv_erase[0] = command;
 
-					sprintf (command, "nand_update");
+					sprintf (command, "update_nand");
 
 					status = CFG_FASTBOOT_FLASHUPCMD(NULL, 0, argc_erase, argv_erase);
+#endif
 				}
 				else
 				{

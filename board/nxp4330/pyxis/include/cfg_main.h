@@ -57,6 +57,11 @@
 #define CFG_NAND_ECC_BITS                       40
 
 /*------------------------------------------------------------------------------
+ *	Nand (GPIO)
+ */
+#define CFG_IO_NAND_nWP							(PAD_GPIO_C + 27)		/* GPIO */
+
+/*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
  */
 #define CFG_DISP_OUTPUT_MODOLE           		0	// 0 : Primary, 1 : Secondary

@@ -159,7 +159,7 @@ static int do_mem_nm(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return mod_mem (cmdtp, 0, flag, argc, argv);
 }
 
-static int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	ulong	addr, writeval, count;
 	int	size;

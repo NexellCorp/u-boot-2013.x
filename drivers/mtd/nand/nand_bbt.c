@@ -69,6 +69,8 @@
 #include <linux/bitops.h>
 #include <linux/string.h>
 
+#include <platform.h>
+
 #include <asm/errno.h>
 
 static int check_pattern_no_oob(uint8_t *buf, struct nand_bbt_descr *td)
@@ -506,11 +508,7 @@ static int create_bbt(struct mtd_info *mtd, uint8_t *buf,
 	}
 
 #ifdef CONFIG_MTD_NAND_BMT_FIRST_LAST
-	/*
-	 * Add by jhkim for 8192 page (samsung)
-	 */
-	if (this->page_shift == 13) {
-
+	do {
 		loff_t offs = from;
 
 		/* check first page */
@@ -570,7 +568,7 @@ static int create_bbt(struct mtd_info *mtd, uint8_t *buf,
 		}
 
 		return 0;
-	}
+	} while (0);
 #endif /* CONFIG_MTD_NAND_BMT_FIRST_LAST */
 
 	if (this->bbt_options & NAND_BBT_SCANLASTPAGE)

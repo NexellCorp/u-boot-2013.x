@@ -59,8 +59,13 @@
 /*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_MODE               		8			/* 4,8,16 */
-#define CFG_NAND_ECC_LIMIT             			(CFG_NAND_ECC_MODE - 2)			/* ecc correction limit */
+#define CFG_NAND_ECC_BYTES                      1024        /* 512 - 4,8,16,24  1024 - 24,40,60  */
+#define CFG_NAND_ECC_BITS                       40
+
+/*------------------------------------------------------------------------------
+ *	Nand (GPIO)
+ */
+#define CFG_IO_NAND_nWP							(PAD_GPIO_C + 27)		/* GPIO */
 
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)

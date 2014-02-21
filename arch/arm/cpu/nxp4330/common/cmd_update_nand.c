@@ -17,7 +17,7 @@
 
 
 #if (0)
-#define DBGOUT(msg...)		{ printf("NUPDATE: " msg); }
+#define DBGOUT(msg...)		{ printf("NANDUP: " msg); }
 #else
 #define DBGOUT(msg...)		do {} while (0)
 #endif
@@ -126,8 +126,12 @@ static int arg_off_size(int argc, char *const argv[], int *idx,
 	loff_t maxsize = 0;
 
 	if (argc == 0) {
-		*off = 0;
-		*size = nand_info[*idx].size;
+		printf("Can't update entire chip.\n");
+		return -1;
+	}
+
+	if (str2off(argv[0], off) && argc == 1) {
+		*size = 0;
 		goto print;
 	}
 
@@ -160,7 +164,7 @@ print:
 	return 0;
 }
 
-int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+int do_update_nand(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int i, ret = 0;
 	ulong addr, mem_pos;
@@ -174,7 +178,7 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 #endif
 	const char *quiet_str = getenv("quiet");
 	int dev = nand_curr_device;
-
+ 
 
 	loff_t start, end;				// data start, data end
 	loff_t nstart, nend;			// rw start, rw end in block
@@ -226,7 +230,7 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	/*
 	 * Syntax is:
 	 *   0           1     2
-	 *   nand_update erase [off size]
+	 *   update_nand erase [off size]
 	 * 
 	 *  +---------+--------+---------+
 	 *  | partial | full   | partial |
@@ -237,7 +241,7 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 *   - partial block
 	 *       1) Read the block
 	 *       2) Erase the block
-	 *       3) Copies the length of 'ff'
+	 *       3) Corresponding to the deleted region 'ff' is filled.
 	 *       4) Write the block
      *
 	 *   - full block
@@ -292,6 +296,9 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		argv_write[3] = rw_start;
 		argv_write[4] = rw_length;
 
+#ifdef CONFIG_NAND_RANDOMIZER
+		no_nand_randomize	= 1;
+#endif
 
 		while (remain > 0) {
 			ulong offset = 0;
@@ -337,14 +344,14 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			mem_pos += update_size;
 		}
 
-		return ret == 0 ? 0 : 1;
+		goto done;
 	}
 
 
 	/*
 	 * Syntax is:
 	 *   0           1     2         3
-	 *   nand_update write [address] [off size]
+	 *   update_nand write [address] [off size]
 	 *
 	 *  +---------+--------+---------+
 	 *  | partial | full   | partial |
@@ -352,15 +359,18 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	 *        |_____________|
 	 *          update length
 	 *
-	 *   - partial block
+	 *
+	 *  from start to end block
+	 *
+	 *   if) partial block
 	 *       1) Read the block
 	 *       2) Erase the block
-	 *       3) Copies of the length of the buffer
+	 *       3) Copy the length of the buffer
 	 *       4) Write the block
      *
-	 *   - all block
+	 *   if) full block
 	 *       1) Erase the block
-	 *       2) Copies of the length of the buffer
+	 *       2) Copy the length of the buffer
 	 *       3) Write the block
 	 */
 
@@ -437,6 +447,9 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		argv_write[3] = rw_start;
 		argv_write[4] = rw_length;
 
+#ifdef CONFIG_NAND_RANDOMIZER
+		no_nand_randomize	= 1;
+#endif
 
 		while (remain > 0) {
 			ulong offset = 0;
@@ -479,7 +492,7 @@ int do_nand_update(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			mem_pos += update_size;
 		}
 
-		return ret == 0 ? 0 : 1;
+		goto done;
 	}
 
 usage:
@@ -487,20 +500,24 @@ usage:
 
 out:
 	free (datbuf);
+done:
+#ifdef CONFIG_NAND_RANDOMIZER
+	no_nand_randomize = 0;
+#endif
 	return ret == 0 ? 0 : 1;
 }
 
 #ifdef CONFIG_SYS_LONGHELP
 static char nand_help_text[] =
-	"nand_update write - addr off|partition size\n"
+	"update_nand write - addr off|partition size\n"
 	"    update 'size' bytes starting at offset 'off'\n"
 	"    from memory address 'addr', skipping bad blocks.\n"
-	"nand_update erase off size - erase 'size' bytes\n"
+	"update_nand erase off size - erase 'size' bytes\n"
 	"";
 #endif
 
 U_BOOT_CMD(
-	nand_update, CONFIG_SYS_MAXARGS, 1,	do_nand_update,
+	update_nand, CONFIG_SYS_MAXARGS, 1,	do_update_nand,
 	"NAND update sub-system", nand_help_text
 );
 

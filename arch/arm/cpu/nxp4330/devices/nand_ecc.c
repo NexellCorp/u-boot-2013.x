@@ -63,6 +63,14 @@
 #define	NAND_READ_RETRY		(1)
 
 #include "nand_ecc.h"
+#ifdef CONFIG_NAND_RANDOMIZER
+#include "nx_randomizer.h"
+static uint8_t *randomize_buf;
+static uint32_t pages_per_block_mask;
+#endif
+#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
+static uint8_t *verify_buf;
+#endif
 
 
 /*
@@ -168,10 +176,10 @@ static int __ecc_get_err_location(unsigned int *pLocation)
 
 static void __ecc_setup_encoder(void)
 {
-	int iNX_BCH_VAR_R = ((((iNX_BCH_VAR_M * iNX_BCH_VAR_T)/8) - 1) & 0xFF);
+	int iNX_BCH_VAR_R = (((iNX_BCH_VAR_M * iNX_BCH_VAR_T)/8) - 1);
 
     NX_MCUS_SetNANDRWDataNum(iNX_BCH_VAR_K);
-    NX_MCUS_SetParityCount(((iNX_BCH_VAR_R + 7) / 8) - 1);
+    NX_MCUS_SetParityCount(iNX_BCH_VAR_R);
     NX_MCUS_SetNumOfELP(iNX_BCH_VAR_T);
 }
 
@@ -227,7 +235,6 @@ static int nand_sw_ecc_verify_buf(struct mtd_info *mtd, const uint8_t *buf, int 
 static uint32_t  eccbuff[ECC_HW_MAX_BYTES/4];
 static int errpos[ECC_HW_BITS];
 
-
 static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 				uint8_t *buf, int oob_required, int page)
 {
@@ -236,7 +243,7 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	int eccsteps = chip->ecc.steps;
 	int eccbytes = chip->ecc.bytes;
 	int eccsize  = chip->ecc.size;
-	int eccrange = eccsteps * eccsize;
+	int eccrange = 8 * eccsize;
 
 	uint8_t  *ecccode = (uint8_t*)eccbuff;
 	uint32_t *eccpos = chip->ecc.layout->eccpos;
@@ -248,6 +255,7 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 	uint32_t corrected = 0, failed = 0;
 	uint32_t max_bitflips = 0;
 #endif
+	int is_erasedpage = 0;
 
 	DBGOUT("%s, page=%d, ecc mode=%d, bytes=%d, page=%d, step=%d\n",
 		__func__, page, ECC_HW_BITS, eccbytes, mtd->writesize, eccsteps);
@@ -276,7 +284,7 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 				ecccode[i] = chip->oob_poi[eccpos[n]];
 
 			/* set hw ecc */
-			__ecc_reset_decoder();
+			__ecc_reset_decoder();	/* discon syndrome */
 			__ecc_write_ecc_decode((unsigned int*)ecccode, eccbytes);
 			__ecc_decode_enable(eccsize);
 
@@ -285,16 +293,25 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 
 			__ecc_wait_for_decode();
 			err = __ecc_decode_error();
-
 			if (err) {
 				/* check erase status */
 				for (i = 0 ; eccbytes > i; i++)
 					if (0xFF != ecccode[i]) break;
-				if (i == eccbytes)
+				if (i == eccbytes) {
+					is_erasedpage = 1;
 					continue;
+				}
 
 				__ecc_start_correct(eccsize);
 				__ecc_wait_for_correct();
+
+#if (0)
+				if (((_pNCTRL->NFECCSTATUS & NX_NFECCSTATUS_ELPERR) >>  16) >= chip->ecc.strength)
+					printk ("  page: %d, step:%d, numerr: %d, elperr: %d\n", page, 
+							(chip->ecc.steps-eccsteps),
+							((_pNCTRL->NFECCSTATUS & NX_NFECCSTATUS_NUMERR) >>  4),
+							((_pNCTRL->NFECCSTATUS & NX_NFECCSTATUS_ELPERR) >> 16));
+#endif
 
 				/* correct Error */
 				errcnt = __ecc_get_err_location((unsigned int *)errpos);
@@ -335,6 +352,15 @@ static int nand_hw_ecc_read_page(struct mtd_info *mtd, struct nand_chip *chip,
 				}
 			}
 		}
+
+#ifdef CONFIG_NAND_RANDOMIZER
+		if (!no_nand_randomize && !is_erasedpage)
+		{
+			randomizer_page (page & pages_per_block_mask, buf, mtd->writesize);
+			//printk("  page: %d ------->    derandomize\n", page);
+		}
+#endif
+
 #ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
 		mtd->ecc_stats.corrected += corrected;
 		if (failed > 0)
@@ -407,15 +433,30 @@ static int nand_hw_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 	int ret = 0;
 #endif
 	int status;
+	uint8_t *funcbuf = (uint8_t *)buf;
+
+#ifdef CONFIG_NAND_RANDOMIZER
+	if (!no_nand_randomize && randomize_buf) {
+		memcpy (randomize_buf, buf, mtd->writesize);
+
+		randomizer_page (page & pages_per_block_mask, randomize_buf, mtd->writesize);
+		//printk("  page: %d ------->    randomize\n", page);
+
+		funcbuf = randomize_buf;
+	}
+#endif
 
 	DBGOUT("%s page %d, raw=%d\n", __func__, page, raw);
 	chip->cmdfunc(mtd, NAND_CMD_SEQIN, 0x00, page);
 
+	/* for hynix H27UBG8T2BTR */
+	//ndelay(200);
+
 	/* not verify */
 	if (raw)
-		chip->ecc.write_page_raw(mtd, chip, buf, oob_required);
+		chip->ecc.write_page_raw(mtd, chip, funcbuf, oob_required);
 	else
-		chip->ecc.write_page(mtd, chip, buf, oob_required);
+		chip->ecc.write_page(mtd, chip, funcbuf, oob_required);
 
 	/*
 	 * Cached progamming disabled for now, Not sure if its worth the
@@ -446,17 +487,50 @@ static int nand_hw_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 	if (raw)
 		return 0;
 
-	stats = mtd->ecc_stats;
 	/* Send command to read back the data */
 	chip->cmdfunc(mtd, NAND_CMD_READ0, 0, page);
-	ret = nand_hw_ecc_read_page(mtd, chip, (uint8_t *)buf, oob_required, page);
-	if (ret)
-		return ret;
+	ret = chip->ecc.read_page(mtd, chip, verify_buf, oob_required, page);
+	if (ret < 0)
+	{
+		ERROUT ("  read page (%d) for write-verify failed!\n", page);
+		return -EIO; //		return ret;
+	}
 
-	if (mtd->ecc_stats.failed - stats.failed)
-		return -EBADMSG;	// EBADMSG
+	if (memcmp (verify_buf, buf, mtd->writesize))
+	{
+		ERROUT ("%s fail verify %d page\n", __func__, page);
+		return -EIO;
+	}
+
+	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
 #endif
 	return 0; // mtd->ecc_stats.corrected - stats.corrected ? -EUCLEAN : 0
+}
+
+
+int nand_ecc_alloc_buffer(struct mtd_info *mtd)
+{
+	int ret = 0;
+
+#ifdef CONFIG_NAND_RANDOMIZER
+	pages_per_block_mask = (mtd->erasesize/mtd->writesize) - 1;
+
+	randomize_buf = kzalloc(mtd->writesize, GFP_KERNEL);
+	if (!randomize_buf) {
+		ERROUT("randomize buffer alloc failed\n");
+	}
+	//printk  ("    [%s:%d] buf: %p\n", __func__, __LINE__, randomize_buf);
+
+	// kfree ...
+#endif
+
+#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
+	verify_buf = kmalloc(NAND_MAX_PAGESIZE + NAND_MAX_OOBSIZE, GFP_KERNEL);
+
+	// kfree
+#endif
+
+	return ret;
 }
 
 int nand_ecc_layout_hwecc(struct mtd_info *mtd)
@@ -607,7 +681,7 @@ int nand_hw_ecc_init_device(struct mtd_info *mtd)
 	chip->ecc.write_page 	= nand_hw_ecc_write_page;
 	chip->write_page		= nand_hw_write_page;
 #ifndef NO_ISSUE_MTD_BITFLIP_PATCH	/* freestyle@2013.09.26 */
-	chip->ecc.strength		= eccbyte * 8 / fls (8*eccsize);
+	chip->ecc.strength		= ((eccbyte * 8 / fls (8*eccsize)) * 80 / 100);
 #endif
 
 	NX_MCUS_ResetNFECCBlock();

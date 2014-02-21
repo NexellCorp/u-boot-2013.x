@@ -342,6 +342,9 @@ int do_fat_fsload(cmd_tbl_t *, int, int, char * const []);
 /* common/cmd_ext2.c */
 int do_ext2load(cmd_tbl_t *, int, int, char * const []);
 
+/* common/cmd_mem.c */
+int do_mem_mw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]);
+
 /* common/cmd_nvedit.c */
 int	env_init     (void);
 void	env_relocate (void);

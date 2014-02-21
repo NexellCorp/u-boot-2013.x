@@ -1,6 +1,6 @@
 /*
- * (C) Copyright 2009
- * jung hyun kim, Nexell Co, <jhkim@nexell.co.kr>
+ * (C) Copyright 2010
+ * KOO Bon-Gyu, Nexell Co, <freestyle@nexell.co.kr>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include <asm/io.h>
 #include <platform.h>
 #include <mach-api.h>
+#include <asm/gpio.h>
 
 #include "nand_ecc.h"
 
@@ -89,13 +90,20 @@ static void nand_cmd_ctrl(struct mtd_info *mtd, int cmd, unsigned int ctrl)
 		return;
 
 	if (ctrl & NAND_CLE)
-		writeb(cmd, addr + MASK_CLE);
-	else if (ctrl & NAND_ALE)
-		writeb(cmd, addr + MASK_ALE);
+	{
+		if (cmd != NAND_CMD_STATUS &&
+			cmd != NAND_CMD_READID &&
+			cmd != NAND_CMD_RESET)
+			CLEAR_RnB(ret);
 
-	if (cmd != NAND_CMD_RESET &&
-		cmd != NAND_CMD_READSTART)
-		CLEAR_RnB(ret);
+		//printk ("  [%s:%d] command: %02x\n", __func__, __LINE__, (unsigned char)cmd);
+		writeb(cmd, addr + MASK_CLE);
+	}
+	else if (ctrl & NAND_ALE)
+	{
+		//printk ("  [%s:%d] address: %02x\n", __func__, __LINE__, (unsigned char)cmd);
+		writeb(cmd, addr + MASK_ALE);
+	}
 }
 
 struct nand_timings {
@@ -279,9 +287,11 @@ static int nand_onfi_timing_set(struct mtd_info *mtd, uint32_t mode)
 static int nexell_nand_timing_set(struct mtd_info *mtd)
 {
 	struct nand_chip *chip = mtd->priv;
-	uint32_t ret, mode;
+	uint32_t ret = ONFI_TIMING_MODE_UNKNOWN, mode;
 
+#ifdef CONFIG_SYS_NAND_ONFI_DETECTION
 	ret = onfi_get_async_timing_mode(chip);
+#endif
 	if (ret == ONFI_TIMING_MODE_UNKNOWN)
 	{
 		NX_MCUS_SetNANDBUSConfig
@@ -291,7 +301,7 @@ static int nexell_nand_timing_set(struct mtd_info *mtd)
 			 CFG_SYS_NAND_TCAH,              // tCAH  ( 0 ~ 3 )
 			 CFG_SYS_NAND_TCOS,              // tCOS  ( 0 ~ 3 )
 			 CFG_SYS_NAND_TCOH,              // tCOH  ( 0 ~ 3 )
-			 CFG_SYS_NAND_TACC              // tACC  ( 1 ~ 16)
+			 CFG_SYS_NAND_TACC               // tACC  ( 1 ~ 16)
 		);
 
 		return 0;
@@ -303,6 +313,23 @@ static int nexell_nand_timing_set(struct mtd_info *mtd)
 	nand_onfi_timing_set (mtd, mode);
 
 	return 0;
+}
+
+
+/*
+ * Enable NAND write protect
+ */
+static void nxp_wp_enable(void)
+{
+	nxp_gpio_set_value(CFG_IO_NAND_nWP, 0);
+}
+
+/*
+ * Disable NAND write protect
+ */
+static void nxp_wp_disable(void)
+{
+	nxp_gpio_set_value(CFG_IO_NAND_nWP, 1);
 }
 
 
@@ -321,19 +348,21 @@ static void nand_dev_init(struct mtd_info *mtd)
 	NX_MCUS_SetInterruptEnableAll(CFALSE);
 	NX_MCUS_SetNFBank(0);
 	NX_MCUS_SetNFCSEnable(CFALSE);
+
+	nxp_gpio_direction_output (CFG_IO_NAND_nWP, 1);
 }
 
 /*------------------------------------------------------------------------------
  * u-boot nand module
  */
 #if defined (CONFIG_MTD_NAND_ECC_BCH)
+static uint8_t *verify_page;
 static int nand_bch_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 			   const uint8_t *buf, int oob_required, int page, int cached, int raw)
 {
-	#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
-	struct mtd_ecc_stats stats;
+#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
 	int ret = 0;
-	#endif
+#endif
 	int status;
 
 	DBGOUT("%s page %d, raw=%d\n", __func__, page, raw);
@@ -370,20 +399,24 @@ static int nand_bch_write_page(struct mtd_info *mtd, struct nand_chip *chip,
 		status = chip->waitfunc(mtd, chip);
 	}
 
-	#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
+#ifdef CONFIG_MTD_NAND_VERIFY_WRITE
 	if (raw)
 		return 0;
 
-	stats = mtd->ecc_stats;
 	/* Send command to read back the data */
 	chip->cmdfunc(mtd, NAND_CMD_READ0, 0, page);
-	ret = chip->ecc.read_page(mtd, chip, (uint8_t *)buf, page);
-	if (ret)
-		return ret;
+	chip->ecc.read_page(mtd, chip, (uint8_t *)verify_page, oob_required, page);
+	if (ret < 0)
+		return -EIO;
 
-	if (mtd->ecc_stats.failed - stats.failed)
-		return -EBADMSG;	// EBADMSG
-	#endif
+	if (memcmp (verify_page, buf, mtd->writesize))
+	{
+		ERROUT ("%s fail verify %d page\n", __func__, page);
+		return -EIO;
+	}
+
+	chip->cmdfunc(mtd, NAND_CMD_STATUS, -1, -1);
+#endif
 	return 0; // mtd->ecc_stats.corrected - stats.corrected ? -EUCLEAN : 0
 }
 
@@ -398,6 +431,11 @@ static int nand_ecc_layout_swbch(struct mtd_info *mtd)
 	printk("sw bch ecc %d bit, oob %2d, bad '0,1', ecc %d~%d (%d), free %d~%d (%d) ",
 		ECC_BCH_BITS, oobsize, oobfree->offset+oobfree->length, oobsize-1, ecctotal,
 		oobfree->offset, oobfree->length + 1, oobfree->length);
+
+	verify_page = kzalloc(mtd->writesize, GFP_KERNEL);
+	if (!verify_page)
+		return -ENOMEM;
+
 	return 0;
 }
 #endif
@@ -405,11 +443,21 @@ static int nand_ecc_layout_swbch(struct mtd_info *mtd)
 int nand_ecc_layout_check(struct mtd_info *mtd)
 {
 	int ret = 0;
-#if   defined (CONFIG_MTD_NAND_ECC_HW)
+#if defined (CONFIG_MTD_NAND_ECC_HW)
 	ret = nand_ecc_layout_hwecc(mtd);
 #elif defined (CONFIG_MTD_NAND_ECC_BCH)
 	ret = nand_ecc_layout_swbch(mtd);
 #endif
+	return ret;
+}
+
+int nand_ecc_post_scan(struct mtd_info *mtd)
+{
+	int ret = 0;
+
+	ret = nand_ecc_layout_check(mtd);
+	nand_ecc_alloc_buffer(mtd);
+
 	return ret;
 }
 
@@ -441,7 +489,7 @@ int board_nand_init(struct nand_chip *chip)
 	 */
 #if   defined (CONFIG_MTD_NAND_ECC_HW)
 	ret = nand_hw_ecc_init_device(mtd);
-	printk(KERN_INFO "NAND ecc: Hardware \n");
+	printk(KERN_INFO "NAND ecc: Hardware (delay %d)\n", chip->chip_delay);
 #elif defined (CONFIG_MTD_NAND_ECC_BCH)
 	chip->ecc.mode = NAND_ECC_SOFT_BCH;
 
@@ -452,8 +500,8 @@ int board_nand_init(struct nand_chip *chip)
     case 12: chip->ecc.bytes =  20; chip->ecc.size  =  512; break;
 	case 16: chip->ecc.bytes =  26; chip->ecc.size  =  512; break;
 	case 24: chip->ecc.bytes =  42; chip->ecc.size  = 1024; break;
-	case 40: chip->ecc.bytes =  70; chip->ecc.size  = 1024; break;	/* not test */
-//	case 60: chip->ecc.bytes = 105; chip->ecc.size  = 1024; break;	/* not test */
+	case 40: chip->ecc.bytes =  70; chip->ecc.size  = 1024; break;
+	//case 60: chip->ecc.bytes = 105; chip->ecc.size  = 1024; break;	/* not test */
 	default:
 		printk("Fail: not supoort bch ecc %d mode !!!\n", ECC_BCH_BITS);
 		return -1;

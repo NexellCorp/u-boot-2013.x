@@ -748,14 +748,14 @@ struct ptable_userdefine user_ptables[] = {
         .name = "2ndboot",
         .start = 0x0,
         .length = 0x20000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_NAND_UPDATE,
+		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
     },
     {
         .type = BOOT_DEV_TYPE_NAND,
         .name = "bootloader",
         .start = 0x20000,
         .length = 0x80000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_NAND_UPDATE,
+		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
     },
 #else
     {
