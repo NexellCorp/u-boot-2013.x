@@ -535,19 +535,12 @@ int board_late_init(void)
 
 	if (power_key_depth > 1)
 	{
-		run_command("loadbmp", 0);
+		run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 	}
 	else if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-#ifdef CONFIG_BOOT_DEVICE_IS_NAND
-		run_command("nand read 0x62000000 0x2800000 0x400000", 0);
-#else
-		run_command("mmc dev 1", 0);
-		run_command("mmcinfo", 0);
-		run_command("ext4load mmc 1:1 62000000 battery.bmp", 0);
-#endif
-		run_command("drawbmp 62000000", 0);
+		run_command(CONFIG_CMD_LOGO_BATTERY, 0);
 	}
 
 	lcd_draw_boot_logo(CONFIG_FB_ADDR,
@@ -703,7 +696,7 @@ int board_late_init(void)
             }
         }
 
-        run_command("loadbmp", 0);
+        run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
         lcd_draw_boot_logo(CONFIG_FB_ADDR,
                 CFG_DISP_PRI_RESOL_WIDTH,
@@ -737,7 +730,7 @@ enter_shutdown:
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)
-	run_command("loadbmp", 0);
+	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
 	lcd_draw_boot_logo(CONFIG_FB_ADDR,
 			CFG_DISP_PRI_RESOL_WIDTH,
@@ -768,7 +761,7 @@ static int _logo_top    = CFG_DISP_PRI_RESOL_HEIGHT/2 + 180;
 static int _logo_width  = 8*24;
 static int _logo_height = 16;
 
-void fastboot_lcd_turnon(void)
+void fboot_lcd_start(void)
 {
 	lcd_info lcd = {
 		.fb_base		= CONFIG_FB_ADDR,
@@ -786,17 +779,49 @@ void fastboot_lcd_turnon(void)
 		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
 		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-#ifdef CONFIG_BOOT_DEVICE_IS_NAND
-	run_command("nand read 0x62000000 0x3000000 0x400000", 0);
-#else
-	run_command("ext4load mmc 1:1 62000000 update.bmp", 0);
-#endif
-	run_command("drawbmp 62000000", 0);
-
-	lcd_draw_text("Wait For Update", _logo_left, _logo_top, 2, 2, 0);
+	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
+	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
 }
 
-void fastboot_lcd_status(char *stat)
+void fboot_lcd_stop(void)
+{
+	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+}
+
+void fboot_lcd_part(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_down(int percent)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "down %d%%", percent);
+}
+
+void fboot_lcd_flash(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_status(char *stat)
 {
 	int s = 2;
 	int l = _logo_left, t = _logo_top;
@@ -807,172 +832,5 @@ void fastboot_lcd_status(char *stat)
 	lcd_draw_string(l, t, s, s, 0, "%s", stat);
 }
 
-void fastboot_lcd_download(int percent)
-{
-	int s = 2;
-	int l = _logo_left, t = _logo_top;
-	int w = (_logo_width*s), h = (_logo_height*s);
-	unsigned bg = LOGO_BGCOLOR;
-
-	lcd_fill_rectangle(l, t, w, h, bg, 0);
-
-	if (0 == percent)
-		lcd_draw_text("Wait Next...", l, t, s, s, 0);
-	else
-		lcd_draw_string(l, t, s, s, 0, "down %d%%", percent);
-}
-
-void fastboot_lcd_update(char *name, char *stat)
-{
-	int s = 2;
-	int l = _logo_left, t = _logo_top;
-	int w = (_logo_width*s), h = (_logo_height*s);
-	unsigned bg = LOGO_BGCOLOR;
-
-	lcd_fill_rectangle(l, t, w, h, bg, 0);
-	lcd_draw_string(l, t, s, s, 0, "%s: %s", name, stat);
-}
 #endif
 
-#ifdef CONFIG_FASTBOOT
-#if defined(CFG_FASTBOOT_PTABLE_USERDEFINE)
-#if defined(CFG_FASTBOOT_NANDBSP)
-
-struct ptable_userdefine user_ptables[] = {
-#ifdef CONFIG_BOOT_DEVICE_IS_NAND
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "2ndboot",
-        .start = 0x0,
-        .length = 0x20000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "bootloader",
-        .start = 0x20000,
-        .length = 0x80000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
-    },
-#else
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "2ndboot",
-        .start = CONFIG_2STBOOT_OFFSET,
-        .length = CONFIG_2STBOOT_SIZE,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_CMD,
-    },
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "bootloader",
-        .start = CONFIG_UBOOT_OFFSET,
-        .length = CONFIG_UBOOT_SIZE,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_CMD,
-    },
-#endif
-
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "kernel",
-        .start = 0xc00000,
-        .length = 0x600000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "ramdisk",
-        .start = 0x1800000,
-        .length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-    },
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "bootlogo",
-		.start = 0x2000000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "battery",
-		.start = 0x2800000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "update",
-		.start = 0x3000000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "system",
-        .start = 0x4000000,
-        .length = 0x20000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "cache",
-        .start = 0x24000000,
-        .length = 0x10000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "userdata",
-        .start = 0x34000000,
-        .length = 0x1cc000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-	{
-		.type = BOOT_DEV_TYPE_NONE,
-	},
-};
-#else
-struct ptable_userdefine user_ptables[] = {
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "2ndboot",
-        .start = 0,
-        .length = 0,
-    },
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "bootloader",
-        .start = 64*1024*1024,
-        .length = 0,
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 1,
-        .pid = 0x83,
-        .name = "boot",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 2,
-        .pid = 0x83,
-        .name = "system",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 3,
-        .pid = 0x83,
-        .name = "cache",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 4,
-        .pid = 0x83,
-        .name = "userdata",
-    },
-	{
-		.type = BOOT_DEV_TYPE_NONE,
-	},
-};
-#endif
-#endif /* CFG_FASTBOOT_PTABLE_USERDEFINE */
-#endif /* CONFIG_FASTBOOT */

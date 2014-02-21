@@ -543,8 +543,10 @@
 
 	/* Logo command: board.c */
 	#if !defined(CONFIG_CMD_NAND)
-	#define	CONFIG_CMD_LOGO_BATTERY		"mmc dev 1;ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+	#define CONFIG_CMD_LOGO_WALLPAPERS	"ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+	#define	CONFIG_CMD_LOGO_BATTERY		"ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
 	#else
+	#define CONFIG_CMD_LOGO_WALLPAPERS	"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
 	#define	CONFIG_CMD_LOGO_BATTERY		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
 	#endif
 

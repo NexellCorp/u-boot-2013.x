@@ -468,6 +468,7 @@ int board_late_init(void)
     if(p_muic)
         p_muic->parent  = p_bat;
 
+//    p_bat->low_power_mode = nxe2000_low_power_mode;
     p_bat->low_power_mode = NULL;
     p_bat->pbat->battery_init(p_bat, p_fg, p_chrg, p_muic);
 
@@ -479,12 +480,14 @@ int board_late_init(void)
 
     if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
         puts("No battery detected\n");
-        goto enter_shutdown;
+        return -1;
     }
 
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
 
+    /* Check to Power-Key status */
+#ifndef CONFIG_FAST_BOOTUP
     if (gpio_get_value(GPIO_PMIC_VUSB_DET) || power_key_depth)
     {
         show_bat_state = 1;
@@ -493,6 +496,10 @@ int board_late_init(void)
     {
         goto enter_shutdown;
     }
+#endif
+
+//  show_bat_state = 0;
+//  show_bat_state = 1;
 
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
@@ -511,6 +518,18 @@ int board_late_init(void)
 
 /*===========================================================*/
 
+#ifdef CONFIG_FAST_BOOTUP
+    if (gpio_get_value(GPIO_PMIC_VUSB_DET))
+    {
+        show_bat_state = 1;
+    }
+    else
+    {
+        power_key_depth = 2;
+    }
+    nxp_gpio_set_int_clear(CFG_KEY_POWER);
+#else
+
     if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
     {
         power_key_depth++;
@@ -519,23 +538,16 @@ int board_late_init(void)
     {
         power_key_depth = 0;
     }
-    nxp_gpio_set_int_clear(CFG_KEY_POWER);
+#endif
 
 	if (power_key_depth > 1)
 	{
-		run_command("loadbmp", 0);
+		run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 	}
 	else if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-#ifdef CONFIG_BOOT_DEVICE_IS_NAND
-		run_command("nand read 0x62000000 0x2800000 0x400000", 0);
-#else
-		run_command("mmc dev 1", 0);
-		run_command("mmcinfo", 0);
-		run_command("ext4load mmc 1:1 62000000 battery.bmp", 0);
-#endif
-		run_command("drawbmp 62000000", 0);
+		run_command(CONFIG_CMD_LOGO_BATTERY, 0);
 	}
 
 	lcd_draw_boot_logo(CONFIG_FB_ADDR,
@@ -556,6 +568,10 @@ int board_late_init(void)
     {
         goto skip_bat_animation;
     }
+
+#ifdef CONFIG_FAST_BOOTUP
+    power_key_depth = 1;
+#endif
 
 /*===========================================================*/
 
@@ -660,7 +676,8 @@ int board_late_init(void)
             }
             if (power_key_depth > 1)
             {
-                if (pb->bat->voltage_uV > shutdown_ilim_uA)
+            // mod by jhkim: boot up when power key press
+            //  if (pb->bat->voltage_uV > shutdown_ilim_uA)
                 {
                     break;
                 }
@@ -687,7 +704,7 @@ int board_late_init(void)
             }
         }
 
-        run_command("loadbmp", 0);
+        run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
         lcd_draw_boot_logo(CONFIG_FB_ADDR,
                 CFG_DISP_PRI_RESOL_WIDTH,
@@ -717,7 +734,7 @@ enter_shutdown:
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)
-	run_command("loadbmp", 0);
+	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
 	lcd_draw_boot_logo(CONFIG_FB_ADDR,
 			CFG_DISP_PRI_RESOL_WIDTH,
@@ -737,145 +754,4 @@ int board_late_init(void)
 }
 #endif	/* CONFIG_BAT_CHECK */
 
-#ifdef CONFIG_FASTBOOT
-#if defined(CFG_FASTBOOT_PTABLE_USERDEFINE)
-#if defined(CFG_FASTBOOT_NANDBSP)
 
-struct ptable_userdefine user_ptables[] = {
-#ifdef CONFIG_BOOT_DEVICE_IS_NAND
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "2ndboot",
-        .start = 0x0,
-        .length = 0x20000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "bootloader",
-        .start = 0x20000,
-        .length = 0x80000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_NAND,
-    },
-#else
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "2ndboot",
-        .start = CONFIG_2STBOOT_OFFSET,
-        .length = CONFIG_2STBOOT_SIZE,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_CMD,
-    },
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "bootloader",
-        .start = CONFIG_UBOOT_OFFSET,
-        .length = CONFIG_UBOOT_SIZE,
-		.flags = FASTBOOT_PTENTRY_FLAGS_USE_UPDATE_CMD,
-    },
-#endif
-
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "kernel",
-        .start = 0xc00000,
-        .length = 0x600000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "ramdisk",
-        .start = 0x1800000,
-        .length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-    },
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "bootlogo",
-		.start = 0x2000000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "battery",
-		.start = 0x2800000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-	{
-		.type = BOOT_DEV_TYPE_NAND,
-		.name = "update",
-		.start = 0x3000000,
-		.length = 0x400000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_NORMAL,
-	},
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "system",
-        .start = 0x4000000,
-        .length = 0x20000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "cache",
-        .start = 0x24000000,
-        .length = 0x10000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-    {
-        .type = BOOT_DEV_TYPE_NAND,
-        .name = "userdata",
-        .start = 0x34000000,
-        .length = 0x1cc000000,
-		.flags = FASTBOOT_PTENTRY_FLAGS_WRITE_UBIFS,
-    },
-	{
-		.type = BOOT_DEV_TYPE_NONE,
-	},
-};
-#else
-struct ptable_userdefine user_ptables[] = {
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "2ndboot",
-        .start = 0,
-        .length = 0,
-    },
-    {
-        .type = BOOT_DEV_TYPE_EEPROM,
-        .name = "bootloader",
-        .start = 64*1024*1024,
-        .length = 0,
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 1,
-        .pid = 0x83,
-        .name = "boot",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 2,
-        .pid = 0x83,
-        .name = "system",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 3,
-        .pid = 0x83,
-        .name = "cache",
-    },
-    {
-        .type = BOOT_DEV_TYPE_SDMMC,
-        .partno = 4,
-        .pid = 0x83,
-        .name = "userdata",
-    },
-	{
-		.type = BOOT_DEV_TYPE_NONE,
-	},
-};
-#endif
-#endif /* CFG_FASTBOOT_PTABLE_USERDEFINE */
-#endif /* CONFIG_FASTBOOT */

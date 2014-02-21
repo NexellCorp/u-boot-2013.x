@@ -29,8 +29,6 @@ COBJS-y	:= board.o
 COBJS-$(CONFIG_DISPLAY_OUT)	+= display.o
 SOBJS-y	:=
 
-COBJS-y	+= movi_partition.o
-
 SRCS    := $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
 OBJS	:= $(addprefix $(obj),$(COBJS-y) $(SOBJS-y))
 
