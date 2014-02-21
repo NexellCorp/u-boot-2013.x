@@ -832,8 +832,7 @@ static f_cmd_inf f_interface = {
 
 static int parse_env_head(const char *env, const char **ret, char *str, int len)
 {
-	const char *p = env;
-	const char *r = p;
+	const char *p = env, *r = p;
 
 	parse_comment(p, &p);
 	if (!(r = strchr(p, '=')))
@@ -954,10 +953,7 @@ static int fboot_tx_status(const char *resp, unsigned int len, unsigned int sync
 
 static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
-	char resp[RESP_SIZE] = "OKAY";
-
-	fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_SYNC);
-
+	fboot_tx_status("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
 	return do_reset (NULL, 0, 0, NULL);
 }
 
@@ -969,7 +965,6 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	debug("getvar = %s\n", cmd);
 
 	if (!strncmp(cmd, "partition-type:", strlen("partition-type:"))) {
-
 		s += strlen("partition-type:");
 		printf("\nReady : [%s]\n", s);
 		fboot_lcd_part(s, "wait...");
