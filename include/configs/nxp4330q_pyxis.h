@@ -46,7 +46,7 @@
 
 /* malloc() pool */
 #define	CONFIG_MEM_MALLOC_START			0x41000000
-#define CONFIG_MEM_MALLOC_LENGTH		8*1024*1024								/* more than 2M for ubifs: MAX 16M */
+#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x46000000
