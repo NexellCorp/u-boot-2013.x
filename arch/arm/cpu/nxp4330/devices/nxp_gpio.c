@@ -45,7 +45,6 @@ void nxp_gpio_set_alt(int gpio, int mode)
 int nxp_gpio_get_alt(int gpio)
 {
 	int grp, bit;
-	int ret = -1;
 
 	if (gpio > (PAD_GPIO_ALV - 1) )
 		return -1;

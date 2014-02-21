@@ -205,7 +205,7 @@ void fboot_usb_int_bulkout(u32 fifo_cnt_byte)
 	s3c_usb_read_out_fifo((u8 *)fastboot_bulk_fifo, fifo_cnt_byte);
 	if (fifo_cnt_byte<64) {
 		fastboot_bulk_fifo[fifo_cnt_byte] = 0x00; // append null
-		printf("Received %d bytes: %s\n",fifo_cnt_byte, fastboot_bulk_fifo);
+	//	printf("Received %d bytes: %s\n",fifo_cnt_byte, fastboot_bulk_fifo);
 	}
 
 	/*ep3 enable, clear nak, bulk, usb active, next ep3, max pkt 64*/
@@ -349,12 +349,14 @@ int fastboot_init(struct cmd_fastboot_interface *interface)
 	nand_blocksize = nand_info[0].erasesize;
 	fastboot_interface->nand_block_size               = nand_blocksize;
 #else
-	fastboot_interface->nand_block_size               = CFG_FASTBOOT_PAGESIZE * 64;
+//	fastboot_interface->nand_block_size               = CFG_FASTBOOT_PAGESIZE * 64;
 #endif
-	fastboot_interface->transfer_buffer               = (unsigned char *) CFG_FASTBOOT_TRANSFER_BUFFER;
-	fastboot_interface->transfer_buffer_size          = CFG_FASTBOOT_TRANSFER_BUFFER_SIZE;
+//	fastboot_interface->transfer_buffer               = (unsigned char *) CFG_FASTBOOT_TRANSFER_BUFFER;
+//	fastboot_interface->transfer_buffer_size          = CFG_FASTBOOT_TRANSFER_BUFFER_SIZE;
 
-	memset((unsigned char *) CFG_FASTBOOT_TRANSFER_BUFFER, 0x0, FASTBOOT_REBOOT_MAGIC_SIZE);
+	memset((unsigned char *)fastboot_interface->transfer_buffer,
+			0x0,
+			FASTBOOT_REBOOT_MAGIC_SIZE);
 
 	ret = 0;	// This is a fake return value, because we do not initialize USB yet!
 

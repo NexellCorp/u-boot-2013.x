@@ -51,7 +51,7 @@ endif
 endif
 
 # ghcstop add
-COBJS-$(CONFIG_S3C_USBD) += usbd-otg-hs.o
+COBJS-$(CONFIG_NXP_USBD) += usbd-otg-hs.o
 
 COBJS	:= $(COBJS-y)
 SRCS	:= $(COBJS:.o=.c)

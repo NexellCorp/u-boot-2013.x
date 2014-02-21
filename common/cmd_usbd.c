@@ -32,14 +32,9 @@
 #include <common.h>
 #include <command.h>
 
-#ifdef CONFIG_S3C_USBD
+#define	USBD_DOWN_ADDR		CONFIG_USBD_DOWN_ADDR
 
-//#include <asm/arch/cpu.h>
-//#include <asm/arch/platform.h>
-#include <asm/arch-nxp4330/platform.h>
-#include <asm/arch-nxp4330/cpu.h>
-
-#if defined(CONFIG_S3C_USBD)
+#if defined(CONFIG_NXP_USBD)
 #include "../drivers/usb/gadget/usbd-otg-hs.h"
 #else
 	#error "* CFG_ERROR : you have to setup right Samsung CPU configuration"
@@ -55,7 +50,7 @@ int s3c_usbctl_init(void);
 
 static const char pszMe[] = "usbd: ";
 
-int do_usbd_dnw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_usbd_dnw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 
 	if (argv[0][0] == 'u') {
@@ -107,19 +102,10 @@ int do_usbd_dnw ( cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 	return 0;
 }
 
-#if 0 /* ud command not support yet */
-U_BOOT_CMD(
-	ud, 3, 0, do_usbd_dnw,
-	"ud      - initialize USB device and ready to receive for LINUX server (specific)\n",
-	"[download address]\n"
-);
-#endif
-
 U_BOOT_CMD(
 	dnw, 3, 0, do_usbd_dnw,
 	"dnw     - initialize USB device and ready to receive for Windows server (specific)\n",
 	"[download address]\n"
 );
 
-#endif	/* CONFIG_S3C_USBD */
 

@@ -31,6 +31,10 @@ COBJS-$(CONFIG_CMD_SPI_EEPROM_UPDATE)   += cmd_spi_eeprom.o
 COBJS-$(CONFIG_CMD_NAND_UPDATE)   += cmd_nand_update.o
 COBJS-$(CONFIG_OTG_PHY_NEXELL)		+= otg_phy.o
 COBJS-$(CONFIG_CMD_USB)		+= cmd_usbdown.o
+COBJS-$(CONFIG_MMC_PARTITIONS)		+= cmd_mmcparts.o
+COBJS-$(CONFIG_FASTBOOT)		+= cmd_fastboot.o
+COBJS-$(CONFIG_CMD_MMC_UPDATE)	+= cmd_mmc_update.o
+
 COBJS   := $(COBJS-y)
 SOBJS   := $(SOBJS-y)
 

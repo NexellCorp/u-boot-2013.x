@@ -333,28 +333,6 @@ extern int fastboot_flash_read_ext(fastboot_ptentry *ptn,
 extern int fastboot_flash_write(fastboot_ptentry *ptn, unsigned extra_per_page,
 				const void *data, unsigned bytes);
 
-#ifdef CFG_FASTBOOT_PTABLE_USERDEFINE
-#ifndef __ASSEMBLY__
-/* boot device type */
-#define BOOT_DEV_TYPE_NONE	 (-1)
-#define BOOT_DEV_TYPE_EEPROM 0
-#define BOOT_DEV_TYPE_SDMMC  1
-#define BOOT_DEV_TYPE_NAND   2
-#endif // __ASSEMBLY__
-
-struct ptable_userdefine {
-    int type;
-    int partno;
-    int pid;
-    char *name;
-    int start;
-    unsigned long long length;
-	unsigned int flags;
-};
-
-extern struct ptable_userdefine user_ptables[];
-#endif /* CFG_FASTBOOT_PTABLE_USERDEFINE */
-
 #else
 
 /* Stubs for when CONFIG_FASTBOOT is not defined */

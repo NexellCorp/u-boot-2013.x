@@ -45,11 +45,15 @@
 #define	CONFIG_SYS_INIT_SP_ADDR			CONFIG_SYS_TEXT_BASE					/* init and run stack pointer */
 
 /* malloc() pool */
-#define	CONFIG_SYS_MALLOC_END			0x41000000								/* relocate_code and  board_init_r */
-#define CONFIG_SYS_MALLOC_LEN			2*1024*1024								/* board_init_f, more than 2M for ubifs */
+#define	CONFIG_MEM_MALLOC_START			0x41000000
+#define CONFIG_MEM_MALLOC_LENGTH		8*1024*1024								/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
-#define CONFIG_FB_ADDR					CFG_MEM_PHY_FB_BASE					/* board_init_f, depend on CONFIG_LCD and nx_draw_boot_logo */
+#define CONFIG_FB_ADDR					0x46000000
+#define CONFIG_BMP_ADDR					0x47000000
+
+/* Download OFFSET */
+#define CONFIG_MEM_LOAD_ADDR			0x48000000
 
 /*-----------------------------------------------------------------------
  *  High Level System Configuration
@@ -62,7 +66,10 @@
 
 #define CONFIG_NR_DRAM_BANKS	   		1										/* dram 1 bank num */
 
-#define CONFIG_SYS_LOAD_ADDR			CONFIG_SYS_MALLOC_END					/* kernel load address */
+#define	CONFIG_SYS_MALLOC_END			(CONFIG_MEM_MALLOC_START + CONFIG_MEM_MALLOC_LENGTH)	/* relocate_code and  board_init_r */
+#define CONFIG_SYS_MALLOC_LEN			(CONFIG_MEM_MALLOC_LENGTH - 0x8000)						/* board_init_f, more than 2M for ubifs */
+
+#define CONFIG_SYS_LOAD_ADDR			CONFIG_MEM_LOAD_ADDR					/* kernel load address */
 
 #define CONFIG_SYS_MEMTEST_START		CONFIG_SYS_MALLOC_END					/* memtest works on */
 #define CONFIG_SYS_MEMTEST_END			(CONFIG_SYS_SDRAM_BASE + CONFIG_SYS_SDRAM_SIZE)
@@ -114,7 +121,7 @@
  */
 #define CONFIG_SYS_PROMPT				"nxp4330# "												/* Monitor Command Prompt   */
 #define CONFIG_SYS_LONGHELP																	/* undef to save memory	   */
-#define CONFIG_SYS_CBSIZE				256													/* Console I/O Buffer Size  */
+#define CONFIG_SYS_CBSIZE				1024													/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE				(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS				16													/* max number of command args   */
 #define CONFIG_SYS_BARGSIZE				CONFIG_SYS_CBSIZE									/* Boot Argument Buffer Size    */
@@ -222,29 +229,24 @@
 	#endif
 
 	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			1024*1024										/* 0x00080000 */
-		#define CONFIG_ENV_SIZE           	1024*1024											/* 1 block size */
-		#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 4 							/* avoid bad block */
+		#define	CONFIG_ENV_OFFSET			(0x400000)										/* 4MB */
+		#define CONFIG_ENV_SIZE           	(4*1024*1024)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 							/* avoid bad block */
 	#endif
 
 	#undef  CONFIG_CMD_IMLS
 
-	#define	CONFIG_CMD_MTDPARTS
-	#define	CONFIG_MTD_DEVICE
-	#define	CONFIG_MTD_PARTITIONS
-	#define MTDIDS_DEFAULT				"nand0=mtd-nand"
-	#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:-(root)"
+	#if defined(CONFIG_CMD_MTDPARTS)
+		#define	CONFIG_MTD_DEVICE
+		#define	CONFIG_MTD_PARTITIONS
+		#define MTDIDS_DEFAULT				"nand0=mtd-nand"
+		#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:2m(u-boot),4m(kernel),8m(ramdisk),-(extra)"
+	#endif
 
 //	#define CONFIG_MTD_DEBUG
 	#ifdef  CONFIG_MTD_DEBUG
-		#define CONFIG_MTD_DEBUG_VERBOSE	7	/* For nand debug message = 0 ~ 3 *//* list all images found in flash	*/
+		#define CONFIG_MTD_DEBUG_VERBOSE	0	/* For nand debug message = 0 ~ 3 *//* list all images found in flash	*/
 	#endif
-
-	/*
-	 * Nand YAFFS2 (cmd: #> ymount / , #> yumount / , #> yls / )
-	 */
-	// #define	CONFIG_CMD_NAND_YAFFS
-
 #endif	/* CONFIG_CMD_NAND */
 
 /*-----------------------------------------------------------------------
@@ -270,6 +272,7 @@
 
 		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
 		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
+		#define CONFIG_EEPROM_ADDRESS_STEP		3
 
 		#define CMD_SPI_WREN			0x06		// Set Write Enable Latch
 		#define CMD_SPI_WRDI			0x04		// Reset Write Enable Latch
@@ -282,8 +285,6 @@
 		#define CMD_SPI_BE				0xC7		// Bulk Erase
 		#define CMD_SPI_DP				0xB9		// Deep Power-down
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
-
-
 
 		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
  	 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
@@ -306,8 +307,6 @@
  	 	 */
 			#define	CONFIG_2STBOOT_OFFSET			   	0
 			#define	CONFIG_2STBOOT_SIZE				   	16*1024
-			#define	CONFIG_NSIH_OFFSET				   	0
-			#define	CONFIG_NSIH_SIZE				    512
 			#define	CONFIG_UBOOT_OFFSET				   	64*1024
 			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
 			#define	CONFIG_CMD_SPI_EEPROM_UPDATE		/* build cmd_spi_eeprom.c */
@@ -425,23 +424,26 @@
  *
  */
 #define	CONFIG_CMD_MMC
+//#define CONFIG_ENV_IS_IN_MMC
+
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
-//	#define CONFIG_ENV_IS_IN_MMC
+	#define HAVE_BLOCK_DEVICE
+
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
-//	#define CONFIG_CMD_MOVI
-#endif
+	#define CONFIG_MMC_PARTITIONS
+	#define CONFIG_CMD_MMC_UPDATE
 
-#if defined(CONFIG_GENERIC_MMC) && defined(CONFIG_ENV_IS_IN_MMC)
-	#undef CONFIG_ENV_IS_IN_NAND
-	#define	CONFIG_ENV_OFFSET			512*1024										/* 0x00080000 */
-	#define CONFIG_ENV_SIZE           	16*1024											/* 1 block size */
-	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 4 							/* avoid bad block */
+	#if defined(CONFIG_ENV_IS_IN_MMC)
+	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
+	#define CONFIG_ENV_SIZE           	32*1024					/* N block size (512Byte Per Block)  */
+	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 	/* avoid bad block */
 	#define CONFIG_SYS_MMC_ENV_DEV  1
+	#endif
 #endif
 
 /*-----------------------------------------------------------------------
@@ -460,21 +462,15 @@
  */
 #if defined(CONFIG_MMC) || defined(CONFIG_CMD_USB)
 	#define CONFIG_DOS_PARTITION
+
 	#define CONFIG_CMD_FAT
 	#define CONFIG_FS_FAT
+	#define CONFIG_FAT_WRITE
+
 	#define CONFIG_CMD_EXT4
+	#define CONFIG_CMD_EXT4_WRITE
 	#define CONFIG_FS_EXT4
-#endif
-
-/*-----------------------------------------------------------------------
- * JFFS2 (NAND or FLASH)
- */
-// #define	CONFIG_CMD_JFFS2
-// #define	CONFIG_JFFS2_NAND				/* support nand jffs2, default support nor flash */
-
-/* nand jffs2 device */
-#if defined(CONFIG_JFFS2_NAND)
-	#define CONFIG_JFFS2_DEV			"nand0"
+	#define CONFIG_EXT4_WRITE
 #endif
 
 /*-----------------------------------------------------------------------
@@ -499,28 +495,6 @@
 #endif
 
 /*-----------------------------------------------------------------------
- * MTD Partition
- */
-
-/* NAND partition */
-#if defined(CONFIG_CMD_UBIFS) || 	\
-   (defined(CONFIG_JFFS2_NAND) && defined(CONFIG_CMD_JFFS2))
-	#define	CONFIG_CMD_MTDPARTS
-	#define	CONFIG_MTD_DEVICE
-	#define	CONFIG_MTD_PARTITIONS
-	#define MTDIDS_DEFAULT				"nand0=mtd-nand"
-//	#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:2m(u-boot),4m(kernel),8m(ramdisk),-(extra)"
-	#define MTDPARTS_DEFAULT			"mtdparts=mtd-nand:-(root)"
-/* Nor partition */
-#elif defined(CONFIG_CMD_JFFS2)
-	#define	CONFIG_CMD_MTDPARTS
-	#define	CONFIG_MTD_DEVICE
-	#define	CONFIG_MTD_PARTITIONS
-	#define MTDIDS_DEFAULT				"nor0=mtd-nor"
-	#define MTDPARTS_DEFAULT			"mtdparts=mtd-nor:2m(u-boot),4m(kernel),8m(ramdisk),-(extra)"
-#endif
-
-/*-----------------------------------------------------------------------
  * Logo command
  */
 #define CONFIG_DISPLAY_OUT
@@ -534,48 +508,6 @@
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
   //#define CONFIG_CMD_LOGO_LOAD			"nand read 0x8e800000 600000 100000; bootlogo 0x8e800000"
 #endif
-
-
-/*-----------------------------------------------------------------------
- * USB Device Command definition
- */
-#if 0
-#define CONFIG_S3C_USBD
-#define USBD_DOWN_ADDR 0x41000000
-#define CONFIG_FASTBOOT
-/* Fastboot variables */
-#if defined(CONFIG_FASTBOOT)
-// #include <fastboot.h>
-#define CFG_FASTBOOT_TRANSFER_BUFFER            (0x42000000)
-#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE       (0x10000000)   /* 256MB */
-#define CFG_FASTBOOT_ADDR_KERNEL                (0x40008000)
-#define CFG_FASTBOOT_ADDR_RAMDISK               (0x40800000)
-#define CFG_FASTBOOT_PAGESIZE                   (2048)  // Page size of booting device
-#define CFG_FASTBOOT_SDMMC_BLOCKSIZE            (512)   // Block size of sdmmc
-/* #define CFG_PARTITION_START                     (0x4000000) */
-#define CFG_PARTITION_START                     (0x100000) // 2048 * 512
-#define CFG_BOOT_PART_START                     CFG_PARTITION_START
-#define CFG_BOOT_PART_SIZE                      (64*1024*1024) // 64MB
-/* check ANDROID_SOURCE/device/nexell/lynx/BoardConfig.mk, BOARD_XXXX_PARTITION_SIZE */
-#define CFG_SYSTEM_PART_SIZE                    (685768704)
-#define CFG_CACHE_PART_SIZE                     (553648128)
-#define CFG_USERDATA_PART_SIZE                  (0xFFFFFFFF) // unlimited - all remaining size
-
-#define CFG_FASTBOOT_SDMMCBSP
-#define CFG_FASTBOOT_SPIEEPROM
-
-/* add for emmc boot : cmd_fastboot.c */
-#define CFG_FASTBOOT_DEV_NUM                    (1) /* 0: external sdmmc, 1: emmc */
-/* partition table */
-#define CFG_FASTBOOT_PTABLE_USERDEFINE
-
-#endif
-#endif
-
-/*-----------------------------------------------------------------------
- * ETC config
- */
-// #define	CONFOG_BOARD_PREBOOT_OS
 
 /*-----------------------------------------------------------------------
  * Debug message

@@ -27,6 +27,8 @@ LIB	:= $(obj)libmmc.o
 
 ifdef CONFIG_SPL_BUILD
 COBJS-$(CONFIG_SPL_MMC_SUPPORT) += spl_mmc.o
+else
+COBJS-$(CONFIG_GENERIC_MMC) += mmc_write.o
 endif
 
 COBJS-$(CONFIG_BFIN_SDH) += bfin_sdh.o

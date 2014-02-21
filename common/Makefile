@@ -135,10 +135,7 @@ ifdef CONFIG_PHYLIB
 COBJS-$(CONFIG_CMD_MII) += cmd_mdio.o
 endif
 COBJS-$(CONFIG_CMD_MISC) += cmd_misc.o
-COBJS-$(CONFIG_CMD_MMC) += cmd_mmc.o 
-ifdef CONFIG_FASTBOOT
-COBJS-$(CONFIG_CMD_MMC) += cmd_mmc_fdisk.o
-endif
+COBJS-$(CONFIG_CMD_MMC) += cmd_mmc.o
 COBJS-$(CONFIG_CMD_MMC_SPI) += cmd_mmc_spi.o
 COBJS-$(CONFIG_CMD_MOVI) += cmd_movi.o
 COBJS-$(CONFIG_MP) += cmd_mp.o
@@ -186,8 +183,7 @@ COBJS-$(CONFIG_CMD_ZIP) += cmd_zip.o
 COBJS-$(CONFIG_CMD_ZFS) += cmd_zfs.o
 
 # ghcstop add
-COBJS-$(CONFIG_S3C_USBD) += cmd_usbd.o
-COBJS-$(CONFIG_FASTBOOT) += cmd_fastboot.o
+COBJS-$(CONFIG_NXP_USBD) += cmd_usbd.o
 
 # others
 ifdef CONFIG_DDR_SPD

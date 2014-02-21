@@ -146,7 +146,7 @@ U_BOOT_CMD(
 );
 #endif
 
-int do_fat_format(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
+int do_fat_format(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int dev = 0;
 	int part = 1;
@@ -176,7 +176,7 @@ int do_fat_format(cmd_tbl_t *cmdtp, int flag, int argc, char *argv[])
 			puts ("** Partition Number should be 1 ~ 4 **\n");
 		}
 	}
-	printf("Start format MMC&d partition&d ...\n", dev, part);
+	printf("Start format mmc.%d partition %d ...\n", dev, part);
 	if (fat_format_device(dev_desc, part) != 0) {
 		printf("Format failure!!!\n");
 	}

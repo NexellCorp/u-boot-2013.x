@@ -25,7 +25,7 @@ include $(TOPDIR)/config.mk
 
 LIB	= $(obj)lib$(BOARD).o
 
-COBJS-y	:= board.o movi_partition.o
+COBJS-y	:= board.o
 SOBJS-y	:=
 
 SRCS    := $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)

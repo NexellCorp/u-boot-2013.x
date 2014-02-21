@@ -27,7 +27,6 @@ LIB	= $(obj)lib$(BOARD).o
 
 COBJS-y	:= board.o
 COBJS-$(CONFIG_DISPLAY_OUT)	+= display.o
-COBJS-y	+= movi_partition.o
 
 SOBJS-y	:=
 
