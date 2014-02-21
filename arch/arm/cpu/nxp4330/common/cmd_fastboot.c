@@ -295,7 +295,7 @@ static struct fastboot_device f_devices[] = {
 		.device 	= "eeprom",
 		.dev_max	= FASTBOOT_EEPROM_MAX,
 		.dev_type	= FASTBOOT_DEV_EEPROM,
-		.fs_support	= (FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW),
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW),
 	#ifdef CONFIG_CMD_EEPROM
 		.write_part	= eeprom_part_write,
 	#endif
@@ -304,7 +304,7 @@ static struct fastboot_device f_devices[] = {
 		.device 	= "nand",
 		.dev_max	= FASTBOOT_NAND_MAX,
 		.dev_type	= FASTBOOT_DEV_NAND,
-		.fs_support	= (FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_UBI),
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_UBI),
 	#ifdef CONFIG_CMD_NAND
 		.write_part	= nand_part_write,
 	#endif
@@ -314,7 +314,7 @@ static struct fastboot_device f_devices[] = {
 		.dev_max	= FASTBOOT_MMC_MAX,
 		.dev_type	= FASTBOOT_DEV_MMC,
 		.part_type	= PART_TYPE_DOS,
-		.fs_support	= (FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= &mmc_part_write,
 	#endif
