@@ -1324,7 +1324,6 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 		if (0 == fastboot_init(inf)) {
 			unsigned int curr_time = (get_ticks()/tclk);
 			unsigned int end_time = curr_time + timeout;
-			mdelay(1);
 
 			printf("------------------------------------------\n");
 			while (1) {

@@ -105,8 +105,8 @@ int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count)
 	}
 
 	for (i = 0; max_part > i; i++, pt++) {
-		parts[i][0] = le32_to_int (pt->start4) * MMC_BLOCK_SIZE;
-		parts[i][1] = le32_to_int (pt->size4) * MMC_BLOCK_SIZE;
+		parts[i][0] = (uint64_t)le32_to_int(pt->start4) * MMC_BLOCK_SIZE;
+		parts[i][1] = (uint64_t)le32_to_int(pt->size4)  * MMC_BLOCK_SIZE;
 		if (parts[i][0] && parts[i][1])
 			*count = (i+1);
 		debug("part.%d=\t0x%llx \t~ \t0x%llx\n", i, parts[i][0], parts[i][1]);
@@ -119,7 +119,7 @@ int mmc_make_part_mbr(block_dev_desc_t *desc, uint64_t (*parts)[2], int count,
 {
 	dos_partition_t *pt;
 	unsigned char buffer[MMC_BLOCK_SIZE];
-	lbaint_t avalible = desc->lba;
+	uint64_t avalible = desc->lba;
 	int i = 0;
 
 	printf("--- Create mmc.%d partitions %d ---\n", desc->dev, count);
@@ -132,6 +132,11 @@ int mmc_make_part_mbr(block_dev_desc_t *desc, uint64_t (*parts)[2], int count,
 		printf ("** Can't make partition tables %d (1 ~ 4) **\n", count);
 		return -1;
 	}
+
+	printf("Total = %lld * %d (%d.%d G) \n", avalible,
+	(int)desc->blksz,
+	(int)((avalible*desc->blksz)/(1024*1024*1024)),
+	(int)((avalible*desc->blksz)%(1024*1024*1024)));
 
 	memset(buffer, 0x0, sizeof(buffer));
 	buffer[DOS_PART_MAGIC_OFFSET] = 0x55;
@@ -162,7 +167,7 @@ int mmc_make_part_mbr(block_dev_desc_t *desc, uint64_t (*parts)[2], int count,
 		if (0 == length)
 			length = avalible;
 
-		if (MMC_BLOCK_SIZE > start) {
+		if (!start) {
 			printf("-- Fail: part %d start 0x%llx is in MBR zone (0x200) --\n",
 				i, parts[i][0]);
 			return -1;
@@ -176,7 +181,7 @@ int mmc_make_part_mbr(block_dev_desc_t *desc, uint64_t (*parts)[2], int count,
 
 		int_to_le32(pt->start4, start);
 		int_to_le32(pt->size4, length);
-		printf("part.%d=\t0x%llx \t~ \t0x%llx\n", i, parts[i][0], (uint64_t)(length*MMC_BLOCK_SIZE));
+		printf("part.%d=\t0x%llx \t~ \t0x%llx\n", i, parts[i][0], (uint64_t)length * MMC_BLOCK_SIZE);
 
 		avalible -= length;
 		if (0 == avalible)
