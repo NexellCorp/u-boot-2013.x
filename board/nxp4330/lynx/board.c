@@ -608,7 +608,7 @@ int board_late_init(void)
 
         time_pwr_prev = nxp_rtc_get();
 
-		while(show_bat_state)
+		while(show_bat_state && !ctrlc())
         {
             if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
             {
