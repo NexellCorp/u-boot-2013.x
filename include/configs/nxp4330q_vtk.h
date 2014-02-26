@@ -223,6 +223,8 @@
 //	#define	CONFIG_MTD_NAND_VERIFY_WRITE
 //	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
 
+	#define CONFIG_CMD_UPDATE_NAND
+
 	#if defined (CONFIG_MTD_NAND_ECC_BCH)
 		#define	CONFIG_BCH
 		#define	CONFIG_NAND_ECC_BCH

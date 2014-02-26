@@ -41,6 +41,8 @@ extern void nand_init(void);
 #include <linux/mtd/mtd.h>
 #include <linux/mtd/nand.h>
 
+#define CONFIG_NAND_RANDOMIZER
+
 #ifdef CONFIG_SYS_NAND_SELF_INIT
 void board_nand_init(void);
 int nand_register(int devnum);

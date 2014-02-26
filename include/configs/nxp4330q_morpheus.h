@@ -114,7 +114,7 @@
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
 /* Image - external sd card */
-#define CONFIG_BOOTCOMMAND				"nand read 0x48000000 0xb00000 0x400000; nand read 0x49000000 0x300000 0x400000; bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND				"nand read 0x48000000 0x300000 0x400000; nand read 0x49000000 0xb00000 0x400000; bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -201,7 +201,7 @@
 //	#define	CONFIG_MTD_NAND_VERIFY_WRITE
 //	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
 
-	#define CONFIG_CMD_NAND_UPDATE
+	#define CONFIG_CMD_UPDATE_NAND
 
 	#if defined (CONFIG_MTD_NAND_ECC_BCH)
 		#define	CONFIG_BCH
