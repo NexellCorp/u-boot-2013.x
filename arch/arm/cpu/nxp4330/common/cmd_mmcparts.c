@@ -95,8 +95,10 @@ int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count)
 
 	*count = 0;
 
-	if (0 > desc->block_read(desc->dev, 0, 1, (void *)buffer))
+	if (0 > desc->block_read(desc->dev, 0, 1, (void *)buffer)) {
+		printf ("** Error read mmc.%d partition info **\n", desc->dev);
 		return -1;
+	}
 
 	if (buffer[DOS_PART_MAGIC_OFFSET] != 0x55 ||
 		buffer[DOS_PART_MAGIC_OFFSET + 1] != 0xAA) {
