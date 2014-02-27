@@ -84,6 +84,7 @@ int do_update_mmc(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 
 		goto do_write;
 	}
+
 	if (! strcmp(argv[2], "boot")) {
 		struct boot_dev_head head;
 		struct boot_dev_head *bh = &head;
