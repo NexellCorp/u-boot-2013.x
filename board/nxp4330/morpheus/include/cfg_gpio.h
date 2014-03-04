@@ -119,7 +119,7 @@
 #define PAD_GPIOC10     (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[10] ,1: GPIO                ,2: SSP2_FSS            ,3: MCUS_nNCS[2]        =
 #define PAD_GPIOC11     (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[11] ,1: GPIO                ,2: SSP2_RXD            ,3: USB2.0OTG0_DRVBUS   =
 #define PAD_GPIOC12     (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[12] ,1: GPIO                ,2: SSP2_TXD            ,3: SDMMC2_nRST         =
-#define PAD_GPIOC13     (PAD_MODE_OUT  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[13] ,1: GPIO                ,2: PWM1_OUT            ,3: SDMMC2_CARD_nint    =
+#define PAD_GPIOC13     (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[13] ,1: GPIO                ,2: PWM1_OUT            ,3: SDMMC2_CARD_nint    =
 #define PAD_GPIOC14     (PAD_MODE_OUT  | PAD_FUNC_ALT1 | PAD_LEVEL_HIGH  | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[14] ,1: GPIO                ,2: PWM2_OUT            ,3: VIP0_ExtCLK2        = ATSC_RST
 #define PAD_GPIOC15     (PAD_MODE_ALT  | PAD_FUNC_ALT2 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[15] ,1: GPIO                ,2: MPEGTSI0_TSCLK      ,3: VIP0_HSYNC2         =
 #define PAD_GPIOC16     (PAD_MODE_ALT  | PAD_FUNC_ALT2 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_ADDR[16] ,1: GPIO                ,2: MPEGTSI0_TSYNC0     ,3: VIP0_VSYNC2         =
@@ -147,7 +147,7 @@
  *
  -----------------------------------------------------------------------------*/
 #define PAD_GPIOD0      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: SSP0_RXD            ,2: PWM3_OUT            ,3:_                    =
-#define PAD_GPIOD1      (PAD_MODE_ALT  | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PWM0_OUT            ,2: MCUS_ADDR[25]       ,3:_                    =
+#define PAD_GPIOD1      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: PWM0_OUT            ,2: MCUS_ADDR[25]       ,3:_                    =
 #define PAD_GPIOD2      (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C0_SCL            ,2: UART4_SMCAYEN       ,3:_                    =
 #define PAD_GPIOD3      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C0_SDA            ,2: UART5_SMCAYEN       ,3:_                    =
 #define PAD_GPIOD4      (PAD_MODE_IN   | PAD_FUNC_ALT1 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          ,1: I2C1_SCL            ,2:_                    ,3:_                    =
@@ -211,11 +211,11 @@
 #define PAD_GPIOE22     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          1: GMAC0_PHY_RXER       ,2:_                    ,3:_                    =
 #define PAD_GPIOE23     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          1: GMAC0_PHY_CRS        ,2:_                    ,3:_                    =
 #define PAD_GPIOE24     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: GPIO          1: GMAC0_GTX_CLK        ,2:_                    ,3:_                    =
-#define PAD_GPIOE25     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: nTRST         1: GPIO                 ,2:_                    ,3:_                    =
-#define PAD_GPIOE26     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TMS           1: GPIO                 ,2:_                    ,3:_                    =
-#define PAD_GPIOE27     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TDI           1: GPIO                 ,2:_                    ,3:_                    =
-#define PAD_GPIOE28     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TCLK          1: GPIO                 ,2:_                    ,3:_                    =
-#define PAD_GPIOE29     (PAD_MODE_IN   | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TDO           1: GPIO                 ,2:_                    ,3:_                    =
+#define PAD_GPIOE25     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: nTRST         1: GPIO                 ,2:_                    ,3:_                    =
+#define PAD_GPIOE26     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TMS           1: GPIO                 ,2:_                    ,3:_                    =
+#define PAD_GPIOE27     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TDI           1: GPIO                 ,2:_                    ,3:_                    =
+#define PAD_GPIOE28     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TCLK          1: GPIO                 ,2:_                    ,3:_                    =
+#define PAD_GPIOE29     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: TDO           1: GPIO                 ,2:_                    ,3:_                    =
 #define PAD_GPIOE30     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_nSOE     1: GPIO                 ,2:_                    ,3:_                    =
 #define PAD_GPIOE31     (PAD_MODE_ALT  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW   | PAD_PULLUP_OFF | PAD_STRENGTH_0)     // 0: MCUS_nSWE     1: GPIO                 ,2:_                    ,3:_                    =
 
