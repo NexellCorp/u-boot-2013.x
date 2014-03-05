@@ -128,43 +128,49 @@ static int muic_chrg_get_type(struct pmic *p)
 	if (pmic_probe(p))
 		return CHARGER_NO;
 
-	/* Set GPIO4 Condition */
+	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
+	if ((chg_state & 0xC0) == 0x00)
+		return CHARGER_UNKNOWN;
+
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+	if (chg_state & 0x40)
+#endif
+	{
+		val = (NXE2000_DEF_LIMIT_ADP_AMP / 100000) - 1;
+		pmic_reg_write(p, NXE2000_REG_REGISET1, val);
+
+		val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1);
+		pmic_reg_write(p, NXE2000_REG_CHGISET, val);
+
+		val = (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+
+		return CHARGER_TA;
+	}
+#endif
+
+	val = (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+		| (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+	pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+
+	/* PMIC GPIO4 : Set output mode */
+	pmic_reg_read(p, NXE2000_REG_IOSEL, &tmp);
+	val = (tmp | 0x10) & 0xFF;
+	pmic_reg_write(p, NXE2000_REG_IOSEL, val);
+
+	/* PMIC GPIO4 : Set low level */
 	pmic_reg_read(p, NXE2000_REG_IOOUT, &tmp);
-	val = (tmp & ~0x10) & 0xFF;	// Low
+	val = (tmp & ~0x10) & 0xFF;
 	pmic_reg_write(p, NXE2000_REG_IOOUT, val);
+	mdelay(10);
 
 #if defined(CONFIG_OTG_PHY_NEXELL)
     otg_clk_disable();
     otg_phy_off();
 #endif
 
-#if !defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
-reset_priority:
-    if (recheck)
-    {
-        val = (0x1 << NXE2000_POS_CHGCTL1_SUSPEND);
-    }
-    else
-    {
-        val = (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-            | (0x1 << NXE2000_POS_CHGCTL1_SUSPEND);
-    }
-    pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-    mdelay(1);
-
 	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
-    if ( !(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK) && recheck)
-    {
-        recheck--;
-        goto reset_priority;
-    }
-#else
-
-    val = (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-        | (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
-    pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-    mdelay(1);
-#endif
 
     tmp = 0;
 
@@ -215,7 +221,7 @@ charger = CHARGER_TA;
         break;
     }
 
-    val = (chg_ilim_uA / 100000) - 1;
+    val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((chg_ilim_uA / 100000) - 1);
     pmic_reg_write(p, NXE2000_REG_CHGISET, val);
 /* ------------------------- */
 
@@ -224,14 +230,6 @@ charger = CHARGER_TA;
 
     if ( !tmp )
         val = 0;
-
-#if defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
-    if (charger & (chg_state >> 6)) {
-        pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-    }
-#else
-    pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
-#endif
 
     /* Set GPIO4 Condition */
     pmic_reg_read(p, NXE2000_REG_IOOUT, &tmp);
