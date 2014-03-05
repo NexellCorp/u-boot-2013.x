@@ -145,10 +145,10 @@ static struct fastboot_fs_type f_part_fs[] = {
  */
 
 static const char *f_reserve_part[] = {
-	[0] = "partmap",
-	[1] = "mem",
-	[2] = "env",
-	[3] = "cmd",
+	[0] = "partmap",			/* fastboot partition */
+	[1] = "mem",				/* download only */
+	[2] = "env",				/* u-boot environment setting */
+	[3] = "cmd",				/* command run */
 };
 
 /*
@@ -302,7 +302,43 @@ static int eeprom_part_write(struct fastboot_part *fpart, void *buf, uint64_t le
 #ifdef CONFIG_CMD_NAND
 static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
-	return 0;
+	char args[64];
+	int l = 0, p = 0;
+
+
+	/*
+	 * nand standalone
+	 *		2ndboot,3rdboot
+	 *			"update_nand write         0x50000000 0x0        0x20000" 
+	 *
+	 * normal
+	 *		raw image
+	 *			"nand        write         0x50000000 0x400000   0x100000"
+	 *
+	 *		ubi image
+	 *			"nand        write.trimffs 0x50000000 0x20000000 0x20000000"
+	 */
+
+	if ((fpart->fs_type & FASTBOOT_FS_2NDBOOT) || (fpart->fs_type & FASTBOOT_FS_BOOT))
+		p = sprintf(args, "update_nand ");
+	else
+		p = sprintf(args, "nand ");
+
+
+	if (fpart->fs_type & FASTBOOT_FS_UBI)
+		l = sprintf(&args[p], "%s", "write.trimffs");
+	else
+		l = sprintf(&args[p], "%s", "write");
+
+	p += l;
+	l = sprintf(&args[p], " 0x%x 0x%llx 0x%llx", (unsigned int)buf, fpart->start, length);
+	p += l;
+	args[p] = 0;
+
+	//debug("%s\n", args);
+	printf("%s\n", args);
+
+	return run_command(args, 0);
 }
 #endif
 

@@ -46,7 +46,7 @@
 
 /* malloc() pool */
 #define	CONFIG_MEM_MALLOC_START			0x41000000
-#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024								/* more than 2M for ubifs: MAX 16M */
+#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024							/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x46000000
@@ -208,9 +208,9 @@
 	#endif
 
 	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			1024*1024										/* 0x00080000 */
-		#define CONFIG_ENV_SIZE           	1024*1024											/* 1 block size */
-		#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 4 							/* avoid bad block */
+		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
 	#endif
 
 	#undef  CONFIG_CMD_IMLS
@@ -540,6 +540,13 @@
  * Logo command
  */
 #define CONFIG_DISPLAY_OUT
+
+#define CONFIG_LOGO_DEVICE_MMC
+
+#if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
+#error "Duplicated config for logo device!!!"
+#endif
+
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
@@ -551,12 +558,14 @@
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	#if !defined(CONFIG_CMD_NAND)
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
+	#define CONFIG_CMD_LOGO_WALLPAPERS	"nand read 0x47000000 0x2000000 0x400000; drawbmp 0x47000000"
+	#define	CONFIG_CMD_LOGO_BATTERY		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
+	#else
+	/* From MMC */
 	#define CONFIG_CMD_LOGO_WALLPAPERS	"ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
 	#define	CONFIG_CMD_LOGO_BATTERY		"ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-	#else
-	#define CONFIG_CMD_LOGO_WALLPAPERS	"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
-	#define	CONFIG_CMD_LOGO_BATTERY		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
 	#endif
 
 #endif
