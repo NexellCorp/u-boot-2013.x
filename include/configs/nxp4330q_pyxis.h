@@ -200,15 +200,17 @@
 //	#define	CONFIG_MTD_NAND_VERIFY_WRITE
 //	#define	CONFIG_MTD_NAND_BMT_FIRST_LAST													/* Samsumg 8192 page nand write bad mark on 1st and last block */
 
+	#define CONFIG_CMD_UPDATE_NAND
+
 	#if defined (CONFIG_MTD_NAND_ECC_BCH)
 		#define	CONFIG_BCH
 		#define	CONFIG_NAND_ECC_BCH
 	#endif
 
 	#if defined(CONFIG_ENV_IS_IN_NAND)
-		#define	CONFIG_ENV_OFFSET			(0x400000)										/* 4MB */
-		#define CONFIG_ENV_SIZE           	(4*1024*1024)									/* 1 block size */
-		#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 2 							/* avoid bad block */
+		#define	CONFIG_ENV_OFFSET			(0x400000)									/* 4MB */
+		#define CONFIG_ENV_SIZE           	(0x100000)									/* 1 block size */
+		#define CONFIG_ENV_RANGE			(0x400000)		 							/* avoid bad block */
 	#endif
 
 	#undef  CONFIG_CMD_IMLS
@@ -357,8 +359,14 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
-#define CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE
-//#define CONFIG_PMIC_NXE2000_ADP_CHARGER_ONLY_MODE
+
+#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
+#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
+
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_UBC
+
 #define CONFIG_NXP_RTC_USE
 #endif
 
@@ -532,25 +540,33 @@
  * Logo command
  */
 #define CONFIG_DISPLAY_OUT
+
+#define CONFIG_LOGO_DEVICE_MMC
+
+#if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
+#error "Duplicated config for logo device!!!"
+#endif
+
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_LVDS
+
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	#if !defined(CONFIG_CMD_NAND)
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
+	#define CONFIG_CMD_LOGO_WALLPAPERS	"nand read 0x47000000 0x2000000 0x400000; drawbmp 0x47000000"
+	#define	CONFIG_CMD_LOGO_BATTERY		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
+	#define	CONFIG_CMD_LOGO_UPDATE		"nand read 0x47000000 0x3000000 0x400000; drawbmp 0x47000000"
+	#else
 	/* From MMC */
 	#define CONFIG_CMD_LOGO_WALLPAPERS	"ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
 	#define	CONFIG_CMD_LOGO_BATTERY		"ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
 	#define	CONFIG_CMD_LOGO_UPDATE		"ext4load mmc 1:1 0x47000000 update.bmp; drawbmp 0x47000000"
-	#else
-	/* From NAND */
-	#define CONFIG_CMD_LOGO_WALLPAPERS	"nand read 0x47000000 0x3000000 0x400000; drawbmp 0x47000000"
-	#define	CONFIG_CMD_LOGO_BATTERY		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
-	#define	CONFIG_CMD_LOGO_UPDATE		"nand read 0x47000000 0x2800000 0x400000; drawbmp 0x47000000"
 	#endif
 #endif
 

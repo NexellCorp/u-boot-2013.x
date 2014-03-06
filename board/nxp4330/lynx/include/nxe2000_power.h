@@ -34,7 +34,7 @@
 #define CHARGER_MIN_CURRENT					100		/* VAL(mV) */
 #define CHARGER_MAX_CURRENT					800		/* VAL(mV) */
 #define CHARGER_CURRENT_RESOLUTION			100		/* VAL(mV) */
-#define CHARGER_CURRENT_COMPLETE			0		/* (n + 1) x 50mA   */
+#define CHARGER_CURRENT_COMPLETE			3		/* (n + 1) x 50mA   */
 
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_B + 30)
 #define GPIO_OTG_VBUS_DET					(PAD_GPIO_B + 28)

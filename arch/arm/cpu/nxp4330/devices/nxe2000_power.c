@@ -254,6 +254,9 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 	DBGOUT("%s\n", __func__);
 
+	/* for Key error. */
+	nxe2000_i2c_write(NXE2000_REG_ADCCNT3, 0, power);
+
 	/* Set GPIO4 Condition */
 	nxe2000_i2c_read(NXE2000_REG_IOOUT, &temp, power);
 	temp |= 0x10;	// High(Hi-Z)
@@ -462,7 +465,24 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 										(NXE2000_DEF_LDO10_ON << NXE2000_POS_LDOEN2_LDO10EN) );
 
 		/* Set charge control register. */
+#if defined(CONFIG_HAVE_BATTERY)
+		cache[NXE2000_REG_CHGCTL1]  =  ((1 << NXE2000_POS_CHGCTL1_CHGP) |
+										(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN) |
+										(1 << NXE2000_POS_CHGCTL1_VADPCHGEN) );
+
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+		cache[NXE2000_REG_CHGCTL1] &= ~((1 << NXE2000_POS_CHGCTL1_CHGP) |
+										(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN) );
+#endif
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
+		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+#endif
+#else
+
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
 		cache[NXE2000_REG_CHGCTL1]	= (0x1 << NXE2000_POS_CHGCTL1_SUSPEND);
+#endif
+#endif	/* CONFIG_HAVE_BATTERY */
 
 		cache[NXE2000_REG_CHGCTL2]	= ( (NXE2000_DEF_CHG_USB_VCONTMASK	<< NXE2000_POS_CHGCTL2_USB_VCONTMASK) |
 										(NXE2000_DEF_CHG_ADP_VCONTMASK	<< NXE2000_POS_CHGCTL2_ADP_VCONTMASK) |
@@ -528,7 +548,7 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 	nxe2000_i2c_write(NXE2000_REG_CHGISET	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET1	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET2	, 0, power);
-#if !defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
+#if 1   //!defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
 #endif
 	nxe2000_i2c_write(NXE2000_REG_FG_CTRL	, cache[NXE2000_REG_FG_CTRL]	, power);

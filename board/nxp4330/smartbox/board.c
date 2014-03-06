@@ -24,6 +24,7 @@
 #include <common.h>
 #include <mmc.h>
 #include <asm/io.h>
+#include <asm/gpio.h>
 
 #include <platform.h>
 #include <mach-api.h>
@@ -35,6 +36,10 @@
 #endif
 
 DECLARE_GLOBAL_DATA_PTR;
+
+#if defined(CONFIG_DRIVER_DM9000) || defined(CONFIG_DESIGNWARE_ETH)
+#include "eth.c"
+#endif
 
 #if (0)
 #define DBGOUT(msg...)		{ printf("BD: " msg); }
@@ -268,6 +273,52 @@ int board_init(void)
 	return 0;
 }
 
+#ifdef CONFIG_CMD_NET
+int bd_eth_init(void)
+{
+#if defined(CONFIG_DESIGNWARE_ETH)
+    u32 addr;
+
+    NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);    // TX Clk invert off
+
+    // Clock control
+    NX_CLKGEN_Initialize();
+    addr = NX_CLKGEN_GetPhysicalAddress(CLOCKINDEX_OF_DWC_GMAC_MODULE);
+    NX_CLKGEN_SetBaseAddress( CLOCKINDEX_OF_DWC_GMAC_MODULE, (u32)IO_ADDRESS(addr) );
+
+    NX_CLKGEN_SetClockSource( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 4);     // Sync mode for 100 & 10Base-T : External RX_clk
+    NX_CLKGEN_SetClockDivisor( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 1);    // Sync mode for 100 & 10Base-T
+
+    NX_CLKGEN_SetClockDivisorEnable( CLOCKINDEX_OF_DWC_GMAC_MODULE, CTRUE);
+
+    // Reset control
+    NX_RSTCON_Initialize();
+    addr = NX_RSTCON_GetPhysicalAddress();
+    NX_RSTCON_SetBaseAddress( (u32)IO_ADDRESS(addr) );
+    NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+    udelay(100);
+    NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_DISABLE);
+    udelay(100);
+    NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+    udelay(100);
+
+	// Set interrupt config.
+	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	gpio_direction_input(CFG_ETHER_GMAC_PHY_IRQ_NUM);
+
+	// Set GPIO nReset
+	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
+	gpio_direction_output(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
+	udelay( 100 );
+	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
+	udelay( 100 );
+	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
+#endif	// #if defined(CONFIG_DESIGNWARE_ETH)
+
+	return 0;
+}
+#endif	/* CONFIG_CMD_NET */
+
 int board_mmc_init(bd_t *bis)
 {
 	int err = 0;
@@ -288,6 +339,10 @@ int board_mmc_init(bd_t *bis)
 
 int board_late_init(void)
 {
+#ifdef CONFIG_CMD_NET
+    bd_eth_init();
+#endif
+
 	return 0;
 }
 
