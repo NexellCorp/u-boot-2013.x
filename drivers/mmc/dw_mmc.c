@@ -133,7 +133,7 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (timeout == 0) {
-			printf("Timeout on data busy\n");
+			printf("Timeout on data busy (mmc.%d)\n", host->dev_index);
 			return TIMEOUT;
 		}
 		timeout--;
