@@ -243,7 +243,7 @@ static int do_fdisk(cmd_tbl_t *cmdtp, int flag, int argc, char* const argv[])
 
 U_BOOT_CMD(
 	fdisk, 8, 1, do_fdisk,
-	"list or create ms-dos partition tables",
+	"mmc list or create ms-dos partition tables",
 	"<dev no>\n"
 	"	- list partition table info\n"
 	"fdisk <dev no> [part table counts] <start:length> <start:length> ...\n"
