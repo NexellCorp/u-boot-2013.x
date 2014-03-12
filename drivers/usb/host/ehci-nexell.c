@@ -79,12 +79,13 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	// GPIO Reset
 	NX_GPIO_SetPadFunction( 4, 22, 0 );
 	NX_GPIO_SetOutputEnable( 4, 22, CTRUE );
-	NX_GPIO_SetPullUpEnable( 4, 22, CTRUE );
-	NX_GPIO_SetOutputValue( 4, 22, CTRUE );	
+	NX_GPIO_SetPullSelect( 4, 22, CTRUE );
+	NX_GPIO_SetPullEnable( 4, 22, CFALSE );
+	NX_GPIO_SetOutputValue( 4, 22, CTRUE );
 	udelay( 100 );
 	NX_GPIO_SetOutputValue( 4, 22, CFALSE );
 	udelay( 100 );
-	NX_GPIO_SetOutputValue( 4, 22, CTRUE );	
+	NX_GPIO_SetOutputValue( 4, 22, CTRUE );
 
 
 	// Release common reset of host controller

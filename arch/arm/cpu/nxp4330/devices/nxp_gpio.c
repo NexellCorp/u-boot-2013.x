@@ -113,14 +113,24 @@ int nxp_gpio_get_value(int gpio)
 		return (int) NX_ALIVE_GetInputValue(bit);
 }
 
-void nxp_gpio_set_pull(int gpio, int mode)
+void nxp_gpio_set_pull_enb(int gpio, int mode)
 {
 	int grp, bit;
 
 	grp = PAD_GET_GROUP(gpio);
 	bit = PAD_GET_BITNO(gpio);
 
-	NX_GPIO_SetPullUpEnable(grp, bit, mode);
+	NX_GPIO_SetPullEnable(grp, bit, mode);
+}
+
+void nxp_gpio_set_pull_sel(int gpio, int mode)
+{
+	int grp, bit;
+
+	grp = PAD_GET_GROUP(gpio);
+	bit = PAD_GET_BITNO(gpio);
+
+	NX_GPIO_SetPullSelect(grp, bit, mode);
 }
 
 void nxp_gpio_set_drv(int gpio, int mode)
