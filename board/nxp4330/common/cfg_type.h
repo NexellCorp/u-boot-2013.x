@@ -15,87 +15,88 @@
  *	History    :
  *	   2009/05/13 first implementation
  ------------------------------------------------------------------------------*/
+
 #ifndef __CFG_TYPE_H__
 #define __CFG_TYPE_H__
 
 /*------------------------------------------------------------------------------
- * 	GPIO function config type
- */
-#define	PAD_MODE_SHIFT			0
-#define	PAD_FUNC_SHIFT			8
-#define	PAD_LEVEL_SHIFT			12
-#define	PAD_PULLUP_SHIFT		16
-#define	PAD_STRENGTH_SHIFT		20
+*  GPIO function config type
+*/
+#define PAD_MODE_SHIFT          0
+#define PAD_FUNC_SHIFT          8
+#define PAD_LEVEL_SHIFT         12
+#define PAD_PULLUP_SHIFT        16
+#define PAD_STRENGTH_SHIFT      20
 
-#define	PAD_GET_GROUP(pad)		((pad >> 0x5) & 0x07)		/* Divide 32 */
-#define	PAD_GET_BITNO(pad)		((pad & 0x1F) >> 0x0)
-#define	PAD_GET_FUNC(pad)		(0xF & (pad >> PAD_FUNC_SHIFT))
-#define	PAD_GET_MODE(pad)		(0xF & (pad >> PAD_MODE_SHIFT))
-#define	PAD_GET_LEVEL(pad)		(0xF & (pad >> PAD_LEVEL_SHIFT))
-#define	PAD_GET_PULLUP(pad)		(0xF & (pad >> PAD_PULLUP_SHIFT))
-#define	PAD_GET_STRENGTH(pad)	(0xF & (pad >> PAD_STRENGTH_SHIFT))
+#define PAD_GET_GROUP(pad)      ((pad >> 0x5) & 0x07)       /* Divide 32 */
+#define PAD_GET_BITNO(pad)      ((pad & 0x1F) >> 0x0)
+#define PAD_GET_FUNC(pad)       (0xF & (pad >> PAD_FUNC_SHIFT))
+#define PAD_GET_MODE(pad)       (0xF & (pad >> PAD_MODE_SHIFT))
+#define PAD_GET_LEVEL(pad)      (0xF & (pad >> PAD_LEVEL_SHIFT))
+#define PAD_GET_PULLUP(pad)     (0xF & (pad >> PAD_PULLUP_SHIFT))
+#define PAD_GET_STRENGTH(pad)   (0xF & (pad >> PAD_STRENGTH_SHIFT))
+#define PAD_GET_BUSPAD(pad)     (pad & 0xFF)
 
-/*	gpio group pad start num. */
+/*  gpio group pad start num. */
 enum {
-	PAD_GPIO_A		= (0 * 32),
-	PAD_GPIO_B		= (1 * 32),
-	PAD_GPIO_C		= (2 * 32),
+    PAD_GPIO_A      = (0 * 32),
+    PAD_GPIO_B      = (1 * 32),
+    PAD_GPIO_C      = (2 * 32),
     PAD_GPIO_D      = (3 * 32),
     PAD_GPIO_E      = (4 * 32),
-	PAD_GPIO_ALV	= (5 * 32),
+    PAD_GPIO_ALV    = (5 * 32),
 };
 
 /* gpio mode, altfunction, gpio in/out or interrput */
 enum {
-	PAD_MODE_ALT	= (0 << PAD_MODE_SHIFT),
-	PAD_MODE_IN		= (1 << PAD_MODE_SHIFT),
-	PAD_MODE_OUT	= (2 << PAD_MODE_SHIFT),
-	PAD_MODE_INT	= (3 << PAD_MODE_SHIFT),
+    PAD_MODE_ALT    = (0 << PAD_MODE_SHIFT),
+    PAD_MODE_IN     = (1 << PAD_MODE_SHIFT),
+    PAD_MODE_OUT    = (2 << PAD_MODE_SHIFT),
+    PAD_MODE_INT    = (3 << PAD_MODE_SHIFT),
 };
 
 /* gpio altfunction, refer to NX_GPIO_PADFUNC in nx_gpio.h */
 enum {
-	PAD_FUNC_ALT0	= (0 << PAD_FUNC_SHIFT),
-	PAD_FUNC_ALT1	= (1 << PAD_FUNC_SHIFT),
-	PAD_FUNC_ALT2	= (2 << PAD_FUNC_SHIFT),
-	PAD_FUNC_ALT3	= (3 << PAD_FUNC_SHIFT),
+    PAD_FUNC_ALT0   = (0 << PAD_FUNC_SHIFT),
+    PAD_FUNC_ALT1   = (1 << PAD_FUNC_SHIFT),
+    PAD_FUNC_ALT2   = (2 << PAD_FUNC_SHIFT),
+    PAD_FUNC_ALT3   = (3 << PAD_FUNC_SHIFT),
 };
 
 /* ouput level or interrupt detect mode, refer to NX_GPIO_INTMODE in nx_gpio.h */
 enum {
-	PAD_LEVEL_LOW  		  = (0 << PAD_LEVEL_SHIFT),		/* if alive, async lowlevel */
-	PAD_LEVEL_HIGH 		  = (1 << PAD_LEVEL_SHIFT),		/* if alive, async highlevel */
-	PAD_LEVEL_FALLINGEDGE = (2 << PAD_LEVEL_SHIFT),		/* if alive, async fallingedge */
-	PAD_LEVEL_RISINGEDGE  = (3 << PAD_LEVEL_SHIFT),		/* if alive, async eisingedge */
-	PAD_LEVEL_LOW_SYNC 	  = (4 << PAD_LEVEL_SHIFT),		/* if gpio , not support */
-	PAD_LEVEL_HIGH_SYNC	  = (5 << PAD_LEVEL_SHIFT),		/* if gpio , not support */
-	PAD_LEVEL_BOTHEDGE    = (4 << PAD_LEVEL_SHIFT),		/* if alive, not support */
-	PAD_LEVEL_ALT		  = (6 << PAD_LEVEL_SHIFT),		/* if pad function is alt, not set */
+    PAD_LEVEL_LOW         = (0 << PAD_LEVEL_SHIFT),     /* if alive, async lowlevel */
+    PAD_LEVEL_HIGH        = (1 << PAD_LEVEL_SHIFT),     /* if alive, async highlevel */
+    PAD_LEVEL_FALLINGEDGE = (2 << PAD_LEVEL_SHIFT),     /* if alive, async fallingedge */
+    PAD_LEVEL_RISINGEDGE  = (3 << PAD_LEVEL_SHIFT),     /* if alive, async eisingedge */
+    PAD_LEVEL_LOW_SYNC    = (4 << PAD_LEVEL_SHIFT),     /* if gpio , not support */
+    PAD_LEVEL_HIGH_SYNC   = (5 << PAD_LEVEL_SHIFT),     /* if gpio , not support */
+    PAD_LEVEL_BOTHEDGE    = (4 << PAD_LEVEL_SHIFT),     /* if alive, not support */
+    PAD_LEVEL_ALT         = (6 << PAD_LEVEL_SHIFT),     /* if pad function is alt, not set */
 };
 
 enum {
-	PAD_PULLUP_OFF	= (0 << PAD_PULLUP_SHIFT),
-	PAD_PULLUP_ON  	= (1 << PAD_PULLUP_SHIFT),
+    PAD_PULL_DN     = (0 << PAD_PULLUP_SHIFT),
+    PAD_PULL_UP     = (1 << PAD_PULLUP_SHIFT),
+    PAD_PULL_OFF    = (2 << PAD_PULLUP_SHIFT),
 };
 
 enum {
-	PAD_STRENGTH_0 = (0 << PAD_STRENGTH_SHIFT),
-	PAD_STRENGTH_1 = (1 << PAD_STRENGTH_SHIFT),
-	PAD_STRENGTH_2 = (2 << PAD_STRENGTH_SHIFT),
-	PAD_STRENGTH_3 = (3 << PAD_STRENGTH_SHIFT),
+    PAD_STRENGTH_0 = (0 << PAD_STRENGTH_SHIFT),
+    PAD_STRENGTH_1 = (1 << PAD_STRENGTH_SHIFT),
+    PAD_STRENGTH_2 = (2 << PAD_STRENGTH_SHIFT),
+    PAD_STRENGTH_3 = (3 << PAD_STRENGTH_SHIFT),
 };
 
 /* alive wakeup detect mode */
 enum {
-	PAD_WAKEUP_ASYNC_LOWLEVEL 	= (0),
-	PAD_WAKEUP_ASYNC_HIGHLEVEL 	= (1),
-	PAD_WAKEUP_FALLINGEDGE 		= (2),
-	PAD_WAKEUP_RISINGEDGE  		= (3),
-	PAD_WAKEUP_SYNC_LOWLEVEL 	= (4),
-	PAD_WAKEUP_SYNC_HIGHLEVEL 	= (5),
+    PAD_WAKEUP_ASYNC_LOWLEVEL   = (0),
+    PAD_WAKEUP_ASYNC_HIGHLEVEL  = (1),
+    PAD_WAKEUP_FALLINGEDGE      = (2),
+    PAD_WAKEUP_RISINGEDGE       = (3),
+    PAD_WAKEUP_SYNC_LOWLEVEL    = (4),
+    PAD_WAKEUP_SYNC_HIGHLEVEL   = (5),
 };
-
-#define	PAD_GET_BUSPAD(pad)			(pad & 0xFF)
 
 /*------------------------------------------------------------------------------
  * 	Display config type

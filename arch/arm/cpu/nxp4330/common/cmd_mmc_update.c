@@ -170,13 +170,13 @@ U_BOOT_CMD(
 	update_mmc, CONFIG_SYS_MAXARGS, 1,	do_update_mmc,
 	"update mmc data\n",
 	"<dev no> <type> <mem> <addr> <length>\n"
-	"    - type :  2ndboot | boot | part \n\n"
-	"update_mmc <dev no> raw 'mem' 'addr' 'length'\n"
-	"    - update data 'length' on 'mem' to device addr.\n\n"
+	"    - type :  2ndboot | boot | raw | part \n\n"
 	"update_mmc <dev no> boot 'mem' 'addr' 'length' [load addr]\n"
 	"    - update  data 'length' add boot header(512) on 'mem' to device addr, \n"
 	"      and set jump addr with 'load addr'\n"
 	"      if no [load addr], set jump addr default u-boot _TEXT_BASE_\n\n"
+	"update_mmc <dev no> raw 'mem' 'addr' 'length'\n"
+	"    - update data 'length' on 'mem' to device addr.\n\n"
 	"update_mmc <dev no> part 'mem' 'part no' 'length'\n"
 	"    - update partition image 'length' on 'mem' to mmc 'part no'.\n\n"
 	"Note.\n"

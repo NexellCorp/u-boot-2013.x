@@ -743,6 +743,9 @@ CBOOL iUSBBOOT(void)
 	
 	while (pUSBBootStatus->bDownLoading)
 	{
+		if (ctrlc())
+			goto _exit;
+
 		if (pUOReg->GCSR.GINTSTS & (WkUpInt|OEPInt|IEPInt|EnumDone|USBRst|USBSusp|RXFLvl))
 		{
 			nx_udc_int_hndlr();
@@ -759,6 +762,9 @@ CBOOL iUSBBOOT(void)
 	
 	while (pUSBBootStatus->bDownLoading)
 	{
+		if (ctrlc())
+			goto _exit;
+
 		if (pUOReg->GCSR.GINTSTS & (WkUpInt|OEPInt|IEPInt|EnumDone|USBRst|USBSusp|RXFLvl))
 		{
 			nx_udc_int_hndlr();
@@ -766,7 +772,7 @@ CBOOL iUSBBOOT(void)
 		}
 	}
 	
-	
+_exit:	
 	/* usb core soft reset */
 	pUOReg->GCSR.GRSTCTL = CORE_SOFT_RESET;
 	while(!(pUOReg->GCSR.GRSTCTL & AHB_MASTER_IDLE));
@@ -791,6 +797,7 @@ int do_usbdown(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
     printf("Download Address %x ",addr);
     pUSBBootStatus->RxBuffAddr = (U8*)addr;
     iUSBBOOT();
+	flush_dcache_all();	
 	printf("Download complete \n");
     return 0;
 
