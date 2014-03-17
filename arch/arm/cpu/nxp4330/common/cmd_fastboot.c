@@ -302,7 +302,7 @@ static int eeprom_part_write(struct fastboot_part *fpart, void *buf, uint64_t le
 #ifdef CONFIG_CMD_NAND
 static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
-	char args[64];
+	char args1[64], args2[64];
 	int l = 0, p = 0;
 
 
@@ -318,27 +318,41 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 	 *		ubi image
 	 *			"nand        write.trimffs 0x50000000 0x20000000 0x20000000"
 	 */
-
 	if ((fpart->fs_type & FASTBOOT_FS_2NDBOOT) || (fpart->fs_type & FASTBOOT_FS_BOOT))
-		p = sprintf(args, "update_nand ");
+		p = sprintf(args1, "update_nand ");
 	else
-		p = sprintf(args, "nand ");
+		p = sprintf(args1, "nand ");
+
+	l = sprintf(&args1[p], "%s", "erase");
+	p += l;
+	l = sprintf(&args1[p], " 0x%llx 0x%llx", fpart->start, fpart->length);
+	p += l;
+	args1[p] = 0;
+
+	run_command(args1, 0);
+
+
+	l = 0, p = 0;
+	if ((fpart->fs_type & FASTBOOT_FS_2NDBOOT) || (fpart->fs_type & FASTBOOT_FS_BOOT))
+		p = sprintf(args2, "update_nand ");
+	else
+		p = sprintf(args2, "nand ");
 
 
 	if (fpart->fs_type & FASTBOOT_FS_UBI)
-		l = sprintf(&args[p], "%s", "write.trimffs");
+		l = sprintf(&args2[p], "%s", "write.trimffs");
 	else
-		l = sprintf(&args[p], "%s", "write");
-
+		l = sprintf(&args2[p], "%s", "write");
 	p += l;
-	l = sprintf(&args[p], " 0x%x 0x%llx 0x%llx", (unsigned int)buf, fpart->start, length);
+
+	l = sprintf(&args2[p], " 0x%x 0x%llx 0x%llx", (unsigned int)buf, fpart->start, length);
 	p += l;
-	args[p] = 0;
+	args2[p] = 0;
 
-	//debug("%s\n", args);
-	printf("%s\n", args);
+	debug("%s\n", args1);
+	debug("%s\n", args2);
 
-	return run_command(args, 0);
+	return run_command(args2, 0);
 }
 #endif
 
