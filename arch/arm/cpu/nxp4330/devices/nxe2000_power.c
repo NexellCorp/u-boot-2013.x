@@ -466,7 +466,8 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 		/* Set charge control register. */
 #if defined(CONFIG_HAVE_BATTERY)
-		cache[NXE2000_REG_CHGCTL1]  =  ((1 << NXE2000_POS_CHGCTL1_CHGP) |
+		cache[NXE2000_REG_CHGCTL1]  =  ((NXE2000_DEF_CHG_NOBAT_OVLIM_EN << NXE2000_POS_CHGCTL1_NOBATOVLIM) |
+										(1 << NXE2000_POS_CHGCTL1_CHGP) |
 										(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN) |
 										(1 << NXE2000_POS_CHGCTL1_VADPCHGEN) );
 
