@@ -103,7 +103,7 @@ int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count)
 	if (buffer[DOS_PART_MAGIC_OFFSET] != 0x55 ||
 		buffer[DOS_PART_MAGIC_OFFSET + 1] != 0xAA) {
 		printf ("** Not find partition magic number **\n");
-		return -1;
+		return 0;
 	}
 
 	for (i = 0; max_part > i; i++, pt++) {
