@@ -48,7 +48,7 @@
 
 #define	NXE2000_DEF_OFF_PRESS_TIME			5		/* VAL = 0:0, 1:1, 2:2, 3:4, 4:6, 5:8, 6:10, 7:12 sec */
 
-#define NXE2000_DEF_LIMIT_ADP_AMP			1500000	/* VAL(mA), MAX = 2500mA */
+#define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
 #define NXE2000_DEF_LIMIT_USB_AMP			500000	/* VAL(mA), MAX = 1500mA */
 
 #define NXE2000_DEF_CHG_ADP_AMP				800000	/* VAL(mA), MAX = 1800mA */
@@ -63,7 +63,7 @@
 #define	NXE2000_DEF_DDC4_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.6V DDR		*/
 #define	NXE2000_DEF_DDC5_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.6V SYS		*/
 
-#define	NXE2000_DEF_LDO1_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V GPS & WIFI	*/
+#define	NXE2000_DEF_LDO1_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V GPS & WIFI	*/
 #define	NXE2000_DEF_LDO2_ON					0		/* VAL = 0: Off, 1: On */	/* 1.8V CAM1	*/
 #define	NXE2000_DEF_LDO3_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V SYS1,	Boot On	*/
 #define	NXE2000_DEF_LDO4_ON					1		/* VAL = 0: Off, 1: On */	/* 1.9V SYS,		Boot On	*/
@@ -176,7 +176,7 @@
 #define NXE2000_DEF_CHG_VUSB_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 #define NXE2000_DEF_CHG_VADP_BUCK_THS		0		/* VAL(V) = 0: 4.1 ~ 4.2, 1: 4.2 ~ 4.3, 2: 4.3 ~ 4.4, 3: 4.4 ~ 4.5, default(OTP) = 4.1 ~ 4.2V */
 
-#define NXE2000_DEF_CHG_VSYS_VOL			1		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
+#define NXE2000_DEF_CHG_VSYS_VOL			3		/* VAL(V) = 0: 3.60, 1: 4.00, 2: 4.40, 3: 4.55, default = 4.00V */
 #define NXE2000_DEF_CHG_VSYS_OVER_VOL		1		/* VAL(V) = 0: 4.8 ~ 5.3, 1: 5.0 ~ 5.5, 2: 5.2 ~ 5.7, 3: 5.2 ~ 5.7, default = 5.0 ~ 5.5V */
 
 #define NXE2000_DEF_CHG_RAPID_CTIME			2		/* VAL(sec) = 0: 0.1, 1: 0.5, 2: 1 3: 5, default = 1sec */

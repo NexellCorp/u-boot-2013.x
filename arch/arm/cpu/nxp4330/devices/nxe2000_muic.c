@@ -143,15 +143,17 @@ static int muic_chrg_get_type(struct pmic *p)
 		val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1);
 		pmic_reg_write(p, NXE2000_REG_CHGISET, val);
 
-		val = (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
+		val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
 
 		return CHARGER_TA;
 	}
 #endif
 
-	val = (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-		| (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
+	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 	pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
 
 	/* PMIC GPIO4 : Set output mode */
