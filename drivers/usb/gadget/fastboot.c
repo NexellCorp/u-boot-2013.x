@@ -16,54 +16,6 @@
 
 #if defined(CONFIG_FASTBOOT)
 
-/* S5PC110 Default Partition Table */
-fastboot_ptentry ptable_default[] =
-{
-	{
-		.name     = "bootloader",
-		.start    = 0x0,
-		.length   = 0x100000,
-		.flags    = 0
-	},
-	{
-		.name     = "recovery",
-		.start    = 0x100000,
-		.length   = 0x500000,
-		.flags    = 0
-	},
-	{
-		.name     = "kernel",
-		.start    = 0x600000,
-		.length   = 0x500000,
-		.flags    = 0
-	},
-	{
-		.name     = "ramdisk",
-		.start    = 0xB00000,
-		.length   = 0x300000,
-		.flags    = 0
-	},
-	{
-		.name     = "system",
-		.start    = 0xE00000,
-		.length   = 0x6E00000,
-		.flags    = FASTBOOT_PTENTRY_FLAGS_WRITE_YAFFS
-	},
-	{
-		.name     = "cache",
-		.start    = 0x7C00000,
-		.length   = 0x5000000,
-		.flags    = FASTBOOT_PTENTRY_FLAGS_WRITE_YAFFS
-	},
-	{
-		.name     = "userdata",
-		.start    = 0xCC00000,
-		.length   = 0,
-		.flags    = FASTBOOT_PTENTRY_FLAGS_WRITE_YAFFS
-	}
-};
-unsigned int ptable_default_size = sizeof(ptable_default);
-
 #define FBOOT_USBD_IS_CONNECTED() (readl(S5P_OTG_GOTGCTL)&(B_SESSION_VALID|A_SESSION_VALID))
 #define FBOOT_USBD_DETECT_IRQ() (readl(S5P_OTG_GINTSTS) & \
 					(GINTSTS_WkUpInt|GINTSTS_OEPInt|GINTSTS_IEPInt| \
@@ -128,21 +80,7 @@ const u8 fboot_string_desc3[] = /* Test Serial ID */
 {
 	(0x16+2), STRING_DESCRIPTOR,
 	'S', 0x0, 'M', 0x0, 'D', 0x0, 'K', 0x0,
-//#if defined(CONFIG_S5PC220) || defined(CONFIG_ARCH_EXYNOS)
 	'E', 0x0,'X', 0x0, 'Y', 0x0, 'N', 0x0, 'O', 0x0, 'S', 0x0, '-', 0x0, '0', 0x0, '1', 0x0
-/*
-#elif defined(CONFIG_S5PC210)
-	'C', 0x0,'2', 0x0, '1', 0x0, '0', 0x0, '-', 0x0, '0', 0x0, '1', 0x0
-#elif defined(CONFIG_S5PV310)
-	'V', 0x0,'3', 0x0, '1', 0x0, '0', 0x0, '-', 0x0, '0', 0x0, '1', 0x0
-#elif defined(CONFIG_S5PC110)
-	'C', 0x0,'1', 0x0, '1', 0x0, '0', 0x0, '-', 0x0, '0', 0x0, '1', 0x0
-#elif defined(CONFIG_S5P6450)
-	'6', 0x0,'4', 0x0, '5', 0x0, '0', 0x0, '-', 0x0, '0', 0x0, '1', 0x0
-#else
-#error "* CFG_ERROR : you have to select proper CPU for Android Fastboot"
-#endif
-*/
 };
 
 /* setting the device qualifier descriptor and a string descriptor */
@@ -159,6 +97,10 @@ const u8 fboot_qualifier_desc[] =
 	0x01,	/*  8 number of other-speed configuration */
 	0x00,	/*  9 reserved */
 };
+
+#define	ALIAS(fnc)	__attribute__((weak, alias(fnc)))
+void ____f_usb_descriptor(descriptors_t *desc) {}
+void fboot_usb_descriptor(descriptors_t *desc)	ALIAS("____f_usb_descriptor");
 
 int fboot_usbctl_init(void)
 {
@@ -289,6 +231,8 @@ void fboot_usb_set_descriptors(void)
 	otg.desc.ep2.wMaxPacketSizeL=(u8)otg.bulkout_max_pktsize; /* 64*/
 	otg.desc.ep2.wMaxPacketSizeH=(u8)(otg.bulkout_max_pktsize>>8);
 	otg.desc.ep2.bInterval=0x0; /* not used */
+
+	fboot_usb_descriptor(&otg.desc);
 }
 
 int  fboot_usb_int_hndlr(void)

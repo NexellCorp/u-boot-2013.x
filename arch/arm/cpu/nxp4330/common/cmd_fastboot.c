@@ -30,6 +30,7 @@
 #include <mmc.h>
 #include <fat.h>
 #include <decompress_ext4.h>
+#include "../../../../../drivers/usb/gadget/usbd-otg-hs.h"
 
 /*
 #define	debug	printf
@@ -40,7 +41,6 @@
 #endif
 
 static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
-
 
 #define	FASTBOOT_MMC_MAX		2
 #define	FASTBOOT_EEPROM_MAX		1
@@ -107,6 +107,7 @@ struct fastboot_device {
 	uint64_t parts[FASTBOOT_DEV_PART_MAX][2];
 	struct list_head link;
 	int (*write_part)(struct fastboot_part *fpart, void *buf, uint64_t length);
+	int (*capacity)  (struct fastboot_device *fd, int devno, uint64_t *length);
 };
 
 struct fastboot_fs_type {
@@ -155,7 +156,7 @@ static const char *f_reserve_part[] = {
  * device partition functions
  */
 static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2], int *count);
-static void print_dev_parts(struct fastboot_device *fd);
+static void part_dev_print(struct fastboot_device *fd);
 
 #ifdef CONFIG_CMD_MMC
 extern ulong mmc_bwrite(int dev_num, lbaint_t start, lbaint_t blkcnt, const void *src);
@@ -205,6 +206,9 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	if (0 > run_command(cmd, 0))	/* mmc device */
 		return -1;
 
+	if (0 > get_device("mmc", simple_itoa(dev), &desc))
+		return -1;
+
 	if (fpart->fs_type == FASTBOOT_FS_2NDBOOT ||
 		fpart->fs_type == FASTBOOT_FS_BOOT) {
 		char args[64];
@@ -244,7 +248,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 
 		if (i == num) {	/* new partition */
 			printf("Warn  : [%s] invalid, make new partitions ....\n", fpart->partition);
-			print_dev_parts(fpart->fd);
+			part_dev_print(fpart->fd);
 
 			get_parts_from_lists(fpart, parts, &num);
 			ret = mmc_make_parts(dev, parts, num);
@@ -271,6 +275,32 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	ret = mmc_bwrite(dev, blk, cnt, buf);
 
 	return (0 > ret ? ret : 0);
+}
+
+static int mmc_part_capacity(struct fastboot_device *fd, int devno, uint64_t *length)
+{
+	block_dev_desc_t *desc;
+	char cmd[32];
+
+	debug("** mmc.%d capacity **\n", devno);
+
+	/* set mmc devicee */
+	if (0 > get_device("mmc", simple_itoa(devno), &desc)) {
+		sprintf(cmd, "mmc dev %d", devno);
+    	if (0 > run_command(cmd, 0))
+    		return -1;
+    	if (0 > run_command("mmc rescan", 0))
+    		return -1;
+	}
+
+	if (0 > get_device("mmc", simple_itoa(devno), &desc))
+		return -1;
+
+	*length = (uint64_t)desc->lba * (uint64_t)desc->blksz;
+
+	debug("%u*%u = %llu\n", (uint)desc->lba, (uint)desc->blksz, *length);
+	return 0;
+
 }
 #endif
 #ifdef CONFIG_CMD_EEPROM
@@ -309,7 +339,7 @@ static int nand_part_write(struct fastboot_part *fpart, void *buf, uint64_t leng
 	/*
 	 * nand standalone
 	 *		2ndboot,3rdboot
-	 *			"update_nand write         0x50000000 0x0        0x20000" 
+	 *			"update_nand write         0x50000000 0x0        0x20000"
 	 *
 	 * normal
 	 *		raw image
@@ -383,6 +413,7 @@ static struct fastboot_device f_devices[] = {
 		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= &mmc_part_write,
+		.capacity	= &mmc_part_capacity,
 	#endif
 	},
 };
@@ -445,7 +476,7 @@ static inline void sort_string(char *p, int len)
 	p[j] = 0;
 }
 
-static int parse_map_device(const char *parts, const char **ret,
+static int parse_part_device(const char *parts, const char **ret,
 			struct fastboot_device **fdev, struct fastboot_part *fpart)
 {
 	struct fastboot_device *fd = *fdev;
@@ -527,7 +558,7 @@ static int parse_map_device(const char *parts, const char **ret,
 	return -1;
 }
 
-static int parse_map_partition(const char *parts, const char **ret,
+static int parse_part_partition(const char *parts, const char **ret,
 			struct fastboot_device **fdev, struct fastboot_part *fpart)
 {
 	struct fastboot_device *fd = f_devices;
@@ -582,7 +613,7 @@ static int parse_map_partition(const char *parts, const char **ret,
 	return 0;
 }
 
-static int parse_map_fs(const char *parts, const char **ret,
+static int parse_part_fs(const char *parts, const char **ret,
 		struct fastboot_device **fdev, struct fastboot_part *fpart)
 {
 	struct fastboot_device *fd = *fdev;
@@ -620,7 +651,7 @@ static int parse_map_fs(const char *parts, const char **ret,
 	return -1;
 }
 
-static int parse_map_address(const char *parts, const char **ret,
+static int parse_part_address(const char *parts, const char **ret,
 			struct fastboot_device **fdev, struct fastboot_part *fpart)
 {
 	const char *p, *id;
@@ -657,7 +688,7 @@ static int parse_map_address(const char *parts, const char **ret,
 	return 0;
 }
 
-static int parse_map_head(const char *parts, const char **ret)
+static int parse_part_head(const char *parts, const char **ret)
 {
 	const char *p = parts;
 	int len = strlen("flash=");
@@ -673,11 +704,11 @@ static int parse_map_head(const char *parts, const char **ret)
 typedef int (parse_fnc_t) (const char *parts, const char **ret,
 						struct fastboot_device **fdev, struct fastboot_part *fpart);
 
-parse_fnc_t *parse_map_seqs[] = {
-	parse_map_device,
-	parse_map_partition,
-	parse_map_fs,
-	parse_map_address,
+parse_fnc_t *parse_part_seqs[] = {
+	parse_part_device,
+	parse_part_partition,
+	parse_part_fs,
+	parse_part_address,
 	0,	/* end */
 };
 
@@ -712,7 +743,7 @@ static inline void part_lists_init(int init)
 	}
 }
 
-static int make_part_lists(const char *ptable_str, int ptable_str_len)
+static int part_lists_make(const char *ptable_str, int ptable_str_len)
 {
 	struct fastboot_device *fd = f_devices;
 	struct fastboot_part *fp;
@@ -721,7 +752,7 @@ static int make_part_lists(const char *ptable_str, int ptable_str_len)
 	int len = ptable_str_len;
 	int err = -1;
 
-	debug("\n---make_part_lists ---\n");
+	debug("\n---part_lists_make ---\n");
 	part_lists_init(0);
 
 	parse_comment(p, &p);
@@ -738,29 +769,29 @@ static int make_part_lists(const char *ptable_str, int ptable_str_len)
 			break;
 		}
 
-		if (parse_map_head(p, &p)) {
+		if (parse_part_head(p, &p)) {
 			if (err)
 				printf("-- unknown parts head: [%s]\n", p);
 			break;
 		}
 
-		for (p_fnc_ptr = parse_map_seqs; *p_fnc_ptr; ++p_fnc_ptr) {
+		for (p_fnc_ptr = parse_part_seqs; *p_fnc_ptr; ++p_fnc_ptr) {
 			if ((*p_fnc_ptr)(p, &p, &fd, fp) != 0) {
 				err = -1;
-				goto parse_fail;
+				goto fail_parse;
 			}
 		}
 		err = 0;
 	}
 
-parse_fail:
+fail_parse:
 	if (err)
 		part_lists_init(0);
 
 	return err;
 }
 
-static void print_part_lists(void)
+static void part_lists_print(void)
 {
 	struct fastboot_device *fd = f_devices;
 	struct fastboot_part *fp;
@@ -780,18 +811,18 @@ static void print_part_lists(void)
 		}
 	}
 
-	printf("Support fstype:");
+	printf("Support fstype :");
 	for (i = 0; ARRAY_SIZE(f_part_fs) > i; i++)
 		printf(" %s ", f_part_fs[i].name);
 	printf("\n");
 
-	printf("Reserved part :");
+	printf("Reserved part  :");
 	for (i = 0; ARRAY_SIZE(f_reserve_part) > i; i++)
 		printf(" %s ", f_reserve_part[i]);
-	printf("\n\n");
+	printf("\n");
 }
 
-static void print_dev_parts(struct fastboot_device *fd)
+static void part_dev_print(struct fastboot_device *fd)
 {
 	struct fastboot_part *fp;
 	struct list_head *entry, *n;
@@ -925,29 +956,6 @@ static int parse_env_end(const char *env, const char **ret, char *str, int len)
 	return 0;
 }
 
-static int fboot_set_env(const char *str, int len)
-{
-	const char *p = str;
-	char cmd[32];
-	char arg[1024];
-	int err = -1;
-
-	debug("---fboot_set_env---\n");
-	while (1) {
-		if (parse_env_head(p, &p, cmd, sizeof(cmd)))
-			break;
-
-		if (parse_env_end(p, &p, arg, sizeof(arg)))
-			break;
-
-		printf("%s=%s\n", cmd, arg);
-		setenv(cmd, (char *)arg);
-		saveenv();
-		err = 0;
-	}
-	return err;
-}
-
 static int parse_cmd(const char *cmd, const char **ret, char *str, int len)
 {
 	const char *p = cmd, *r = p;
@@ -975,13 +983,36 @@ static int parse_cmd(const char *cmd, const char **ret, char *str, int len)
 	return 0;
 }
 
-static int fboot_run_cmd(const char *str, int len)
+static int fboot_setenv(const char *str, int len)
+{
+	const char *p = str;
+	char cmd[32];
+	char arg[1024];
+	int err = -1;
+
+	debug("---fboot_setenv---\n");
+	while (1) {
+		if (parse_env_head(p, &p, cmd, sizeof(cmd)))
+			break;
+
+		if (parse_env_end(p, &p, arg, sizeof(arg)))
+			break;
+
+		printf("%s=%s\n", cmd, arg);
+		setenv(cmd, (char *)arg);
+		saveenv();
+		err = 0;
+	}
+	return err;
+}
+
+static int fboot_command(const char *str, int len)
 {
 	const char *p = str;
 	char cmd[128];
 	int err = -1;
 
-	debug("---fboot_run_cmd---\n");
+	debug("---fboot_command---\n");
 	while (1) {
 		if (parse_cmd(p, &p, cmd, sizeof(cmd)))
 			break;
@@ -994,16 +1025,16 @@ static int fboot_run_cmd(const char *str, int len)
 	return err;
 }
 
-static int fboot_tx_status(const char *resp, unsigned int len, unsigned int sync)
+static int fboot_response(const char *resp, unsigned int len, unsigned int sync)
 {
-	debug("reaponse -> %s\n", resp);
+	debug("response -> %s\n", resp);
 	fastboot_tx_status(resp, len, sync);
 	return 0;
 }
 
 static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
-	fboot_tx_status("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
+	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
 	return do_reset (NULL, 0, 0, NULL);
 }
 
@@ -1018,36 +1049,68 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 		s += strlen("partition-type:");
 		printf("\nReady : [%s]\n", s);
 		fboot_lcd_part(s, "wait...");
-		goto var_done;
+		goto done_getvar;
 	}
 
 	if (!strncmp(cmd, "version", strlen("version"))) {
 		strcpy(p, FASTBOOT_VERSION);
-		goto var_done;
+		goto done_getvar;
 	}
 
 	if (!strncmp(cmd, "product", strlen("product"))) {
 		if (inf->product_name)
 			strcpy(p, inf->product_name);
-		goto var_done;
+		goto done_getvar;
 	}
 
 	if (!strncmp(cmd, "serialno", strlen("serialno"))) {
 		if (inf->serial_no)
 			strcpy(p, inf->serial_no);
-		goto var_done;
+		goto done_getvar;
+	}
+
+	if (!strncmp(cmd, "capacity", strlen("capacity"))) {
+		struct fastboot_device *fd = f_devices;
+		uint64_t length = 0;
+		char str[32] = {0,};
+		const char *s = cmd, *c = cmd;
+		int no = 0, i = 0;
+
+		s += strlen("capacity");
+		s += 1;	/* . */
+
+		if ((c = strchr(s, '.'))) {
+			strncpy(str, s, (c - s));
+			str[(c - s)] = 0;
+			c +=1;
+			no = simple_strtoul(c, NULL, 10);
+			for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+				if (strcmp(fd->device, str))
+					continue;
+				if (fd->capacity)
+					fd->capacity(fd, no, &length);
+				break;
+			}
+		}
+
+		if (!length)
+			strcpy(resp, "FAIL bad device");
+		else
+			sprintf(p, "%lld", length);
+
+		goto done_getvar;
 	}
 
 	if (!strncmp(cmd, "max-download-size", strlen("max-download-size"))) {
 		if (inf->transfer_buffer_size)
 			sprintf(p, "%08x", inf->transfer_buffer_size);
-		goto var_done;
+		goto done_getvar;
 	}
 
 	fastboot_getvar(cmd, p);
 
-var_done:
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+done_getvar:
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 }
 
 static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
@@ -1083,7 +1146,7 @@ static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_st
 		sprintf(resp, "DATA%08llx", fst->image_size);
 	}
 
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 }
 
 static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
@@ -1100,19 +1163,19 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 	if (fst->down_bytes == 0) {
 		sprintf(resp, "FAIL no image downloaded");
 		printf("Fail : image not dowloaded !!!\n");
-		return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+		return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 	}
 
 	/* new partition map */
 	if (!strcmp("partmap", cmd)) {
 		const char *p = (const char *)inf->transfer_buffer;
 
-		if (0 > make_part_lists(p, strlen(p))) {
+		if (0 > part_lists_make(p, strlen(p))) {
 			sprintf(resp, "FAIL partition map parse");
 			printf("-- Fail, partition map parse --\n");
 			goto err_flash;
 		}
-		print_part_lists();
+		part_lists_print();
 		parse_comment(p, &p);
 
 		if (0 == setenv("fastboot", (char *)p) &&
@@ -1123,7 +1186,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 	} else if (!strcmp("env", cmd)) {
 		char *p = (char *)inf->transfer_buffer;
 
-		if(0 > fboot_set_env(p, fst->down_bytes)){
+		if(0 > fboot_setenv(p, fst->down_bytes)){
 			sprintf(resp, "FAIL environment parse");
 			printf("-- Fail, env partition parse --\n");
 			goto err_flash;
@@ -1134,7 +1197,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 	} else if (!strcmp("cmd", cmd)) {
 		char *p = (char *)inf->transfer_buffer;
 
-		if(0 > fboot_run_cmd(p, fst->down_bytes)){
+		if(0 > fboot_command(p, fst->down_bytes)){
 			sprintf(resp, "FAIL cmd parse");
 			printf("-- Fail, cmd partition parse --\n");
 			goto err_flash;
@@ -1186,37 +1249,37 @@ done_flash:
 	printf("Flash : [%s] %s\n", cmd, 0 > err ? "FAIL":"DONE");
 	fboot_lcd_flash((char*)cmd, 0 > err ? "fail":"done");
 
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 }
 
 static int fboot_cmd_boot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "FAIL";
 	printf("*** Not IMPLEMENT ***\n");
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_SYNC);
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 }
 
 static int fboot_cmd_format(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "FAIL";
 	printf("*** Not IMPLEMENT ***\n");
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
 }
 
 static int fboot_cmd_erase(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "FAIL";
 	printf("*** Not IMPLEMENT ***\n");
-	return fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	return fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
 }
 
 static int fboot_cmd_oem(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "INFO unknown OEM command";
-	fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
 
 	sprintf(resp,"OKAY");
-	fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+	fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
 	return 0;
 }
 
@@ -1234,7 +1297,7 @@ struct f_cmd_fnc_t {
 	int (*fnc_t)(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst);
 };
 
-static struct f_cmd_fnc_t f_sequence [] = {
+static struct f_cmd_fnc_t f_cmd_seqs [] = {
 	{ "reboot"		, fboot_cmd_reboot		},
 	{ "getvar:"		, fboot_cmd_getvar		},
 	{ "download:"	, fboot_cmd_download	},
@@ -1242,9 +1305,9 @@ static struct f_cmd_fnc_t f_sequence [] = {
 	{ "boot"		, fboot_cmd_boot		},
 	{ "format:"		, fboot_cmd_format		},
 	{ "erase:"		, fboot_cmd_erase		},
-	{ "oem"			, fboot_cmd_oem			},
+	{ "oem "		, fboot_cmd_oem			},
 };
-#define	FASTBOOT_CMD_SIZE	ARRAY_SIZE(f_sequence)
+#define	FASTBOOT_CMD_SIZE	ARRAY_SIZE(f_cmd_seqs)
 
 static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 {
@@ -1259,7 +1322,7 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 		const char *cmd = (char *)buffer;
 		debug("[CMD = %s]\n", cmd);
 		for (i = 0; FASTBOOT_CMD_SIZE > i; i++) {
-			struct f_cmd_fnc_t *fptr = &f_sequence[i];
+			struct f_cmd_fnc_t *fptr = &f_cmd_seqs[i];
 			const char *str = fptr->command;
 			int len = strlen(str);
 			if (!strncmp(cmd, str, len) &&
@@ -1273,7 +1336,7 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 
 		if (FASTBOOT_CMD_SIZE == i) {
 			printf("-- unknown fastboot cmd [%s] --\n", cmd);
-			fboot_tx_status("ERROR", strlen("ERROR"), FASTBOOT_TX_ASYNC);
+			fboot_response("ERROR", strlen("ERROR"), FASTBOOT_TX_ASYNC);
 		}
 	/*
 	 * Download
@@ -1307,7 +1370,7 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 					sprintf(resp, "OKAY");
 
 				fst->image_size = 0;
-				fboot_tx_status(resp, strlen(resp), FASTBOOT_TX_ASYNC);
+				fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 
 				fboot_lcd_down(100);
 			} else {
@@ -1328,10 +1391,64 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 	return ret;
 }
 
+#define ANDROID_VENDOR_ID 						0x18D1
+#define ANDROID_PRODUCT_ID						0x0002
+#define NEXELL_VENDOR_ID 						0x2375
+#define NEXELL_PRODUCT_ID						0x4330
+
+
+#define USB_STRING_MANUFACTURER_INDEX  	1
+#define USB_STRING_PRODUCT_INDEX       	2
+#define USB_STRING_SERIAL_INDEX 		3
+#define USB_STRING_CONFIG_INDEX        	4
+#define USB_STRING_INF_INDEX   		 	5
+#define USB_STRING_MAX_INDEX   			USB_STRING_INF_INDEX
+
+static char *usb_dev_descript[USB_STRING_MAX_INDEX+1];
+static int	android_drvier = 1;
+
+static int fboot_interface_init(void)
+{
+	f_cmd_inf *inf = &f_interface;
+	int ret;
+
+	ret = fastboot_init(inf);
+	if (ret)
+		return ret;
+
+	if (android_drvier)
+		return 0;
+
+	usb_dev_descript[USB_STRING_MANUFACTURER_INDEX] = "Nexell";
+	usb_dev_descript[USB_STRING_PRODUCT_INDEX]   	= "PYROPE";
+	usb_dev_descript[USB_STRING_SERIAL_INDEX] 		= "NXP4330";
+	usb_dev_descript[USB_STRING_CONFIG_INDEX]    	= "Android Fastboot";
+	usb_dev_descript[USB_STRING_INF_INDEX]  		= "Android Fastboot";
+
+	inf->product_name = usb_dev_descript[USB_STRING_PRODUCT_INDEX];
+	inf->serial_no = usb_dev_descript[USB_STRING_SERIAL_INDEX];
+
+	return 0;
+}
+
+void fboot_usb_descriptor(descriptors_t *desc)
+{
+	if (android_drvier) {
+		desc->dev.idVendorL  = ANDROID_VENDOR_ID	& 0xff;	//0xB4;	/**/
+		desc->dev.idVendorH  = ANDROID_VENDOR_ID	>>8;	//0x0B;	/**/
+		desc->dev.idProductL = ANDROID_PRODUCT_ID	& 0xff;	//0xFF; /**/
+		desc->dev.idProductH = ANDROID_PRODUCT_ID	>>8;	//0x0F; /**/
+	} else {
+		desc->dev.idVendorL  = NEXELL_VENDOR_ID  	& 0xff;	//0xB4;	/**/
+		desc->dev.idVendorH  = NEXELL_VENDOR_ID		>>8;	//0x0B;	/**/
+		desc->dev.idProductL = NEXELL_PRODUCT_ID	& 0xff;	//0xFF; /**/
+		desc->dev.idProductH = NEXELL_PRODUCT_ID	>>8;	//0x0F; /**/
+	}
+}
+
 static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
-	static int inited = 0;
-	f_cmd_inf *inf = &f_interface;
+	static int init_parts = 0;
 	const char *p;
 	unsigned int tclk = TCLK_TICK_HZ;
 	int timeout = 0, f_connect = 0;
@@ -1339,39 +1456,46 @@ static int do_fastboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]
 
 	p = getenv("fastboot");
 	if (NULL == p) {
-		printf("*** Warning use default fastboot commands ***\n");
+		printf("*** Warning use default fastboot commands:%s ***\n", f_parts_default);
 		p = f_parts_default;
+		init_parts = 0;
 
 		sort_string((char*)p, strlen(p));
 		setenv("fastboot", (char *)p);
 		saveenv();
 	}
 
-	if (!inited) {
+	if (!init_parts) {
 		part_lists_init(1);
-		err = make_part_lists(p, strlen(p));
+		err = part_lists_make(p, strlen(p));
 		if (0 > err)
 			return err;
 
-		inited = 1;
+		init_parts = 1;
 	}
+	android_drvier = 1;
 
 	if (argc > 1) {
 		if (!strcmp(argv[1], "-l")) {
-			print_part_lists();
+			part_lists_print();
 			return 0;
-		} else {
-			timeout = simple_strtol(argv[1], NULL, 10);
 		}
+
+		if (!strcmp(argv[1], "-n"))
+			timeout = simple_strtol(argv[1], NULL, 10);
+
+		if (!strcmp(argv[1], "nexell"))
+			android_drvier = 0;
 	}
 
-	print_part_lists();
+	part_lists_print();
 	fboot_lcd_start();
+	printf("Load USB Driver: %s\n", android_drvier?"android":"nexell");
 
 	do {
 		/* reset */
 		f_connect = 0;
-		if (0 == fastboot_init(inf)) {
+		if (0 == fboot_interface_init()) {
 			unsigned int curr_time = (get_ticks()/tclk);
 			unsigned int end_time = curr_time + timeout;
 
@@ -1443,8 +1567,8 @@ U_BOOT_CMD(
 	"    - reflect new partition environments and Run.\n"
 	"fastboot -1 \n"
 	"    - Print current fastboot partition map table.\n"
-	"fastboot -p \n"
-	"    - Print current fastboot support device list.\n"
+	"fastboot nexell \n"
+	"    - connect to nexell usb device driver\n"
 );
 
 

@@ -1473,6 +1473,7 @@ void s3c_usb_dma_in_done(void)
 	s32 remain_cnt;
 
 	DBG_BULK0("DMA IN : Transfer Done\n");
+	flush_dcache_all();
 
 	otg.up_ptr = (u8 *)readl(S5P_OTG_DIEPDMA_IN);
 	remain_cnt = otg.up_size- ((u32)otg.up_ptr - otg.up_addr);
@@ -1498,6 +1499,8 @@ void s3c_usb_dma_in_done(void)
 			S5P_OTG_DIEPCTL_IN);
 	} else
 		DBG_SETUP1("DMA IN : Transfer Complete\n");
+
+	flush_dcache_all();
 }
 
 void s3c_usb_dma_out_done(void)
@@ -1505,6 +1508,8 @@ void s3c_usb_dma_out_done(void)
 	s32 remain_cnt;
 
 	DBG_BULK1("DMA OUT : Transfer Done\n");
+	flush_dcache_all();
+
 	otg.dn_ptr = (u8 *)readl(S5P_OTG_DOEPDMA_OUT);
 
 	remain_cnt = otg.dn_filesize - ((u32)otg.dn_ptr - otg.dn_addr + 8);
@@ -1532,6 +1537,7 @@ void s3c_usb_dma_out_done(void)
 		DBG_BULK1("DMA OUT : Transfer Complete\n");
 		udelay(500);		/*for FPGA ???*/
 	}
+	flush_dcache_all();
 }
 
 void s3c_usb_set_all_outep_nak(void)
@@ -1882,7 +1888,6 @@ int s3c_udc_int_hndlr(void)
 	int tmp;
 	int ret = ERROR;
 
-	flush_dcache_all();
 	int_status = readl(S5P_OTG_GINTSTS); /* Core Interrupt Register */
 	writel(int_status, S5P_OTG_GINTSTS); /* Interrupt Clear */
 	DBG_SETUP0("*** USB OTG Interrupt(S5P_OTG_GINTSTS: 0x%08x) ****\n",
@@ -1948,8 +1953,6 @@ int s3c_udc_int_hndlr(void)
 		s3c_usb_transfer();
 		ret = OK;
 	}
-	flush_dcache_all();
-
 	return ret;
 }
 
