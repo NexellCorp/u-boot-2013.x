@@ -1086,6 +1086,13 @@ static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	return do_reset (NULL, 0, 0, NULL);
 }
 
+static inline void s_reponse(char *response, char *string)
+{
+	if (response)
+		sprintf(response, "%s", string);
+	printf("%s\n", string);
+}
+
 static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "OKAY";
@@ -1101,9 +1108,8 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 			fboot_lcd_part(s, "Bad Partition...");
 			goto done_getvar;
 		}
-		sprintf(p, "%s", s);
-
-		printf("\nReady : [%s]\n", s);
+		printf("\nReady : ");
+		s_reponse(p, s);
 		fboot_lcd_part(s, "wait...");
 		goto done_getvar;
 	}
@@ -1172,12 +1178,9 @@ static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_st
 	printf("Starting download of %lld bytes\n", fst->image_size);
 
 	if (0 == fst->image_size) {
-		sprintf(resp, "FAIL data invalid size");	/* bad user input */
-		printf("-- Fail, data invalid size --\n");
+		s_reponse(resp, "FAIL data invalid size");	/* bad user input */
 	} else if (fst->image_size > inf->transfer_buffer_size) {
-		sprintf(resp, "FAIL data too large");
-		printf("-- Fail, data too large buf[%d], image[%lld] --\n",
-			inf->transfer_buffer_size, fst->image_size);
+		s_reponse(resp, "FAIL data too large");
 		fst->image_size = 0;
 	} else {
 		/* The default case, the transfer fits
@@ -1196,12 +1199,11 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 	char resp[RESP_SIZE] = "OKAY";
 	int i = 0, err = 0;
 
-	printf("Flash : [%s]\n", cmd);
+	printf("Flash : %s\n", cmd);
 	fboot_lcd_flash((char*)cmd, "flashing");
 
 	if (fst->down_bytes == 0) {
-		sprintf(resp, "FAIL no image downloaded");
-		printf("Fail : image not dowloaded !!!\n");
+		s_reponse(resp, "FAIL no image downloaded");
 		return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 	}
 
@@ -1210,8 +1212,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		const char *p = (const char *)inf->transfer_buffer;
 
 		if (0 > part_lists_make(p, strlen(p))) {
-			sprintf(resp, "FAIL partition map parse");
-			printf("-- Fail, partition map parse --\n");
+			s_reponse(resp, "FAIL partition map parse");
 			goto err_flash;
 		}
 		part_lists_print();
@@ -1226,8 +1227,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		char *p = (char *)inf->transfer_buffer;
 
 		if(0 > fboot_setenv(p, fst->down_bytes)){
-			sprintf(resp, "FAIL environment parse");
-			printf("-- Fail, env partition parse --\n");
+			s_reponse(resp, "FAIL environment parse");
 			goto err_flash;
 		}
 		goto done_flash;
@@ -1237,8 +1237,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		char *p = (char *)inf->transfer_buffer;
 
 		if(0 > fboot_command(p, fst->down_bytes)){
-			sprintf(resp, "FAIL cmd parse");
-			printf("-- Fail, cmd partition parse --\n");
+			s_reponse(resp, "FAIL cmd parse");
 			goto err_flash;
 		}
 		goto done_flash;
@@ -1259,19 +1258,15 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 			if (!strcmp(fp->partition, cmd)) {
 
 				if ((fst->down_bytes > fp->length) && (fp->length != 0)) {
-					sprintf(resp, "FAIL image too large for partition");
-					printf("-- Fail: image too large for %s part length %lld --\n",
-						fp->partition, fp->length);
+					s_reponse(resp, "FAIL image too large for partition");
 					goto err_flash;
 				}
 
 				if ((fd->dev_type != FASTBOOT_DEV_MEM) &&
 					fd->write_part) {
 					char *p = (char *)inf->transfer_buffer;
-					if (0 > fd->write_part(fp, p, fst->down_bytes)) {
-						sprintf(resp, "FAIL to flash partition");
-						printf("-- Fail, flash %s partition %s --\n", fd->device, fp->partition);
-					}
+					if (0 > fd->write_part(fp, p, fst->down_bytes))
+						s_reponse(resp, "FAIL to flash partition");
 				}
 
 				goto done_flash;
@@ -1281,11 +1276,10 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 
 err_flash:
 	err = -1;
-	sprintf(resp, "FAIL partition does not exist");
-	printf("-- Fail: %s partition does not exist --\n", cmd);
+	s_reponse(resp, "FAIL partition does not exist");
 
 done_flash:
-	printf("Flash : [%s] %s\n", cmd, 0 > err ? "FAIL":"DONE");
+	printf("Flash : %s - %s\n", cmd, 0 > err ? "FAIL":"DONE");
 	fboot_lcd_flash((char*)cmd, 0 > err ? "fail":"done");
 
 	return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
@@ -1434,7 +1428,6 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 #define ANDROID_PRODUCT_ID				0x0002
 #define NEXELL_VENDOR_ID 				0x2375
 #define NEXELL_PRODUCT_ID				0x4330
-
 
 #define USB_STRING_MANUFACTURER_INDEX  	1
 #define USB_STRING_PRODUCT_INDEX       	2
