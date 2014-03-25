@@ -1046,7 +1046,10 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	debug("getvar = %s\n", cmd);
 
 	if (!strncmp(cmd, "partition-type:", strlen("partition-type:"))) {
+		/* response */
 		s += strlen("partition-type:");
+		sprintf(p, "%s", s);
+
 		printf("\nReady : [%s]\n", s);
 		fboot_lcd_part(s, "wait...");
 		goto done_getvar;
