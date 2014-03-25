@@ -822,6 +822,27 @@ static void part_lists_print(void)
 	printf("\n");
 }
 
+static int part_lists_check(const char *part)
+{
+	struct fastboot_device *fd = f_devices;
+	struct fastboot_part *fp;
+	struct list_head *entry, *n;
+	int i =0;
+
+	for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+		struct list_head *head = &fd->link;
+		if (list_empty(head))
+			continue;
+		list_for_each_safe(entry, n, head) {
+			fp = list_entry(entry, struct fastboot_part, link);
+			if (!strcmp(fp->partition, part)) {
+				return 0;
+			}
+		}
+	}
+	return -1;
+}
+
 static void part_dev_print(struct fastboot_device *fd)
 {
 	struct fastboot_part *fp;
@@ -839,6 +860,34 @@ static void part_dev_print(struct fastboot_device *fd)
 	}
 }
 
+/* fastboot getvar capacity.<device>.<dev no> */
+static int part_dev_capacity(const char *device, uint64_t *length)
+{
+	struct fastboot_device *fd = f_devices;
+	const char *s = device, *c = device;
+	char str[32] = {0,};
+	uint64_t len = 0;
+	int no = 0, i = 0;
+
+	if ((c = strchr(s, '.'))) {
+		strncpy(str, s, (c-s));
+		str[c-s] = 0;
+		c +=1;
+		no = simple_strtoul(c, NULL, 10);
+		for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
+			if (strcmp(fd->device, str))
+				continue;
+			if (fd->capacity)
+				fd->capacity(fd, no, &len);
+			break;
+		}
+	}
+
+	*length = len;
+
+	return !len ? -1 : 0;
+}
+
 static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2], int *count)
 {
 	struct fastboot_part *fp = fpart;
@@ -852,7 +901,6 @@ static int get_parts_from_lists(struct fastboot_part *fpart, uint64_t (*parts)[2
 		printf("-- No partition input params --\n");
 		return -1;
 	}
-
 	*count = 0;
 
 	if (list_empty(head))
@@ -1046,8 +1094,13 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	debug("getvar = %s\n", cmd);
 
 	if (!strncmp(cmd, "partition-type:", strlen("partition-type:"))) {
-		/* response */
+
 		s += strlen("partition-type:");
+		if (part_lists_check(s)) {
+			strcpy(resp, "FAIL bad partition");
+			fboot_lcd_part(s, "Bad Partition...");
+			goto done_getvar;
+		}
 		sprintf(p, "%s", s);
 
 		printf("\nReady : [%s]\n", s);
@@ -1073,30 +1126,13 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	}
 
 	if (!strncmp(cmd, "capacity", strlen("capacity"))) {
-		struct fastboot_device *fd = f_devices;
+		const char *s = cmd;
 		uint64_t length = 0;
-		char str[32] = {0,};
-		const char *s = cmd, *c = cmd;
-		int no = 0, i = 0;
 
 		s += strlen("capacity");
 		s += 1;	/* . */
 
-		if ((c = strchr(s, '.'))) {
-			strncpy(str, s, (c - s));
-			str[(c - s)] = 0;
-			c +=1;
-			no = simple_strtoul(c, NULL, 10);
-			for (i = 0; FASTBOOT_DEV_SIZE > i; i++, fd++) {
-				if (strcmp(fd->device, str))
-					continue;
-				if (fd->capacity)
-					fd->capacity(fd, no, &length);
-				break;
-			}
-		}
-
-		if (!length)
+		if (0 > part_dev_capacity(s, &length))
 			strcpy(resp, "FAIL bad device");
 		else
 			sprintf(p, "%lld", length);
@@ -1394,10 +1430,10 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 	return ret;
 }
 
-#define ANDROID_VENDOR_ID 						0x18D1
-#define ANDROID_PRODUCT_ID						0x0002
-#define NEXELL_VENDOR_ID 						0x2375
-#define NEXELL_PRODUCT_ID						0x4330
+#define ANDROID_VENDOR_ID 				0x18D1
+#define ANDROID_PRODUCT_ID				0x0002
+#define NEXELL_VENDOR_ID 				0x2375
+#define NEXELL_PRODUCT_ID				0x4330
 
 
 #define USB_STRING_MANUFACTURER_INDEX  	1
@@ -1568,7 +1604,7 @@ U_BOOT_CMD(
 	"    - the normal console resumes\n"
 	"fastboot -n [inactive timeout]\n"
 	"    - reflect new partition environments and Run.\n"
-	"fastboot -1 \n"
+	"fastboot -l \n"
 	"    - Print current fastboot partition map table.\n"
 	"fastboot nexell \n"
 	"    - connect to nexell usb device driver\n"
