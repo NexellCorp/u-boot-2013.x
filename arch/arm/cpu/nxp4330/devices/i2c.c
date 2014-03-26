@@ -66,6 +66,13 @@
 #else
 	#define	I2C2_SDA	((PAD_GPIO_D + 7) | PAD_FUNC_ALT0)
 #endif
+#ifdef CFG_IO_I2C3_SCL
+	#define	I2C3_SCL	CFG_IO_I2C3_SCL
+#endif
+#ifdef CFG_IO_I2C3_SDA
+	#define	I2C3_SDA	CFG_IO_I2C3_SDA
+#endif
+
 
 /*
  * I2C io maps
@@ -92,6 +99,12 @@ static struct i2c_params i2c_info[3] = {
 		2, I2C2_SCL, I2C2_SDA, CONFIG_I2C2_NO_STOP,
 		CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SPEED,
 	},
+#if defined (CFG_IO_I2C3_SCL) || defined (CFG_IO_I2C3_SDA)
+	{
+		3, I2C3_SCL, I2C3_SDA, CONFIG_I2C3_NO_STOP,
+		CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SPEED,
+	},
+#endif	
 };
 
 /* set .data section, before u-boot is relocated */
