@@ -57,7 +57,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 #if defined(CONFIG_BAT_CHECK)
-#define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
+#define CFG_KEY_POWER       (PAD_GPIO_C + 10)
 #endif
 
 
@@ -401,7 +401,7 @@ static void auto_update(int io, int wait)
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
-#if defined(CONFIG_BAT_CHECK)
+#if 0//defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)

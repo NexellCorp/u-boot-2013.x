@@ -365,7 +365,7 @@
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC			(2) // Using VADP, VUSB power path. Separated power path.
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED	(3) // Using VADP, VUSB power path. Linked power path.
 
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH			CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH			CONFIG_PMIC_CHARGING_PATH_UBC
 
 #define CONFIG_NXP_RTC_USE
 #endif
@@ -375,8 +375,8 @@
  */
 #if defined(CONFIG_HAVE_BATTERY)
 
-//#define CONFIG_BAT_CHECK
-//#define CONFIG_FAST_BOOTUP
+#define CONFIG_BAT_CHECK
+#define CONFIG_FAST_BOOTUP
 
 #if defined(CONFIG_BAT_CHECK)
 
@@ -550,7 +550,8 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-	#define	CONFIG_DISPLAY_OUT_LVDS
+	//#define	CONFIG_DISPLAY_OUT_LVDS
+	#define	CONFIG_DISPLAY_OUT_MIPI
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */

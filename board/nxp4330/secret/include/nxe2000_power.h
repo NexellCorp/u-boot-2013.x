@@ -64,10 +64,10 @@
 #define	NXE2000_DEF_DDC5_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.6V SYS		*/
 
 #define	NXE2000_DEF_LDO1_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V GPS & WIFI	*/
-#define	NXE2000_DEF_LDO2_ON					0		/* VAL = 0: Off, 1: On */	/* 1.8V CAM1	*/
+#define	NXE2000_DEF_LDO2_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V LCD	*/
 #define	NXE2000_DEF_LDO3_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V SYS1,	Boot On	*/
 #define	NXE2000_DEF_LDO4_ON					1		/* VAL = 0: Off, 1: On */	/* 1.9V SYS,		Boot On	*/
-#define	NXE2000_DEF_LDO5_ON					0		/* VAL = 0: Off, 1: On */	/* 2.8V CAM		*/
+#define	NXE2000_DEF_LDO5_ON					0		/* VAL = 0: Off, 1: On */	/* 2.8V none,	Not Use	*/
 #define	NXE2000_DEF_LDO6_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V ALIVE,	Boot On	*/
 #define	NXE2000_DEF_LDO7_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V VID,		Boot On	*/
 #define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
