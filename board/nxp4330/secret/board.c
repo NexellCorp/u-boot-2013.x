@@ -401,7 +401,7 @@ static void auto_update(int io, int wait)
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
-#if 0//defined(CONFIG_BAT_CHECK)
+#if defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)
@@ -435,8 +435,12 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
+	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_LOWLEVEL);
+	nxp_gpio_set_int_en(CFG_KEY_POWER, CTRUE);
+
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
+
     if (power_key_depth)
         time_key_pev = nxp_rtc_get();
 
