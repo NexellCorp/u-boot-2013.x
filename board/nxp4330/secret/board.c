@@ -67,6 +67,43 @@ DECLARE_GLOBAL_DATA_PTR;
 #if defined(CONFIG_PMIC_NXE2000)
 struct nxe2000_power	nxe_power_config;
 #endif
+
+#if 0
+static int secret_i2c_read(u8 bus, u8 address, u8 reg, u8 *value)
+{
+	uchar chip = address;
+	u32 addr = (u32)reg & 0xFF;
+	int alen = 1;
+	u32 old_bus = 0;
+	int ret=0;
+
+	old_bus=i2c_get_bus_num();
+	i2c_set_bus_num(bus);
+
+	ret = i2c_read(chip, addr, alen, value, 1);
+
+	i2c_set_bus_num(old_bus);
+	return ret;
+}
+
+static int secret_i2c_write(u8 bus, u8 address, u8 reg, u8 value)
+{
+	uchar chip = address;
+	u32   addr = (u32)reg & 0xFF;
+	int   alen = 1;
+	u32 old_bus = 0;
+	int ret=0;
+
+	old_bus=i2c_get_bus_num();
+	i2c_set_bus_num(bus);
+
+	ret = i2c_write(chip, addr, alen, &value, 1);
+
+	i2c_set_bus_num(old_bus);
+	return ret;
+}
+#endif
+
 static void set_gpio_strenth(U32 Group, U32 BitNumber, U32 mA)
 {
 	U32 drv1=0, drv0=0;
@@ -428,6 +465,9 @@ int board_late_init(void)
 	int show_bat_state = 0;
 	int power_key_depth = 0;
     u32 time_key_pev = 0;
+	unsigned int sum_voltage=0, avg_voltage=0;
+	int i=0;
+
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
@@ -490,59 +530,45 @@ int board_late_init(void)
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
 
-    /* Check to Power-Key status */
-#ifndef CONFIG_FAST_BOOTUP
-    if (gpio_get_value(GPIO_PMIC_VUSB_DET) || power_key_depth)
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+	for(i=0; i<5; i++)
+	{
+		p_fg->fg->fg_battery_check(p_fg, p_bat);
+		sum_voltage += pb->bat->voltage_uV;
+		mdelay(1);
+	}
+	avg_voltage = sum_voltage/5;
+
+    if (GPIO_PMIC_VUSB_DET > -1)
     {
-        show_bat_state = 1;
+		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
     }
-    else
-    {
-        goto enter_shutdown;
-    }
-#endif
+	printf("power_key_depth:%d\n", power_key_depth);
+	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
+	printf("chg_state:0x%x\n", chg_state);
+	printf("\n");
 
-//  show_bat_state = 0;
-//  show_bat_state = 1;
-
-    /* Access for image file. */
-    p_fg->fg->fg_battery_check(p_fg, p_bat);
-//shutdown_ilim_uA    = 3000000;
-
-    if (pb->bat->voltage_uV < shutdown_ilim_uA)
+    if (avg_voltage < shutdown_ilim_uA)
     {
         bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
 
-        pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-        if ( !(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK) )
+        if (!(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK))
         {
+			printf("enter_shutdown,%d", __LINE__);
             goto enter_shutdown;
         }
+		else
+		{
+			show_bat_state = 1;
+		}
     }
+	else
+	{
+		power_key_depth = 2;
+	}
+
 
 /*===========================================================*/
-
-#ifdef CONFIG_FAST_BOOTUP
-    if (gpio_get_value(GPIO_PMIC_VUSB_DET))
-    {
-        show_bat_state = 1;
-    }
-    else
-    {
-        power_key_depth = 2;
-    }
-    nxp_gpio_set_int_clear(CFG_KEY_POWER);
-#else
-
-    if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
-    {
-        power_key_depth++;
-    }
-    else
-    {
-        power_key_depth = 0;
-    }
-#endif
 
 	if (power_key_depth > 1)
 	{
@@ -563,6 +589,17 @@ int board_late_init(void)
 	bd_display();
 
 	/* backlight */
+	mdelay(10);
+#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_LCD_BACKLIGHT_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_LCD_BACKLIGHT_EN), CTRUE);
+#endif
+#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_LCD_VG_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_VG_EN), PAD_GET_BITNO(CFG_IO_LCD_VG_EN), CTRUE);
+#endif
+#ifdef CFG_IO_LCD_PWM
+	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
+#endif
+
 	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
 	pwm_config(CFG_LCD_PRI_PWM_CH,
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
@@ -631,7 +668,6 @@ int board_late_init(void)
                 is_pwr_in           = 0;
                 shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
             }
-//shutdown_ilim_uA    = 3000000;
 
             if (!power_state && is_pwr_in)
             {
@@ -675,6 +711,7 @@ int board_late_init(void)
             {
                 if ((pb->bat->voltage_uV < shutdown_ilim_uA) || (!power_depth))
                 {
+					printf("enter_shutdown,%d", __LINE__);
                     goto enter_shutdown;
                 }
             }
@@ -731,6 +768,16 @@ skip_bat_animation:
 	return 0;
 
 enter_shutdown:
+#if 0
+	{
+		u8 temp_val=0;
+		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
+		printf(" temp_val:%d \n", temp_val);
+		printf(" NXP4330 Poweroff -> Micom, result:%d \n", secret_i2c_write(0x00, 0x30, 0x00, 0x00));
+		mdelay(500);
+	}
+#endif
+	mdelay(50);
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 	while(1);
 
@@ -757,6 +804,17 @@ int board_late_init(void)
 	bd_display();
 
 	/* backlight */
+	mdelay(10);
+#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_LCD_BACKLIGHT_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_LCD_BACKLIGHT_EN), CTRUE);
+#endif
+#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_LCD_VG_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_VG_EN), PAD_GET_BITNO(CFG_IO_LCD_VG_EN), CTRUE);
+#endif
+#ifdef CFG_IO_LCD_PWM
+	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
+#endif
+
 	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
 	pwm_config(CFG_LCD_PRI_PWM_CH,
 		TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),

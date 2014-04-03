@@ -38,8 +38,8 @@
 
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 16)
 #define GPIO_OTG_VBUS_DET					(-1)//(PAD_GPIO_D + 21)
-#define GPIO_PMIC_VUSB_DET					(PAD_GPIO_ALV + 2)
-#define GPIO_PMIC_LOWBAT_DET				(PAD_GPIO_ALV + 3)
+#define GPIO_PMIC_VUSB_DET					(-1)//(PAD_GPIO_ALV + 2)
+#define GPIO_PMIC_LOWBAT_DET				(-1)//(PAD_GPIO_ALV + 3)
 
 
 /*
