@@ -68,7 +68,7 @@ DECLARE_GLOBAL_DATA_PTR;
 struct nxe2000_power	nxe_power_config;
 #endif
 
-#if 0
+#if 1
 static int secret_i2c_read(u8 bus, u8 address, u8 reg, u8 *value)
 {
 	uchar chip = address;
@@ -539,6 +539,7 @@ int board_late_init(void)
 	}
 	avg_voltage = sum_voltage/5;
 
+	printf("\n");
     if (GPIO_PMIC_VUSB_DET > -1)
     {
 		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
@@ -546,7 +547,6 @@ int board_late_init(void)
 	printf("power_key_depth:%d\n", power_key_depth);
 	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
 	printf("chg_state:0x%x\n", chg_state);
-	printf("\n");
 
     if (avg_voltage < shutdown_ilim_uA)
     {
@@ -554,7 +554,7 @@ int board_late_init(void)
 
         if (!(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK))
         {
-			printf("enter_shutdown,%d", __LINE__);
+			printf("enter_shutdown,%d\n", __LINE__);
             goto enter_shutdown;
         }
 		else
@@ -567,6 +567,8 @@ int board_late_init(void)
 		power_key_depth = 2;
 	}
 
+	//show_bat_state = 1;
+	//power_key_depth = 0;
 
 /*===========================================================*/
 
@@ -711,7 +713,7 @@ int board_late_init(void)
             {
                 if ((pb->bat->voltage_uV < shutdown_ilim_uA) || (!power_depth))
                 {
-					printf("enter_shutdown,%d", __LINE__);
+					printf("enter_shutdown,%d\n", __LINE__);
                     goto enter_shutdown;
                 }
             }
@@ -768,16 +770,15 @@ skip_bat_animation:
 	return 0;
 
 enter_shutdown:
-#if 0
+#if 1
 	{
 		u8 temp_val=0;
 		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
-		printf(" temp_val:%d \n", temp_val);
-		printf(" NXP4330 Poweroff -> Micom, result:%d \n", secret_i2c_write(0x00, 0x30, 0x00, 0x00));
-		mdelay(500);
+		printf("temp_val:%d \n", temp_val);
+		printf("NXP4330 Poweroff -> Micom, result:%d \n", secret_i2c_write(0x00, 0x30, 0x00, 0x00));
 	}
 #endif
-	mdelay(50);
+	mdelay(100);
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 	while(1);
 
