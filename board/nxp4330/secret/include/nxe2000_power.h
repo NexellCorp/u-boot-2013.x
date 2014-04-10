@@ -189,8 +189,8 @@
 #define NXE2000_DEF_CHG_VDEAD				0		/* VAL(V) = 0: 2.9 ~ 3.0, 1: 2.8 ~ 2.9, default(OTP) = 2.9 ~ 3.0V */
 #define NXE2000_DEF_CHG_VSHORT				0		/* VAL(V) = 0: 2.7 ~ 2.8, 1: 2.5 ~ 2.6, default(OTP) = 2.7 ~ 2.8V */
 
-#define NXE2000_DEF_CHG_VFCHG				1		/* VAL(V) = 0: 4.05, 1: 4.10, 2: 4.15, 3: 4.20,  4 ~ 7: 4.35, default = 4.10V */
-#define NXE2000_DEF_CHG_VRCHG				1		/* VAL(V) = 0: 3.85, 1: 3.90, 2: 3.95, 3: 4.00,  4 ~ 7: 4.10  default = 3.90V */
+#define NXE2000_DEF_CHG_VFCHG				3		/* VAL(V) = 0: 4.05, 1: 4.10, 2: 4.15, 3: 4.20,  4 ~ 7: 4.35, default = 4.10V */
+#define NXE2000_DEF_CHG_VRCHG				3		/* VAL(V) = 0: 3.85, 1: 3.90, 2: 3.95, 3: 4.00,  4 ~ 7: 4.10  default = 3.90V */
 
 #define NXE2000_DEF_CHG_CURR_ADP 			24		/* VAL(mA) = 100mA x (n + 1), MAX = 2500mA, default(OTP) = 2500mA */
 #define NXE2000_DEF_CHG_CURR_USB 			4		/* VAL(mA) = 100mA x (n + 1), MAX = 1500mA, default(OTP) = 500mA */

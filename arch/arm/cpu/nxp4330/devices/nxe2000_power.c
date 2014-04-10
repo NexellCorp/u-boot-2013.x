@@ -278,6 +278,10 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 	nxe2000_i2c_read(NXE2000_REG_FG_CTRL    , &cache[NXE2000_REG_FG_CTRL]   , power);
 	cache[NXE2000_REG_FG_CTRL]  &= (1 << NXE2000_POS_FG_CTRL_FG_ACC);
+#if 1
+	cache[NXE2000_REG_FG_CTRL]  = (1 << NXE2000_POS_FG_CTRL_SRST1);
+	nxe2000_i2c_write(NXE2000_REG_FG_CTRL   , cache[NXE2000_REG_FG_CTRL]    , power);
+#endif
 
 #if 0
 	if (power->warm_reset == CTRUE)
@@ -516,6 +520,7 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 		cache[NXE2000_REG_BATSET2]	= ( ((NXE2000_DEF_CHG_VFCHG & 7) << NXE2000_POS_BATSET2_VFCHG) | (NXE2000_DEF_CHG_VRCHG & 7) );
 	}
 
+#if 0
 	if (cache[NXE2000_REG_FG_CTRL])
 	{
 		cache[NXE2000_REG_FG_CTRL]	= ( (1 << NXE2000_POS_FG_CTRL_SRST0)	|
@@ -526,6 +531,10 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 	{
 		cache[NXE2000_REG_FG_CTRL]	= ( (1 << NXE2000_POS_FG_CTRL_FG_EN)	);
 	}
+#else
+		cache[NXE2000_REG_FG_CTRL]  = ( (1 << NXE2000_POS_FG_CTRL_FG_ACC)   |
+										(1 << NXE2000_POS_FG_CTRL_FG_EN)    );
+#endif
 
 //	nxe2000_register_dump(power);
 
