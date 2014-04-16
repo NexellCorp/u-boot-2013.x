@@ -1888,6 +1888,8 @@ int s3c_udc_int_hndlr(void)
 	int tmp;
 	int ret = ERROR;
 
+	flush_dcache_all();
+
 	int_status = readl(S5P_OTG_GINTSTS); /* Core Interrupt Register */
 	writel(int_status, S5P_OTG_GINTSTS); /* Interrupt Clear */
 	DBG_SETUP0("*** USB OTG Interrupt(S5P_OTG_GINTSTS: 0x%08x) ****\n",
@@ -1953,6 +1955,8 @@ int s3c_udc_int_hndlr(void)
 		s3c_usb_transfer();
 		ret = OK;
 	}
+
+	flush_dcache_all();	
 	return ret;
 }
 
