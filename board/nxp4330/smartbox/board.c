@@ -264,7 +264,7 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-    bd_pmic_init();
+	bd_pmic_init();
 	return 0;
 }
 
@@ -304,11 +304,12 @@ int bd_eth_init(void)
     udelay(100);
 
 	// Set interrupt config.
-	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	nxp_gpio_set_pull_sel(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
 	gpio_direction_input(CFG_ETHER_GMAC_PHY_IRQ_NUM);
 
 	// Set GPIO nReset
-	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
 	gpio_direction_output(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
 	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
