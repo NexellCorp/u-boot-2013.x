@@ -36,10 +36,14 @@
 #define CHARGER_CURRENT_RESOLUTION			100		/* VAL(mV) */
 #define CHARGER_CURRENT_COMPLETE			3		/* (n + 1) x 50mA   */
 
+#ifdef CONFIG_SECRET_2ND_BOARD
+#define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 21)
+#else
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 16)
+#endif
 #define GPIO_OTG_VBUS_DET					(-1)//(PAD_GPIO_D + 21)
-#define GPIO_PMIC_VUSB_DET					(PAD_GPIO_ALV + 2)
-#define GPIO_PMIC_LOWBAT_DET				(PAD_GPIO_ALV + 3)
+#define GPIO_PMIC_VUSB_DET					(-1)//(PAD_GPIO_ALV + 2)
+#define GPIO_PMIC_LOWBAT_DET				(-1)//(PAD_GPIO_ALV + 3)
 
 
 /*
@@ -73,8 +77,13 @@
 #define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
 #define	NXE2000_DEF_LDO9_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
 #define	NXE2000_DEF_LDO10_ON				0		/* VAL = 0: Off, 1: On */	/* 1.2V none,	Not Use	*/
+#ifdef CONFIG_SECRET_2ND_BOARD
+#define	NXE2000_DEF_LDORTC1_ON				0		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On	*/
+#define	NXE2000_DEF_LDORTC2_ON				0		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On	*/
+#else
 #define	NXE2000_DEF_LDORTC1_ON				1		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On	*/
 #define	NXE2000_DEF_LDORTC2_ON				1		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On	*/
+#endif
 
 #define	NXE2000_DEF_DDC1_VOL				1300000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
 #define	NXE2000_DEF_DDC2_VOL				1200000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.2V */
