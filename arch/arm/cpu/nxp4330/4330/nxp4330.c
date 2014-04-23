@@ -27,6 +27,7 @@
 #include <asm/io.h>
 #include <platform.h>
 #include <mach-api.h>
+#include <pm.h>
 
 #define DBGOUT(msg...)		do { printf("sys: " msg); } while (0)
 #define printk(msg...)		do { printf(msg); } while (0)
@@ -62,8 +63,10 @@ static void cpu_base_init(void)
 
     /*
      * NOTE> ALIVE Power Gate must enable for RTC register access.
+     * 		 must be clear wfi jump address
  	 */
 	NX_ALIVE_SetWriteEnable(CTRUE);
+	__raw_writel(0xFFFFFFFF, SCR_ARM_SECOND_BOOT);
 
 	/*
 	 * NOTE> Control for ACP register access.
