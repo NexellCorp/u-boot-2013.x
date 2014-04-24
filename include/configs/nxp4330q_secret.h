@@ -35,8 +35,7 @@
 
 #define	CONFIG_MACH_NXP4330Q
 #define CONFIG_NXP4330_GPIO
-#define CONFIG_SECRET_LVDS		// defined : LVDS LCD, not defined : MIPI LCD
-//#define CONFIG_SECRET_2ND_BOARD	// 2014.04.14 H/W 2nd
+#define CONFIG_SECRET_2ND_BOARD	// 2014.04.14 H/W 2nd
 
 
 /*-----------------------------------------------------------------------
@@ -243,9 +242,9 @@
  */
 
 #ifdef CONFIG_SECRET_2ND_BOARD 
-//#define CONFIG_CMD_EEPROM
-//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-//#define CONFIG_ENV_IS_IN_EEPROM
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
 #endif
 
 #if defined(CONFIG_CMD_EEPROM)
@@ -395,6 +394,12 @@
 #define CONFIG_POWER_MUIC_NXE2000
 #define CONFIG_POWER_BATTERY
 #define CONFIG_POWER_BATTERY_NXE2000
+
+#ifdef CONFIG_SECRET_2ND_BOARD	// 2014.04.14 H/W 2nd
+#define	CFG_IO_I2C0_SCL	((PAD_GPIO_A + 25) | PAD_FUNC_ALT0)
+#define	CFG_IO_I2C0_SDA	((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
+#endif
+
 #endif
 
 #endif
@@ -545,10 +550,10 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,2:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,2:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,2:cache:ext4:0x02CF00000,0x21000000;"	\
-			"flash=mmc,2:userdata:ext4:0x4df00000,0x0;"
+			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
 #else
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
@@ -574,10 +579,10 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-#ifdef CONFIG_SECRET_LVDS
-	#define	CONFIG_DISPLAY_OUT_LVDS
-#else
+#ifdef CONFIG_SECRET_2ND_BOARD
 	#define	CONFIG_DISPLAY_OUT_MIPI
+#else
+	#define	CONFIG_DISPLAY_OUT_LVDS
 #endif
 
 	/* display logo */

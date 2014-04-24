@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#ifdef CONFIG_SECRET_2ND_BOARD
+#if 1//def CONFIG_SECRET_2ND_BOARD
 /*------------------------------------------------------------------------------
  *
  *	(GROUP_A)
@@ -54,8 +54,8 @@
 #define PAD_GPIOA22	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[21]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA23	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[22]         ,2:_                    ,3:_                    =
 #define PAD_GPIOA24	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[23]         ,2:_                    ,3:_                    =
-#define PAD_GPIOA25	(PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDVSYNC             ,2:_                    ,3:_                    =// SCL_S
-#define PAD_GPIOA26	(PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDHSYNC             ,2:_                    ,3:_                    =// SDA_S
+#define PAD_GPIOA25	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDVSYNC             ,2:_                    ,3:_                    =// SCL_S
+#define PAD_GPIOA26	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDHSYNC             ,2:_                    ,3:_                    =// SDA_S
 #define PAD_GPIOA27	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDDE                ,2:_                    ,3:_                    =
 #define PAD_GPIOA28	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: VP0_EXTCLK          ,2: I2S2_CLK            ,3: I2S1_CLK            =
 #define PAD_GPIOA29	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: SDMMC0_CCLK         ,2:_                    ,3:_                    =
@@ -240,10 +240,11 @@
 /*------------------------------------------------------------------------------
  *	GPIO LCD (Backlight Enable/PWM)
  */
+#define	CFG_IO_LCD_PWM						((PAD_GPIO_D + 1) | PAD_FUNC_ALT1)
 // #define CFG_IO_MCU_BACKLIGHT_EN				((PAD_GPIO_A + 13) | PAD_FUNC_ALT0)	// NC
 // #define CFG_IO_MCU_VG_EN					((PAD_GPIO_A + 14) | PAD_FUNC_ALT0)	// NC
 #define CFG_IO_PANEL_RESET					((PAD_GPIO_A + 15) | PAD_FUNC_ALT0)
-
+//#define CFG_IO_TEST							((PAD_GPIO_D + 29) | PAD_FUNC_ALT0)
 /*------------------------------------------------------------------------------
  *	GPIO EEPROM
  */
