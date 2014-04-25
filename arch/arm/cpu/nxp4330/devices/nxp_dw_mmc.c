@@ -21,7 +21,6 @@
 #include <common.h>
 #include <malloc.h>
 #include <dwmmc.h>
-#include <nxp_dwmmc.h>
 #include <mach-api.h>
 
 static char *NXP_NAME = "NXP DWMMC";
