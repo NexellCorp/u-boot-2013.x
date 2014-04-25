@@ -460,6 +460,10 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC1 */
+	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
+	#define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
+	#define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS

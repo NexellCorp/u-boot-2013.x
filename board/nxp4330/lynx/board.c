@@ -29,7 +29,7 @@
 
 #include <platform.h>
 #include <mach-api.h>
-#include <nxp_dwmmc.h>
+
 #include <nxp_rtc.h>
 
 #include <draw_lcd.h>
@@ -387,24 +387,6 @@ int power_init_board(void)
 	return 0;
 }
 #endif  /* CONFIG_BAT_CHECK */
-
-int board_mmc_init(bd_t *bis)
-{
-	int err = 0;
-#ifdef CONFIG_MMC0_NEXELL
-	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
-	err = nxp_dwmmc_init(0, 4);
-#endif
-#ifdef CONFIG_MMC1_NEXELL
-	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
-	err = nxp_dwmmc_init(1, 4);
-#endif
-#ifdef CONFIG_MMC2_NEXELL
-	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
-	err = nxp_dwmmc_init(2, 4);
-#endif
-	return err;
-}
 
 extern void	bd_display(void);
 

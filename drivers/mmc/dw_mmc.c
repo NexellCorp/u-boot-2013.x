@@ -346,6 +346,12 @@ static int dwmci_init(struct mmc *mmc)
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
 	return 0;
 }
+static int dwmci_getcd(struct mmc *mmc)
+{
+	return 0;
+}
+
+
 
 int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 {
@@ -367,9 +373,24 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk)
 	mmc->init = dwmci_init;
 	mmc->f_min = min_clk;
 	mmc->f_max = max_clk;
+	mmc->getcd = NULL;
 
+	switch (host->dev_index) {
+	case 0:		
+		if (CONFIG_MMC0_ATTACH != TRUE)
+			mmc->getcd = dwmci_getcd;
+		break;
+
+	case 1:		
+		if (CONFIG_MMC1_ATTACH != TRUE)
+			mmc->getcd = dwmci_getcd;
+		break;
+	case 2:		
+		if (CONFIG_MMC2_ATTACH != TRUE)
+			mmc->getcd = dwmci_getcd;
+		break;
+	}		
 	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-
 	mmc->host_caps = host->caps;
 
 	if (host->buswidth == 8) {

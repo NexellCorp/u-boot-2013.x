@@ -465,11 +465,18 @@
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
+    #define CONFIG_MMC0_NEXELL                  /* 0 = MMC0 */
+    #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
+    #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
 #ifdef CONFIG_SECRET_2ND_BOARD 
-	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+    #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
+    #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
+    #define CONFIG_MMC2_ATTACH          TRUE	/* 2 = MMC2 */
 #else
-	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
+    #define CONFIG_MMC0_ATTACH          TRUE	/* 0 = MMC0 */
+    #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
+    #define CONFIG_MMC2_ATTACH          FALSE	/* 2 = MMC2 */
 #endif
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC

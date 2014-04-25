@@ -185,8 +185,8 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define	CONFIG_CMD_NAND
-#define CONFIG_ENV_IS_IN_NAND
+//#define	CONFIG_CMD_NAND
+//#define CONFIG_ENV_IS_IN_NAND
 
 #if defined(CONFIG_CMD_NAND)
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
@@ -286,7 +286,7 @@
  */
 #if defined(CONFIG_HAVE_BATTERY)
 
-#define CONFIG_BAT_CHECK
+//#define CONFIG_BAT_CHECK
 //#define CONFIG_FAST_BOOTUP
 
 #if defined(CONFIG_BAT_CHECK)
@@ -358,7 +358,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
@@ -367,11 +367,15 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
+	#define	CONFIG_MMC1_ATTACH			FALSE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			TRUE	/* 1 = MMC1 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
