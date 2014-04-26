@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#if 1//def CONFIG_SECRET_2ND_BOARD
+#if 1// CONFIG_SECRET_2ND_BOARD
 /*------------------------------------------------------------------------------
  *
  *	(GROUP_A)

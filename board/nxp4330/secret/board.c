@@ -534,13 +534,14 @@ int board_late_init(void)
 #if 1
 	{
 		u8 temp_val=0;
+		int ret;
 		printf("===== MICOM Reg ========================\n");
-		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
-		printf(" Reg 0x00 : 0x%x \n", temp_val);
-		secret_i2c_read(0x00, 0x30, 0x01, &temp_val);
-		printf(" Reg 0x01 : 0x%x \n", temp_val);
-		secret_i2c_read(0x00, 0x30, 0x02, &temp_val);
-		printf(" Reg 0x02 : 0x%x \n", temp_val);
+		ret=secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
+		printf(" Reg 0x00 : 0x%x, ret:%d\n", temp_val, ret);
+		ret=secret_i2c_read(0x00, 0x30, 0x01, &temp_val);
+		printf(" Reg 0x01 : 0x%x, ret:%d\n", temp_val, ret);
+		ret=secret_i2c_read(0x00, 0x30, 0x02, &temp_val);
+		printf(" Reg 0x02 : 0x%x, ret:%d\n", temp_val, ret);
 		printf("========================================\n");
 	}
 #endif
