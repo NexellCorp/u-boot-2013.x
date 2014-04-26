@@ -29,6 +29,7 @@
 
 #include <platform.h>
 #include <mach-api.h>
+#include <nxp_dwmmc.h>
 #include <nxp_rtc.h>
 
 #include <draw_lcd.h>
@@ -387,6 +388,24 @@ int power_init_board(void)
 }
 #endif  /* CONFIG_BAT_CHECK */
 
+int board_mmc_init(bd_t *bis)
+{
+	int err = 0;
+#ifdef CONFIG_MMC0_NEXELL
+	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
+	err = nxp_dwmmc_init(0, 4);
+#endif
+#ifdef CONFIG_MMC1_NEXELL
+	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
+	err = nxp_dwmmc_init(1, 4);
+#endif
+#ifdef CONFIG_MMC2_NEXELL
+	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
+	err = nxp_dwmmc_init(2, 4);
+#endif
+	return err;
+}
+
 extern void	bd_display(void);
 
 static void auto_update(int io, int wait)
@@ -456,7 +475,7 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_LOWLEVEL);
+	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_HIGHLEVEL);
 	nxp_gpio_set_int_en(CFG_KEY_POWER, CTRUE);
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
@@ -525,9 +544,25 @@ int board_late_init(void)
     {
 		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
     }
+
 	printf("power_key_depth:%d\n", power_key_depth);
 	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
 	printf("chg_state:0x%x\n", chg_state);
+
+#if 1
+	{
+		u8 temp_val=0;
+		printf("===== MICOM Reg ========================\n");
+		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
+		printf(" Reg 0x00 : 0x%x \n", temp_val);
+		secret_i2c_read(0x00, 0x30, 0x01, &temp_val);
+		printf(" Reg 0x01 : 0x%x \n", temp_val);
+		secret_i2c_read(0x00, 0x30, 0x02, &temp_val);
+		printf(" Reg 0x02 : 0x%x \n", temp_val);
+		printf("========================================\n");
+	}
+#endif
+
 
     if (avg_voltage < shutdown_ilim_uA)
     {
@@ -831,6 +866,8 @@ int board_late_init(void)
 
 	/* Temp check gpio to update */
 	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+
+	//run_command("fastboot nexell", 0);
 
 	return 0;
 }
