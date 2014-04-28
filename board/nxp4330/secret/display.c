@@ -221,7 +221,6 @@ static struct reg_val mipi_init_data[]=
 static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, const U8* pByteData )
 {
 	U32 DataCount32 = (ByteCount+3)/4;
-	U32	WordCount32 = 0;
 	int i = 0;
 	U32 index = 0;
 	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
