@@ -77,27 +77,27 @@ static struct reg_val mipi_init_data[]=
  {0x15, 0xF7, 1, {0xA0}},
  {0x15, 0x6F, 1, {0x19}},
  {0x15, 0xF7, 1, {0x12}},
- {0x39, 0xF0, 4, {0x55,0xAA,0x52,0x08,0x00}},
+ {0x39, 0xF0, 5, {0x55,0xAA,0x52,0x08,0x00}},
  {0x15, 0xC8, 1, {0x80}},
  {0x39, 0xB1, 2, {0x6C,0x01}},
  {0x15, 0xB6, 1, {0x08}},
  {0x15, 0x6F, 1, {0x02}},
  {0x15, 0xB8, 1, {0x08}},
- {0x15, 0xBB, 2, {0x54,0x54}},
- {0x15, 0xBC, 2, {0x05,0x05}},
+ {0x39, 0xBB, 2, {0x54,0x54}},
+ {0x39, 0xBC, 2, {0x05,0x05}},
  {0x15, 0xC7, 1, {0x01}},
  {0x39, 0xBD, 5, {0x02,0xB0,0x0C,0x0A,0x00}},
  {0x39, 0xF0, 5, {0x55,0xAA,0x52,0x08,0x01}},
- {0x15, 0xB0, 2, {0x05,0x05}},
+ {0x39, 0xB0, 2, {0x05,0x05}},
  {0x39, 0xB1, 2, {0x05,0x05}},
  {0x39, 0xBC, 2, {0x8E,0x00}},
  {0x39, 0xBD, 2, {0x92,0x00}},
  {0x15, 0xCA, 1, {0x00}},
  {0x15, 0xC0, 1, {0x04}},
  {0x39, 0xB3, 2, {0x19,0x19}},
- {0x39, 0xB4, 3, {0x12,0x12}},
- {0x39, 0xB9, 3, {0x24,0x24}},
- {0x39, 0xBA, 3, {0x14,0x14}},
+ {0x39, 0xB4, 2, {0x12,0x12}},
+ {0x39, 0xB9, 2, {0x24,0x24}},
+ {0x39, 0xBA, 2, {0x14,0x14}},
  {0x39, 0xF0, 5, {0x55,0xAA,0x52,0x08,0x02}},
  {0x15, 0xEE, 1, {0x02}},
  {0x39, 0xEF, 4, {0x09,0x06,0x15,0x18}},
@@ -228,15 +228,16 @@ static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, const U8* pByteData 
 
 	NX_ASSERT( 512 >= DataCount32 );
 
-	//printf("0x%02x, wc:%2d, 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x, status:0x%08x\n", 
-	//		cmd, ByteCount, pByteData[0], pByteData[1], pByteData[2], pByteData[3], pByteData[4], pByteData[5], pmipi->DSIM_STATUS);
+	//for(i=0; i< ByteCount; i++)
+	//	printf(",0x%02x", pByteData[i]);
+	//printf("\n");
 
 	for( i=0; i<DataCount32; i++ )
 	{
 		pmipi->DSIM_PAYLOAD = (pByteData[3]<<24)|(pByteData[2]<<16)|(pByteData[1]<<8)|pByteData[0];
 		pByteData += 4;
 	}
-	pmipi->DSIM_PKTHDR  = 0x39 | (ByteCount<<8);
+	pmipi->DSIM_PKTHDR  = (cmd & 0xff) | (ByteCount<<8);
 }
 
 
@@ -244,7 +245,21 @@ static void mipilcd_dcs_write( unsigned int id, unsigned int data0, unsigned int
 {
 	U32 index = 0;
 	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
-	//printf("0x%02x, %2d, 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x 0x%02x\n", id, 0, data0, data1, 0, 0, 0, 0);
+
+#if 0
+	int i = 0;
+	switch(id)
+	{
+		case 0x05:
+			printf(",0x%02x\n", data0);
+			break;
+
+		case 0x15:
+			printf(",0x%02x,0x%02x\n", data0, data1);
+			break;
+	}
+#endif
+
 	pmipi->DSIM_PKTHDR = id | (data0<<8) | (data1<<16);
 }
 
@@ -263,17 +278,30 @@ static int LD070WX3_SL01(int width, int height, void *data)
 	//printf("reg_val:0x%x\n", reg_val);
 
 	mdelay(10);
- 
+
 	for(i=0; i<size; i++)
 	{
 		switch(mipi_init_data[i].cmd)
 		{
+#if 0 // all long packet
+			case 0x05:
+				//pByteData[0] = mipi_init_data[i].addr;
+				//memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 7);
+				mipilcd_dcs_long_write(0x39, mipi_init_data[i].cnt, &mipi_init_data[i].data.data[0]);
+				break;
+			case 0x15:
+				pByteData[0] = mipi_init_data[i].addr;
+				memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 7);
+				mipilcd_dcs_long_write(0x39, mipi_init_data[i].cnt+1, &pByteData);
+				break;
+#else
 			case 0x05:
 				mipilcd_dcs_write(mipi_init_data[i].cmd, mipi_init_data[i].data.data[0], 0x00);
 				break;
 			case 0x15:
 				mipilcd_dcs_write(mipi_init_data[i].cmd, mipi_init_data[i].addr, mipi_init_data[i].data.data[0]);
 				break;
+#endif
  			case 0x39:
 				pByteData[0] = mipi_init_data[i].addr;
 				memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 7);
