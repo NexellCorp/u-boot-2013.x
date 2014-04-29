@@ -57,7 +57,7 @@ extern void display_mipi(int module, unsigned int fbbase,
 #define	PLLCTL		0
 #define	DPHYCTL		0
 
-#if 1 // CONFIG_SECRET_2ND_BOARD
+#ifdef CONFIG_SECRET_2ND_BOARD
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 struct data_val{
@@ -439,7 +439,7 @@ int bd_display(void)
 	/*
 	 * set vsync parameters
 	 */
-#if 1 // CONFIG_SECRET_2ND_BOARD
+#ifdef CONFIG_SECRET_2ND_BOARD
 	vsync.h_active_len =  800;
 	vsync.v_active_len = 1280;
 	vsync.h_sync_width = 4;
