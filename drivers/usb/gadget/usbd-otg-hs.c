@@ -1781,6 +1781,7 @@ int s3c_usb_set_init(void)
 	return TRUE;
 }
 
+void dwc_otg_save_ep0_state(U32 rx_status);
 void s3c_usb_pkt_receive(void)
 {
 	u32 rx_status;
@@ -1822,6 +1823,8 @@ void s3c_usb_pkt_receive(void)
 	} else {
 		DBG_SETUP1("Reserved\n");
 	}
+
+	dwc_otg_save_ep0_state(rx_status);
 }
 
 void s3c_usb_transfer(void)
@@ -1881,6 +1884,37 @@ void s3c_usb_transfer(void)
 		}
 	}
 }
+
+int s_ep0state;
+
+void dwc_otg_save_ep0_state(U32 rx_status)
+{
+	U32 ep0state = (rx_status & (0xf<<17));
+
+	switch (ep0state) {
+	case SETUP_PKT_RECEIVED:
+	case OUT_PKT_RECEIVED:
+	case GLOBAL_OUT_NAK:
+	case OUT_TRNASFER_COMPLETED:
+	case SETUP_TRANSACTION_COMPLETED:
+		s_ep0state = 1;
+		break;
+	default:
+		s_ep0state = 0;
+	}
+}
+
+int dwc_otg_get_ep0_state(void)
+{
+	return s_ep0state;
+}
+EXPORT_SYMBOL(dwc_otg_get_ep0_state);
+
+void dwc_otg_clear_ep0_state(void)
+{
+	s_ep0state = 0;
+}
+EXPORT_SYMBOL(dwc_otg_clear_ep0_state);
 
 int s3c_udc_int_hndlr(void)
 {
