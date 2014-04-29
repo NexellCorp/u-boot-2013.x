@@ -322,8 +322,10 @@ int power_muic_init(unsigned int bus)
 	static const char name[] = "MUIC_NXE2000";
 	struct pmic *p = pmic_alloc();
 
+#if defined(CONFIG_FAST_BOOTUP) && defined(CONFIG_SW_UBC_DETECT)
 	s_otg_bind_status   = 0;
 	s_otg_bind_flag     = 0;
+#endif
 
 	if (!p) {
 		printf("%s: POWER allocation error!\n", __func__);
