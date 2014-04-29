@@ -36,7 +36,7 @@ extern void display_mipi(int module, unsigned int fbbase,
 				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
 				struct disp_multily_param *pmly, struct disp_mipi_param *pmipi);
 
-#define	MIPI_BITRATE_750M
+#define	MIPI_BITRATE_512M//MIPI_BITRATE_750M
 
 #ifdef MIPI_BITRATE_1G
 #define	PLLPMS		0x033E8
@@ -44,6 +44,9 @@ extern void display_mipi(int module, unsigned int fbbase,
 #elif defined(MIPI_BITRATE_750M)
 #define	PLLPMS		0x043E8
 #define	BANDCTL		0xC
+#elif defined(MIPI_BITRATE_512M)
+#define	PLLPMS		0x03200
+#define	BANDCTL		0x9
 #elif defined(MIPI_BITRATE_420M)
 #define	PLLPMS		0x2231
 #define	BANDCTL		0x7
@@ -78,6 +81,8 @@ static struct reg_val mipi_init_data[]=
  {0x15, 0x6F, 1, {0x19}},
  {0x15, 0xF7, 1, {0x12}},
  {0x39, 0xF0, 5, {0x55,0xAA,0x52,0x08,0x00}},
+ {0x39, 0xEF, 2, {0x07,0xFF}},
+ {0x39, 0xEE, 4, {0x87,0x78,0x08,0x40}},
  {0x15, 0xC8, 1, {0x80}},
  {0x39, 0xB1, 2, {0x6C,0x01}},
  {0x15, 0xB6, 1, {0x08}},
@@ -218,7 +223,7 @@ static struct reg_val mipi_init_data[]=
 };
 
 
-static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, const U8* pByteData )
+static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, U8* pByteData )
 {
 	U32 DataCount32 = (ByteCount+3)/4;
 	int i = 0;
@@ -304,7 +309,7 @@ static int LD070WX3_SL01(int width, int height, void *data)
  			case 0x39:
 				pByteData[0] = mipi_init_data[i].addr;
 				memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 7);
-				mipilcd_dcs_long_write(mipi_init_data[i].cmd, mipi_init_data[i].cnt+1, &pByteData);
+				mipilcd_dcs_long_write(mipi_init_data[i].cmd, mipi_init_data[i].cnt+1, &pByteData[0]);
 				break;
 			case 0xff:
 				break;
@@ -434,6 +439,16 @@ int bd_display(void)
 	/*
 	 * set vsync parameters
 	 */
+#if 1 // CONFIG_SECRET_2ND_BOARD
+	vsync.h_active_len =  800;
+	vsync.v_active_len = 1280;
+	vsync.h_sync_width = 4;
+	vsync.h_back_porch = 138;
+	vsync.h_front_porch = 138;
+	vsync.v_sync_width = 4;
+	vsync.v_back_porch = 12;
+	vsync.v_front_porch = 10;
+#else
 	vsync.h_active_len =  800;
 	vsync.v_active_len = 1280;
 	vsync.h_sync_width = 8;
@@ -442,6 +457,7 @@ int bd_display(void)
 	vsync.v_sync_width = 1;
 	vsync.v_back_porch = 2;
 	vsync.v_front_porch = 4;
+#endif
 
 	/*
 	 * set syncgen parameters
