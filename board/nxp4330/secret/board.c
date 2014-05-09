@@ -29,7 +29,6 @@
 
 #include <platform.h>
 #include <mach-api.h>
-#include <nxp_dwmmc.h>
 #include <nxp_rtc.h>
 
 #include <draw_lcd.h>
@@ -388,23 +387,6 @@ int power_init_board(void)
 }
 #endif  /* CONFIG_BAT_CHECK */
 
-int board_mmc_init(bd_t *bis)
-{
-	int err = 0;
-#ifdef CONFIG_MMC0_NEXELL
-	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
-	err = nxp_dwmmc_init(0, 4);
-#endif
-#ifdef CONFIG_MMC1_NEXELL
-	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
-	err = nxp_dwmmc_init(1, 4);
-#endif
-#ifdef CONFIG_MMC2_NEXELL
-	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
-	err = nxp_dwmmc_init(2, 4);
-#endif
-	return err;
-}
 
 extern void	bd_display(void);
 
@@ -475,7 +457,7 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_LOWLEVEL);
+	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_HIGHLEVEL);
 	nxp_gpio_set_int_en(CFG_KEY_POWER, CTRUE);
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
@@ -539,14 +521,30 @@ int board_late_init(void)
 	}
 	avg_voltage = sum_voltage/5;
 
+#if 1
 	printf("\n");
     if (GPIO_PMIC_VUSB_DET > -1)
     {
 		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
     }
+
 	printf("power_key_depth:%d\n", power_key_depth);
 	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
 	printf("chg_state:0x%x\n", chg_state);
+
+	{
+		u8 val[7]={0};
+		int ret;
+		printf("===== MICOM Reg ===================================\n");
+		printf(" Reg 0x00~0x06 : ");
+		for(i=0; i<7; i++)
+		{
+			ret=secret_i2c_read(0x00, 0x30, i, &val[i]);
+			printf("0x%02x ", val[i]);
+		}
+		printf("\n===================================================\n");
+	}
+#endif
 
     if (avg_voltage < shutdown_ilim_uA)
     {
@@ -587,16 +585,28 @@ int board_late_init(void)
 			CFG_DISP_PRI_RESOL_HEIGHT,
 			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
+#ifdef CFG_IO_PANEL_RESET
+	mdelay(40);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+	mdelay(10);
+
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CFALSE);
+	mdelay(10);
+
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+	mdelay(20);
+#endif
+
 	/* display */
 	bd_display();
 
 	/* backlight */
 	mdelay(10);
-#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_LCD_BACKLIGHT_EN)
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_LCD_BACKLIGHT_EN), CTRUE);
+#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_MCU_BACKLIGHT_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 #endif
-#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_LCD_VG_EN)
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_VG_EN), PAD_GET_BITNO(CFG_IO_LCD_VG_EN), CTRUE);
+#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_MCU_VG_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_VG_EN), PAD_GET_BITNO(CFG_IO_MCU_VG_EN), CTRUE);
 #endif
 #ifdef CFG_IO_LCD_PWM
 	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
@@ -772,10 +782,12 @@ skip_bat_animation:
 enter_shutdown:
 #if 1
 	{
+		int result=0;
 		u8 temp_val=0;
 		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
 		printf("temp_val:%d \n", temp_val);
-		printf("NXP4330 Poweroff -> Micom, result:%d \n", secret_i2c_write(0x00, 0x30, 0x00, 0x00));
+		result = secret_i2c_write(0x00, 0x30, 0x00, 0x00);
+		printf("NXP4330 Poweroff -> Micom, result:%d \n", result);
 	}
 #endif
 	mdelay(100);
@@ -802,15 +814,27 @@ int board_late_init(void)
 			CFG_DISP_PRI_RESOL_HEIGHT,
 			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
+#ifdef CFG_IO_PANEL_RESET
+	mdelay(40);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+	mdelay(10);
+
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CFALSE);
+	mdelay(10);
+
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+	mdelay(20);
+#endif
+
 	bd_display();
 
 	/* backlight */
 	mdelay(10);
-#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_LCD_BACKLIGHT_EN)
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_LCD_BACKLIGHT_EN), CTRUE);
+#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_MCU_BACKLIGHT_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 #endif
-#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_LCD_VG_EN)
-	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_LCD_VG_EN), PAD_GET_BITNO(CFG_IO_LCD_VG_EN), CTRUE);
+#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_MCU_VG_EN)
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_VG_EN), PAD_GET_BITNO(CFG_IO_MCU_VG_EN), CTRUE);
 #endif
 #ifdef CFG_IO_LCD_PWM
 	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
@@ -824,6 +848,8 @@ int board_late_init(void)
 
 	/* Temp check gpio to update */
 	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+
+	//run_command("fastboot nexell", 0);
 
 	return 0;
 }

@@ -27,12 +27,14 @@
 #include <asm/io.h>
 #include <platform.h>
 #include <mach-api.h>
+#include <pm.h>
 
 #define DBGOUT(msg...)		do { printf("sys: " msg); } while (0)
 #define printk(msg...)		do { printf(msg); } while (0)
 
 static void cpu_base_init(void)
 {
+	U32 tie_reg, val;
 	int i = 0;
 
 	NX_RSTCON_Initialize();
@@ -61,8 +63,21 @@ static void cpu_base_init(void)
 
     /*
      * NOTE> ALIVE Power Gate must enable for RTC register access.
+     * 		 must be clear wfi jump address
  	 */
 	NX_ALIVE_SetWriteEnable(CTRUE);
+	__raw_writel(0xFFFFFFFF, SCR_ARM_SECOND_BOOT);
+
+	/*
+	 * NOTE> Control for ACP register access.
+	 */
+	tie_reg = (U32)IO_ADDRESS(NX_TIEOFF_GetPhysicalAddress());
+
+	val = __raw_readl(tie_reg + 0x70) & ~((3 << 30) | (3 << 10));
+	writel(val,   (tie_reg + 0X70));
+
+	val = __raw_readl(tie_reg + 0x80) & ~(3 << 3);
+	writel(val,   (tie_reg + 0x80));
 }
 
 static void cpu_bus_init(void)

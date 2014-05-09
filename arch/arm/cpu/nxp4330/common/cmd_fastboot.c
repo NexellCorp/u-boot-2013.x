@@ -42,7 +42,7 @@
 
 static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 
-#define	FASTBOOT_MMC_MAX		2
+#define	FASTBOOT_MMC_MAX		3
 #define	FASTBOOT_EEPROM_MAX		1
 #define	FASTBOOT_NAND_MAX		1
 #define	FASTBOOT_MEM_MAX		1

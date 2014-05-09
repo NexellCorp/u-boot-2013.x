@@ -22,6 +22,7 @@
  */
 
 #include <common.h>
+#include <asm/io.h>
 #include <platform.h>
 #include <mach-api.h>
 
@@ -47,114 +48,95 @@ static long	TIMER_FREQ  = 1000000;
 static long	TIMER_HZ    = 1000000 / CONFIG_SYS_HZ;
 static long	TIMER_COUNT = -1UL;
 
-struct timer_register {
-	volatile U32 TCFG0;
-	volatile U32 TCFG1;
-	volatile U32 TCON;
-	volatile U32 TCNTB0;
-	volatile U32 TCMPB0;
-	volatile U32 TCNTO0;
- 	volatile U32 TCNTB1;
-	volatile U32 TCMPB1;
-	volatile U32 TCNTO1;
-	volatile U32 TCNTB2;
-	volatile U32 TCMPB2;
-	volatile U32 TCNTO2;
-	volatile U32 TCNTB3;
-	volatile U32 TCMPB3;
-	volatile U32 TCNTO3;
-	volatile U32 TCNTB4;
-	volatile U32 TCNTO4;
-	volatile U32 TINT_CSTAT;
-};
+#define	TIMER_CFG0		(0x00)
+#define	TIMER_CFG1		(0x04)
+#define	TIMER_TCON		(0x08)
+#define	TIMER_CNTB		(0x0C)
+#define	TIMER_CMPB		(0x10)
+#define	TIMER_CNTO		(0x14)
+#define	TIMER_STAT		(0x44)
 
 #define	TCON_AUTO		(1<<3)
-#define	TCON_INVERT		(1<<2)
-#define	TCON_UPDATE		(1<<1)
-#define	TCON_START		(1<<0)
-#define TCFG0_CH(ch)	(ch == 0 && ch == 1 ? 8 : 0)
-#define TCFG1_CH(ch)	(ch * 4)
+#define	TCON_INVT		(1<<2)
+#define	TCON_UP			(1<<1)
+#define	TCON_RUN		(1<<0)
+#define CFG0_CH(ch)		(ch == 0 || ch == 1 ? 0 : 8)
+#define CFG1_CH(ch)		(ch * 4)
 #define TCON_CH(ch)		(ch ? ch * 4  + 4 : 0)
 #define TINT_CH(ch)		(ch)
 #define TINT_CS_CH(ch)	(ch + 5)
 #define	TINT_CS_MASK	(0x1F)
-#define CH_OFFSET	 	(0xC)
+#define TIMER_CH_OFFS	(0xC)
 
 /*
  * Timer HW
  */
-#define	TMR_BASE		((struct timer_register *)IO_ADDRESS(PHY_BASEADDR_TIMER))
-#define	TIMER_READ(ch)	(TIMER_COUNT - ReadIODW((U8*)&(TMR_BASE)->TCNTO0 + (CH_OFFSET * ch)))
+#define	TIMER_BASE		IO_ADDRESS(PHY_BASEADDR_TIMER)
+#define	TIMER_READ(ch)	(TIMER_COUNT - readl(TIMER_BASE + TIMER_CNTO + (TIMER_CH_OFFS * ch)))
 
 static inline void timer_clock(int ch, int mux, int scl)
 {
-	struct timer_register *preg = TMR_BASE;
 	volatile U32 val;
 
-	val  = ReadIODW(&preg->TCFG0);
-	val &= ~(0xFF   << TCFG0_CH(ch));
-	val |=  ((scl-1)<< TCFG0_CH(ch));
-	WriteIODW(&preg->TCFG0, val);
+	val  = readl(TIMER_BASE + TIMER_CFG0);
+	val &= ~(0xFF   << CFG0_CH(ch));
+	val |=  ((scl-1)<< CFG0_CH(ch));
+	writel(val, TIMER_BASE + TIMER_CFG0);
 
-	val  = ReadIODW(&preg->TCFG1);
-	val &= ~(0xF << TCFG1_CH(ch));
-	val |=  (mux << TCFG1_CH(ch));
-	WriteIODW(&preg->TCFG1, val);
+	val  = readl(TIMER_BASE + TIMER_CFG1);
+	val &= ~(0xF << CFG1_CH(ch));
+	val |=  (mux << CFG1_CH(ch));
+	writel(val, TIMER_BASE + TIMER_CFG1);
 }
 
 static inline void timer_count(int ch, unsigned int cnt)
 {
-	struct timer_register *preg = TMR_BASE;
-	WriteIODW(((U8*)&preg->TCNTB0+(CH_OFFSET * ch)), (cnt-1));
-	WriteIODW(((U8*)&preg->TCMPB0+(CH_OFFSET * ch)), (cnt-1));
+	writel((cnt-1), TIMER_BASE + TIMER_CNTB + (TIMER_CH_OFFS * ch));
+	writel((cnt-1), TIMER_BASE + TIMER_CMPB + (TIMER_CH_OFFS * ch));
 }
-
 
 static inline void timer_start(int ch, int irqon)
 {
-	struct timer_register *preg = TMR_BASE;
 	volatile U32 val;
 	int on = irqon ? 1 : 0;
 
-	val  = ReadIODW(&preg->TINT_CSTAT);
+	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
 	val |=  (0x1 << TINT_CS_CH(ch) | on << TINT_CH(ch));
-	WriteIODW(&preg->TINT_CSTAT, val);
+	writel(val, TIMER_BASE + TIMER_STAT);
 
-	val = ReadIODW(&preg->TCON);
+	val = readl(TIMER_BASE + TIMER_TCON);
 	val &= ~(0xE << TCON_CH(ch));
-	val |=  (TCON_UPDATE << TCON_CH(ch));
-	WriteIODW(&preg->TCON, val);
+	val |=  (TCON_UP << TCON_CH(ch));
+	writel(val, TIMER_BASE + TIMER_TCON);
 
-	val &= ~(TCON_UPDATE << TCON_CH(ch));
-	val |=  ((TCON_AUTO | TCON_START)  << TCON_CH(ch));
-	WriteIODW(&preg->TCON, val);
+	val &= ~(TCON_UP << TCON_CH(ch));
+	val |=  ((TCON_AUTO | TCON_RUN)  << TCON_CH(ch));
+	writel(val, TIMER_BASE + TIMER_TCON);
 }
 
 static inline void timer_stop(int ch, int irqon)
 {
-	struct timer_register *preg = TMR_BASE;
 	volatile U32 val;
 	int on = irqon ? 1 : 0;
 
-	val  = ReadIODW(&preg->TINT_CSTAT);
+	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
 	val |=  (0x1 << TINT_CS_CH(ch) | on << TINT_CH(ch));
-	WriteIODW(&preg->TINT_CSTAT, val);
+	writel(val, TIMER_BASE + TIMER_STAT);
 
-	val  = ReadIODW(&preg->TCON);
-	val &= ~(TCON_START << TCON_CH(ch));
-	WriteIODW(&preg->TCON, val);
+	val  = readl(TIMER_BASE + TIMER_TCON);
+	val &= ~(TCON_RUN << TCON_CH(ch));
+	writel(val, TIMER_BASE + TIMER_TCON);
 }
 
 static inline void timer_irq_clear(int ch)
 {
-	struct timer_register *preg = TMR_BASE;
 	volatile U32 val;
-	val  = ReadIODW(&preg->TINT_CSTAT);
+	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5);
 	val |= (0x1 << TINT_CS_CH(ch));
-	WriteIODW(&preg->TINT_CSTAT, val);
+	writel(val, TIMER_BASE + TIMER_STAT);
 }
 
 /*------------------------------------------------------------------------------

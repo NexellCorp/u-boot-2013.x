@@ -36,7 +36,11 @@
 #define CHARGER_CURRENT_RESOLUTION			100		/* VAL(mV) */
 #define CHARGER_CURRENT_COMPLETE			3		/* (n + 1) x 50mA   */
 
+#ifdef CONFIG_SECRET_2ND_BOARD
+#define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 21)
+#else
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 16)
+#endif
 #define GPIO_OTG_VBUS_DET					(-1)//(PAD_GPIO_D + 21)
 #define GPIO_PMIC_VUSB_DET					(-1)//(PAD_GPIO_ALV + 2)
 #define GPIO_PMIC_LOWBAT_DET				(-1)//(PAD_GPIO_ALV + 3)
@@ -73,8 +77,13 @@
 #define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
 #define	NXE2000_DEF_LDO9_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V none,	Not Use	*/
 #define	NXE2000_DEF_LDO10_ON				0		/* VAL = 0: Off, 1: On */	/* 1.2V none,	Not Use	*/
+#ifdef CONFIG_SECRET_2ND_BOARD
+#define	NXE2000_DEF_LDORTC1_ON				0		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On	*/
+#define	NXE2000_DEF_LDORTC2_ON				0		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On	*/
+#else
 #define	NXE2000_DEF_LDORTC1_ON				1		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On	*/
 #define	NXE2000_DEF_LDORTC2_ON				1		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On	*/
+#endif
 
 #define	NXE2000_DEF_DDC1_VOL				1300000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.3V */
 #define	NXE2000_DEF_DDC2_VOL				1200000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.2V */
@@ -189,8 +198,8 @@
 #define NXE2000_DEF_CHG_VDEAD				0		/* VAL(V) = 0: 2.9 ~ 3.0, 1: 2.8 ~ 2.9, default(OTP) = 2.9 ~ 3.0V */
 #define NXE2000_DEF_CHG_VSHORT				0		/* VAL(V) = 0: 2.7 ~ 2.8, 1: 2.5 ~ 2.6, default(OTP) = 2.7 ~ 2.8V */
 
-#define NXE2000_DEF_CHG_VFCHG				1		/* VAL(V) = 0: 4.05, 1: 4.10, 2: 4.15, 3: 4.20,  4 ~ 7: 4.35, default = 4.10V */
-#define NXE2000_DEF_CHG_VRCHG				1		/* VAL(V) = 0: 3.85, 1: 3.90, 2: 3.95, 3: 4.00,  4 ~ 7: 4.10  default = 3.90V */
+#define NXE2000_DEF_CHG_VFCHG				3		/* VAL(V) = 0: 4.05, 1: 4.10, 2: 4.15, 3: 4.20,  4 ~ 7: 4.35, default = 4.10V */
+#define NXE2000_DEF_CHG_VRCHG				3		/* VAL(V) = 0: 3.85, 1: 3.90, 2: 3.95, 3: 4.00,  4 ~ 7: 4.10  default = 3.90V */
 
 #define NXE2000_DEF_CHG_CURR_ADP 			24		/* VAL(mA) = 100mA x (n + 1), MAX = 2500mA, default(OTP) = 2500mA */
 #define NXE2000_DEF_CHG_CURR_USB 			4		/* VAL(mA) = 100mA x (n + 1), MAX = 1500mA, default(OTP) = 500mA */

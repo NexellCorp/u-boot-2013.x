@@ -32,7 +32,7 @@ COBJS-$(CONFIG_CMD_UPDATE_NAND)   += cmd_update_nand.o
 COBJS-$(CONFIG_OTG_PHY_NEXELL)		+= otg_phy.o
 COBJS-$(CONFIG_NXP_USBD)		+= cmd_usbdown.o
 COBJS-$(CONFIG_MMC_PARTITIONS)		+= cmd_mmcparts.o
-COBJS-$(CONFIG_FASTBOOT)		+= cmd_fastboot.o
+COBJS-$(CONFIG_FASTBOOT)		+= cmd_fastboot.o otg_bind_chk.o
 COBJS-$(CONFIG_CMD_MMC_UPDATE)	+= cmd_mmc_update.o
 
 COBJS   := $(COBJS-y)

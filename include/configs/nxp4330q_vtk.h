@@ -176,7 +176,7 @@
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
 	#if defined(CONFIG_DRIVER_DM9000)
-	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x10000000(CS4) */
+	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
 	#define DM9000_IO	   				CONFIG_DM9000_BASE
 	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
 //	#define CONFIG_DM9000_DEBUG
@@ -435,6 +435,10 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
+    #define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
+    #define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS

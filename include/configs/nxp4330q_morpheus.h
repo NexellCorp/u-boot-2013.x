@@ -175,7 +175,7 @@
 #if defined(CONFIG_CMD_NET)
     /* DM9000 Ethernet device */
     #if defined(CONFIG_DRIVER_DM9000)
-    #define CONFIG_DM9000_BASE          CFG_ETHER_EXT_PHY_BASEADDR      /* DM9000: 0x10000000(CS4) */
+    #define CONFIG_DM9000_BASE          CFG_ETHER_EXT_PHY_BASEADDR      /* DM9000: 0x04000000(CS1) */
     #define DM9000_IO                   CONFIG_DM9000_BASE
     #define DM9000_DATA                 (CONFIG_DM9000_BASE + 0x4)
     //#define CONFIG_DM9000_DEBUG
@@ -185,8 +185,8 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define	CONFIG_CMD_NAND
-#define CONFIG_ENV_IS_IN_NAND
+//#define	CONFIG_CMD_NAND
+//#define CONFIG_ENV_IS_IN_NAND
 
 #if defined(CONFIG_CMD_NAND)
 	#define CONFIG_SYS_MAX_NAND_DEVICE		(1)
@@ -270,13 +270,14 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
+#define CONFIG_SW_UBC_DETECT
 
 #define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 #define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
 
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_UBC
 
 #define CONFIG_NXP_RTC_USE
 #endif
@@ -286,7 +287,7 @@
  */
 #if defined(CONFIG_HAVE_BATTERY)
 
-#define CONFIG_BAT_CHECK
+//#define CONFIG_BAT_CHECK
 //#define CONFIG_FAST_BOOTUP
 
 #if defined(CONFIG_BAT_CHECK)
@@ -358,7 +359,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
@@ -367,11 +368,15 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
+	#define	CONFIG_MMC1_ATTACH			FALSE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			TRUE	/* 1 = MMC1 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */

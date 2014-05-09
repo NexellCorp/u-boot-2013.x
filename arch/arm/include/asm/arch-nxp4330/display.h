@@ -151,4 +151,11 @@ struct disp_mipi_param {
 	void *private_data;
 };
 
+/*
+ * RGB
+ */
+struct disp_rgb_param {
+	int lcd_mpu_type;
+};
+
 #endif /* __DISPLAY_H__ */

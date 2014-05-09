@@ -610,8 +610,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 			le16_to_cpu(req->index) - 1);
 		return -1;
 	}
-//	status_reg	= (uint32_t *)&ctrl->hcor->or_portsc[1];
-	status_reg	= (uint32_t *)&ctrl->hcor->or_portsc[ le16_to_cpu( req->index ) -1 ];
+	status_reg	= (uint32_t *)&ctrl->hcor->or_portsc[le16_to_cpu(req->index) - 1];
 	status_reg2	= (uint32_t *)0xc00300b0;
 
 //	printf(">>>>>>>>>>>>>>>>>>>>>>>>>> juno test : 0x%08x\n", (le16_to_cpu(req->index) - 1) );
@@ -712,7 +711,7 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 
 // juno
 //		if (reg & EHCI_PS_PP)
-		if( (reg & EHCI_PS_PP) || ( reg2 & 0x02 ) )
+		if( (reg & EHCI_PS_PP) || (reg2 & 0x02) )
 			tmpbuf[1] |= USB_PORT_STAT_POWER >> 8;
 
 		if (ehci_is_TDI()) {
@@ -755,11 +754,11 @@ ehci_submit_root(struct usb_device *dev, unsigned long pipe, void *buffer,
 		case USB_PORT_FEAT_POWER:
 // juno
 			if (HCS_PPC(ehci_readl(&ctrl->hccr->cr_hcsparams))) {
-				reg		|= EHCI_PS_PP;
+				reg |= EHCI_PS_PP;
 				ehci_writel(status_reg, reg);
 				if( status_reg == 0xc0030058 )
 				{
-					reg2	|= 0x02;
+					reg2 |= 0x02;
 					ehci_writel(status_reg2, reg2);
 				}
 			}

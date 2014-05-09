@@ -21,7 +21,6 @@
 #include <common.h>
 #include <malloc.h>
 #include <dwmmc.h>
-#include <nxp_dwmmc.h>
 #include <mach-api.h>
 
 static char *NXP_NAME = "NXP DWMMC";
@@ -96,3 +95,23 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index)
 	return 0;
 }
 
+int board_mmc_init(bd_t *bis)
+{
+	int err = 0;
+#if(CONFIG_MMC0_ATTACH == TRUE)
+	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
+#endif
+	err = nxp_dwmci_init(0xC0062000, 4,0);
+
+#if(CONFIG_MMC1_ATTACH == TRUE)
+	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
+#endif
+	err = nxp_dwmci_init(0xC0068000, 4,1);
+
+#if(CONFIG_MMC2_ATTACH == TRUE)	
+	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
+#endif
+	err = nxp_dwmci_init(0xC0069000, 4,2);
+
+	return err;
+}

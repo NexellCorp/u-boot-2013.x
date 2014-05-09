@@ -28,7 +28,6 @@
 
 #include <platform.h>
 #include <mach-api.h>
-#include <nxp_dwmmc.h>
 
 #include "fastboot.h"
 #if defined(CONFIG_PMIC_NXE2000)
@@ -169,8 +168,8 @@ static void bd_alive_init(void)
 	U32 gpio;
 
 	const U32 pads[] = {
-	PAD_GPIOALV0, PAD_GPIOALV1,  PAD_GPIOALV2, PAD_GPIOALV3,
-	PAD_GPIOALV4, PAD_GPIOALV5,  PAD_GPIOALV6, PAD_GPIOALV7
+	PAD_GPIOALV0, PAD_GPIOALV1, PAD_GPIOALV2,
+	PAD_GPIOALV3, PAD_GPIOALV4, PAD_GPIOALV5
 	};
 
 	index = sizeof(pads)/sizeof(pads[0]);
@@ -264,7 +263,7 @@ int board_early_init_f(void)
 {
 	bd_gpio_init();
 	bd_alive_init();
-    bd_pmic_init();
+	bd_pmic_init();
 	return 0;
 }
 
@@ -304,11 +303,12 @@ int bd_eth_init(void)
     udelay(100);
 
 	// Set interrupt config.
-	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	nxp_gpio_set_pull_sel(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
 	gpio_direction_input(CFG_ETHER_GMAC_PHY_IRQ_NUM);
 
 	// Set GPIO nReset
-	nxp_gpio_set_pull(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
 	gpio_direction_output(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
 	udelay( 100 );
 	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
@@ -319,24 +319,6 @@ int bd_eth_init(void)
 	return 0;
 }
 #endif	/* CONFIG_CMD_NET */
-
-int board_mmc_init(bd_t *bis)
-{
-	int err = 0;
-#ifdef CONFIG_MMC0_NEXELL
-	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
-	err = nxp_dwmmc_init(0, 4);
-#endif
-#ifdef CONFIG_MMC1_NEXELL
-	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
-	err = nxp_dwmmc_init(1, 4);
-#endif
-#ifdef CONFIG_MMC2_NEXELL
-	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
-	err = nxp_dwmmc_init(2, 4);
-#endif
-	return err;
-}
 
 int board_late_init(void)
 {

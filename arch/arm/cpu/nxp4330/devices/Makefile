@@ -43,6 +43,7 @@ COBJS-$(CONFIG_DISPLAY_OUT)		+= display_dev.o
 COBJS-$(CONFIG_DISPLAY_OUT_LVDS)	+= display_lvds.o
 COBJS-$(CONFIG_DISPLAY_OUT_HDMI)	+= display_hdmi.o
 COBJS-$(CONFIG_DISPLAY_OUT_MIPI)	+= display_mipi.o
+COBJS-$(CONFIG_DISPLAY_OUT_RGB)		+= display_rgb.o
 COBJS-$(CONFIG_NXP4330_GPIO)		+= nxp_gpio.o
 COBJS-$(CONFIG_NXP_RTC_USE)			+= nxp_rtc.o
 
