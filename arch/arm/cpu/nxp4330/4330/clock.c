@@ -273,7 +273,6 @@ static inline void peri_clk_disable(void *base)
 	WriteIODW(&preg->CLKENB, val);
 }
 
-
 /*
  * Core clocks
  */
@@ -636,12 +635,20 @@ int clk_enable(struct clk *clk)
 		return 0;
 
 	spin_lock_irqsave(&peri->lock, flags);
-	pr_debug("clk: %s.%d enable (BCLK=%s)\n",
-		peri->dev_name, peri->dev_id, (_GATE_BCLK_&peri->clk_mask0?"ON":"PASS"));
+	pr_debug("clk: %s.%d enable (BCLK=%s, PCLK=%s)\n",
+		peri->dev_name, peri->dev_id, _GATE_BCLK_ & peri->clk_mask0 ? "ON":"PASS",
+		_GATE_PCLK_ & peri->clk_mask0 ? "ON":"PASS");
 
 	if (!(INPUT_MASK & peri->clk_mask0)) {
+		/*
+		 * Gated BCLK/PCLK enable
+		 */
 		if (_GATE_BCLK_ & peri->clk_mask0)
 			peri_clk_bclk(peri->base_addr, 1);
+
+		if (_GATE_PCLK_ & peri->clk_mask0)
+			peri_clk_pclk(peri->base_addr, 1);
+
 		spin_unlock_irqrestore(&peri->lock, flags);
 		return 0;
 	}
@@ -651,6 +658,16 @@ int clk_enable(struct clk *clk)
 	for (; peri->level > i; i++, inv = peri->clk_inv1)
 		peri_clk_invert(peri->base_addr, i, inv);
 
+	/*
+	 * Gated BCLK/PCLK enable
+	 */
+	if (_GATE_BCLK_ & peri->clk_mask0)
+		peri_clk_bclk(peri->base_addr, 1);
+
+	if (_GATE_PCLK_ & peri->clk_mask0)
+		peri_clk_pclk(peri->base_addr, 1);
+
+	/* CLKGEN enable */
 	peri_clk_enable(peri->base_addr);
 
 	spin_unlock_irqrestore(&peri->lock, flags);
@@ -671,12 +688,28 @@ void clk_disable(struct clk *clk)
 	pr_debug("clk: %s.%d disable\n", peri->dev_name, peri->dev_id);
 
 	if (!(INPUT_MASK & peri->clk_mask0)) {
+		/*
+	 	 * Gated BCLK/PCLK disable
+	 	*/
 		if (_GATE_BCLK_ & peri->clk_mask0)
 			peri_clk_bclk(peri->base_addr, 0);
+
+		if (_GATE_PCLK_ & peri->clk_mask0)
+			peri_clk_pclk(peri->base_addr, 0);
+
 		spin_unlock_irqrestore(&peri->lock, flags);
 		return;
 	}
 	peri_clk_disable(peri->base_addr);
+
+	/*
+	 * Gated BCLK/PCLK disable
+	 */
+	if (_GATE_BCLK_ & peri->clk_mask0)
+		peri_clk_bclk(peri->base_addr, 0);
+
+	if (_GATE_PCLK_ & peri->clk_mask0)
+		peri_clk_pclk(peri->base_addr, 0);
 
 	spin_unlock_irqrestore(&peri->lock, flags);
 	return;
@@ -714,16 +747,12 @@ void __init nxp_cpu_clock_init(void)
 	struct nxp_clk_dev *cdev = clk_devices;
 	struct nxp_clk_periph *peri = clk_periphs;
 	struct clk *clk = NULL;
-	int count = CLKPLL_NUM + PERIPH_NUM;
 	int i = 0;
 
 	for (i = 0; ARRAY_SIZE(core_hz) > i; i++)
 		core_update_rate(i);
 
-	/*
-	 * Inint peripheral clock data
-	 */
-	for (i = 0; count > i; i++, cdev++) {
+	for (i = 0; (CLKPLL_NUM+PERIPH_NUM) > i; i++, cdev++) {
 		if (CLKPLL_NUM > i) {
 			cdev->name = clk_plls[i];
 			clk = &cdev->clk;
@@ -731,30 +760,30 @@ void __init nxp_cpu_clock_init(void)
 			continue;
 		}
 
-		cdev->peri = peri;
-		cdev->name = peri->dev_name;
+		peri = &clk_periphs[i-CLKPLL_NUM];
 		peri->base_addr = IO_ADDRESS(peri->base_addr);
 		spin_lock_init(&peri->lock);
-		pr_debug("[%2d] clock : 0x%p, %s.%d, id %2d\n",
-			i, peri->base_addr, peri->dev_name, peri->dev_id, (int)peri->periph_id);
+		cdev->peri = peri;
+		cdev->name = peri->dev_name;
 
 		if (!(INPUT_MASK & peri->clk_mask0)) {
 			if (BLCK_MASK & peri->clk_mask0)
 				cdev->clk.rate = core_rate(CORECLK_ID_BCLK);
-
 			if (PLCK_MASK & peri->clk_mask0)
 				cdev->clk.rate = core_rate(CORECLK_ID_PCLK);
 		}
 
-		/* Gated PCLK enable */
-		if (_GATE_PCLK_ & peri->clk_mask0)
-			peri_clk_pclk(peri->base_addr, 1);
-
-		/* Next */
-		peri++;
+		/* prevent uart clock for low level debug message */
+		#ifndef CONFIG_DEBUG_NX_UART
+		if (peri->dev_name) {
+			peri_clk_disable(peri->base_addr);
+			peri_clk_bclk(peri->base_addr, 0);
+			peri_clk_pclk(peri->base_addr, 0);
+		}
+		#endif
 	}
 
-	pr_info("clock generatort: %d EA\n", DEVICE_NUM);
+	pr_info("CPU : Clock Generator= %d EA, ", DEVICE_NUM);
 }
 
 void nxp_cpu_clock_print(void)
