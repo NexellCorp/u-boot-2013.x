@@ -414,7 +414,7 @@ static struct fastboot_device f_devices[] = {
 		.dev_type	= FASTBOOT_DEV_MMC,
 		.part_type	= PART_TYPE_DOS,
 		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW |
-						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
+						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4 | FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= &mmc_part_write,
 		.capacity	= &mmc_part_capacity,
