@@ -137,17 +137,11 @@ static int muic_chrg_get_type(struct pmic *p)
 	if ((chg_state & 0xC0) == 0x00)
 		return CHARGER_UNKNOWN;
 
-	val = (NXE2000_DEF_LIMIT_ADP_AMP / 100000) - 1;
-	pmic_reg_write(p, NXE2000_REG_REGISET1, val);
-
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 	if (chg_state & 0x40)
 #endif
 	{
-		val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1);
-		pmic_reg_write(p, NXE2000_REG_CHGISET, val);
-
 		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 		val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
