@@ -63,8 +63,9 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_FS_EXT4		(1<<5)	/*  name "ext4" */
 #define	FASTBOOT_FS_UBI			(1<<6)	/*  name "ubi" */
 #define	FASTBOOT_FS_UBIFS		(1<<7)	/*  name "ubifs" */
+#define	FASTBOOT_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 
-#define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS)
+#define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS | FASTBOOT_FS_RAW_PART)
 
 #define	TCLK_TICK_HZ			(1000000)
 
@@ -123,6 +124,7 @@ static struct fastboot_fs_type f_part_fs[] = {
 	{ "raw"		, FASTBOOT_FS_RAW		},
 	{ "fat"		, FASTBOOT_FS_FAT		},
 	{ "ext4"	, FASTBOOT_FS_EXT4		},
+	{ "emmc"	, FASTBOOT_FS_RAW_PART	},
 	{ "ubi"		, FASTBOOT_FS_UBI		},
 	{ "ubifs"	, FASTBOOT_FS_UBIFS		},
 };
@@ -412,7 +414,7 @@ static struct fastboot_device f_devices[] = {
 		.dev_type	= FASTBOOT_DEV_MMC,
 		.part_type	= PART_TYPE_DOS,
 		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW |
-						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
+						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4 | FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= &mmc_part_write,
 		.capacity	= &mmc_part_capacity,
