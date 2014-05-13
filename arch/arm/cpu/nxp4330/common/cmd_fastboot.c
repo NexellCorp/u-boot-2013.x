@@ -243,6 +243,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 			/* when last partition set value is zero,
 			   set avaliable length */
 			if ((num-1) == i &&
+				parts[i][0] == fpart->start &&
 				0 == fpart->length) {
 				fpart->length = parts[i][1];
 				break;
