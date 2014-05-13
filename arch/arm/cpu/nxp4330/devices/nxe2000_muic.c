@@ -116,7 +116,7 @@ apsd_fail:
 	return ret;
 }
 
-#if defined(CONFIG_FAST_BOOTUP) && defined(CONFIG_SW_UBC_DETECT)
+#if defined(CONFIG_FASTBOOT) && defined(CONFIG_SW_UBC_DETECT)
 extern int otg_bind_check(int miliSec_Timeout);
 
 static int s_otg_bind_status;
@@ -322,7 +322,7 @@ int power_muic_init(unsigned int bus)
 	static const char name[] = "MUIC_NXE2000";
 	struct pmic *p = pmic_alloc();
 
-#if defined(CONFIG_FAST_BOOTUP) && defined(CONFIG_SW_UBC_DETECT)
+#if defined(CONFIG_FASTBOOT) && defined(CONFIG_SW_UBC_DETECT)
 	s_otg_bind_status   = 0;
 	s_otg_bind_flag     = 0;
 #endif

@@ -521,6 +521,7 @@ int board_late_init(void)
 	}
 	avg_voltage = sum_voltage/5;
 
+#if 1
 	printf("\n");
     if (GPIO_PMIC_VUSB_DET > -1)
     {
@@ -531,21 +532,19 @@ int board_late_init(void)
 	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
 	printf("chg_state:0x%x\n", chg_state);
 
-#if 1
 	{
-		u8 temp_val=0;
+		u8 val[7]={0};
 		int ret;
-		printf("===== MICOM Reg ========================\n");
-		ret=secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
-		printf(" Reg 0x00 : 0x%x, ret:%d\n", temp_val, ret);
-		ret=secret_i2c_read(0x00, 0x30, 0x01, &temp_val);
-		printf(" Reg 0x01 : 0x%x, ret:%d\n", temp_val, ret);
-		ret=secret_i2c_read(0x00, 0x30, 0x02, &temp_val);
-		printf(" Reg 0x02 : 0x%x, ret:%d\n", temp_val, ret);
-		printf("========================================\n");
+		printf("===== MICOM Reg ===================================\n");
+		printf(" Reg 0x00~0x06 : ");
+		for(i=0; i<7; i++)
+		{
+			ret=secret_i2c_read(0x00, 0x30, i, &val[i]);
+			printf("0x%02x ", val[i]);
+		}
+		printf("\n===================================================\n");
 	}
 #endif
-
 
     if (avg_voltage < shutdown_ilim_uA)
     {
