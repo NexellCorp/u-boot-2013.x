@@ -417,15 +417,6 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-#if defined CONFIG_RECOVERY_BOOT
-	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
-		printf("RECOVERY BOOT\n");
-		writel((-1UL), SCR_RESET_SIG_RESET);
-		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);
-	}
-	writel((-1UL), SCR_RESET_SIG_RESET);
-#endif
-
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
     if (power_key_depth)
@@ -506,6 +497,15 @@ int board_late_init(void)
             goto enter_shutdown;
         }
     }
+
+#if defined CONFIG_RECOVERY_BOOT
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		printf("RECOVERY BOOT\n");
+		writel((-1UL), SCR_RESET_SIG_RESET);
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
 
 /*===========================================================*/
 
