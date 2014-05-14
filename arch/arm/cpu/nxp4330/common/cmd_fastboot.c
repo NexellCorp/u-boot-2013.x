@@ -183,6 +183,32 @@ static inline int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 	return run_command(cmd, 0);
 }
 
+static int mmc_check_part_table(block_dev_desc_t *desc, struct fastboot_part *fpart)
+{
+	uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+	int i = 0, num = 0;
+	int ret = 1;
+
+	if (0 > mmc_get_part_table(desc, parts, &num))
+		return -1;
+
+	for (i = 0; num > i; i++) {
+		if (parts[i][0] == fpart->start &&
+			parts[i][1] == fpart->length)
+			return 0;
+		/* when last partition set value is zero,
+		   set avaliable length */
+		if ((num-1) == i &&
+			parts[i][0] == fpart->start &&
+			0 == fpart->length) {
+			fpart->length = parts[i][1];
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+
 static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
 	block_dev_desc_t *desc;
@@ -191,7 +217,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	lbaint_t blk, cnt;
 	int blk_size = 512;
 	char cmd[32];
-	int i = 0, ret = 0;
+	int ret = 0;
 
 	sprintf(cmd, "mmc dev %d", dev);
 
@@ -230,28 +256,16 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	}
 
 	if (fpart->fs_type & FASTBOOT_FS_MASK) {
-		uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
-		int num = 0;
 
-		if (0 > mmc_get_part_table(desc, parts, &num))
+		ret = mmc_check_part_table(desc, fpart);
+		if (0 > ret)
 			return -1;
 
-		for (i = 0; num > i; i++) {
-			if (parts[i][0] == fpart->start &&
-				parts[i][1] == fpart->length)
-				break;
-			/* when last partition set value is zero,
-			   set avaliable length */
-			if ((num-1) == i &&
-				parts[i][0] == fpart->start &&
-				0 == fpart->length) {
-				fpart->length = parts[i][1];
-				break;
-			}
-		}
+		if (ret) {	/* new partition */
+			uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+			int num;
 
-		if (i == num) {	/* new partition */
-			printf("Warn  : [%s] invalid, make new partitions ....\n", fpart->partition);
+			printf("Warn  : [%s] make new partitions ....\n", fpart->partition);
 			part_dev_print(fpart->fd);
 
 			get_parts_from_lists(fpart, parts, &num);
@@ -262,6 +276,9 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 				return -1;
 			}
 		}
+
+		if (mmc_check_part_table(desc, fpart))
+			return -1;
 	}
 
  	if ((fpart->fs_type & FASTBOOT_FS_EXT4) &&

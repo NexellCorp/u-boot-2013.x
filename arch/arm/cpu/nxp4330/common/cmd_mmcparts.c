@@ -218,7 +218,7 @@ int mmc_make_part_table_extended(block_dev_desc_t *desc, lbaint_t lba_start,
 			lba_s -= lba_start;
 		}
 
-		printf("%s=\t0x%llx \t~ \t0x%llx \n",
+		debug("%s=\t0x%llx \t~ \t0x%llx \n",
 			i == 0 ? "Prim p" : "Extd p",
 			i == 0 ? (uint64_t)(lba_s + lba_start)*desc->blksz : (uint64_t)(lba_s)*desc->blksz,
 			(uint64_t)(lba_l)*desc->blksz);
@@ -248,7 +248,7 @@ int mmc_make_part_table(block_dev_desc_t *desc,
 	int part_tables = part_num, part_EBR = 0;
 	int i = 0, ret = 0;
 
-	printf("--- Create mmc.%d partitions %d ---\n", desc->dev, part_num);
+	debug("--- Create mmc.%d partitions %d ---\n", desc->dev, part_num);
 	if (part_type != PART_TYPE_DOS) {
 		printf ("** Support only DOS PARTITION **\n");
 		return -1;
@@ -259,7 +259,7 @@ int mmc_make_part_table(block_dev_desc_t *desc,
 		return -1;
 	}
 
-	printf("Total = %lld * %d :0x%llx (%d.%d G) \n", avalible,
+	debug("Total = %lld * %d :0x%llx (%d.%d G) \n", avalible,
 		(int)desc->blksz, (uint64_t)(avalible)*desc->blksz,
 		(int)((avalible*desc->blksz)/(1024*1024*1024)),
 		(int)((avalible*desc->blksz)%(1024*1024*1024)));
@@ -303,7 +303,7 @@ int mmc_make_part_table(block_dev_desc_t *desc,
 		part_mmc_chs(pt, lba_s, lba_l);
 		last_lba = lba_s + lba_l;
 
-		printf("part.%d=\t0x%llx \t~ \t0x%llx \n",
+		debug("part.%d=\t0x%llx \t~ \t0x%llx \n",
 			i, (uint64_t)(lba_s)*desc->blksz, (uint64_t)(lba_l)*desc->blksz);
 	}
 
