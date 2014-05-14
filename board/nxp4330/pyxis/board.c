@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <mach-api.h>
 #include <nxp_rtc.h>
+#include <pm.h>
 
 #include <draw_lcd.h>
 
@@ -414,6 +415,15 @@ int board_late_init(void)
 	char boot[16];
 	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
 	run_command(boot, 0);
+#endif
+
+#if defined CONFIG_RECOVERY_BOOT
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		printf("RECOVERY BOOT\n");
+		writel((-1UL), SCR_RESET_SIG_RESET);
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
