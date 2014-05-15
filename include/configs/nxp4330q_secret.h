@@ -241,7 +241,7 @@
  * EEPROM
  */
 
-#ifdef CONFIG_SECRET_2ND_BOARD 
+#ifdef CONFIG_SECRET_2ND_BOARD
 #define CONFIG_CMD_EEPROM
 #define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 #define CONFIG_ENV_IS_IN_EEPROM
@@ -457,8 +457,8 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#ifndef CONFIG_SECRET_2ND_BOARD 
-#define CONFIG_ENV_IS_IN_MMC
+#ifndef CONFIG_SECRET_2ND_BOARD
+//#define CONFIG_ENV_IS_IN_MMC
 #endif
 
 #if defined(CONFIG_CMD_MMC)
@@ -469,7 +469,7 @@
     #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
     #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
-#ifdef CONFIG_SECRET_2ND_BOARD 
+#ifdef CONFIG_SECRET_2ND_BOARD
     #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
     #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
     #define CONFIG_MMC2_ATTACH          TRUE	/* 2 = MMC2 */
@@ -482,7 +482,7 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-#ifdef CONFIG_SECRET_2ND_BOARD 
+#ifdef CONFIG_SECRET_2ND_BOARD
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)
 #else
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
@@ -601,6 +601,10 @@
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
 #endif
 
+#define  CONFIG_RECOVERY_BOOT
+#if defined (CONFIG_RECOVERY_BOOT)
+    #define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+#endif
 
 /*-----------------------------------------------------------------------
  * Debug message

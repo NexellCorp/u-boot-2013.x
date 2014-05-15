@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <mach-api.h>
 #include <nxp_rtc.h>
+#include <pm.h>
 
 #include <draw_lcd.h>
 
@@ -624,6 +625,16 @@ int board_late_init(void)
 
 #ifdef CONFIG_FAST_BOOTUP
     power_key_depth = 1;
+#endif
+
+#if defined CONFIG_RECOVERY_BOOT
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+		printf("RECOVERY BOOT\n");
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
 /*===========================================================*/
