@@ -618,16 +618,7 @@ int board_late_init(void)
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
 		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
-    if (power_key_depth > 1)
-    {
-        goto skip_bat_animation;
-    }
-
-#ifdef CONFIG_FAST_BOOTUP
-    power_key_depth = 1;
-#endif
-
-#if defined CONFIG_RECOVERY_BOOT
+#if defined(CONFIG_RECOVERY_BOOT)
 	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
 		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
@@ -635,6 +626,15 @@ int board_late_init(void)
 		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
 	}
 	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
+
+    if (power_key_depth > 1)
+    {
+        goto skip_bat_animation;
+    }
+
+#ifdef CONFIG_FAST_BOOTUP
+    power_key_depth = 1;
 #endif
 
 /*===========================================================*/

@@ -601,8 +601,8 @@
     #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
 #endif
 
-#define  CONFIG_RECOVERY_BOOT
-#if defined (CONFIG_RECOVERY_BOOT)
+#define CONFIG_RECOVERY_BOOT
+#if defined(CONFIG_RECOVERY_BOOT)
     #define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
