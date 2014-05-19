@@ -36,42 +36,128 @@ extern void display_mipi(int module, unsigned int fbbase,
 				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
 				struct disp_multily_param *pmly, struct disp_mipi_param *pmipi);
 
-#define	MIPI_BITRATE_512M//MIPI_BITRATE_750M
+#if defined(CONFIG_SECRET_3RD_BOARD)
+#define	MIPI_BITRATE_480M
+#else
+#define	MIPI_BITRATE_750M
+#endif
 
 #ifdef MIPI_BITRATE_1G
-#define	PLLPMS		0x033E8
+#define	PLLPMS		0x33E8
 #define	BANDCTL		0xF
+#elif defined(MIPI_BITRATE_900M)
+#define	PLLPMS		0x2258
+#define	BANDCTL		0xE
+#elif defined(MIPI_BITRATE_840M)
+#define	PLLPMS		0x2230
+#define	BANDCTL		0xD
 #elif defined(MIPI_BITRATE_750M)
-#define	PLLPMS		0x043E8
+#define	PLLPMS		0x43E8
 #define	BANDCTL		0xC
+#elif defined(MIPI_BITRATE_660M)
+#define	PLLPMS		0x21B8
+#define	BANDCTL		0xB
+#elif defined(MIPI_BITRATE_600M)
+#define	PLLPMS		0x2190
+#define	BANDCTL		0xA
+#elif defined(MIPI_BITRATE_540M)
+#define	PLLPMS		0x2168
+#define	BANDCTL		0x9
 #elif defined(MIPI_BITRATE_512M)
 #define	PLLPMS		0x03200
 #define	BANDCTL		0x9
+#elif defined(MIPI_BITRATE_480M)
+#define	PLLPMS		0x2281
+#define	BANDCTL		0x8
 #elif defined(MIPI_BITRATE_420M)
 #define	PLLPMS		0x2231
 #define	BANDCTL		0x7
 #elif defined(MIPI_BITRATE_402M)
 #define	PLLPMS		0x2219
 #define	BANDCTL		0x7
+#elif defined(MIPI_BITRATE_210M)
+#define	PLLPMS		0x2232
+#define	BANDCTL		0x4
 #endif
 #define	PLLCTL		0
 #define	DPHYCTL		0
 
-#ifdef CONFIG_SECRET_2ND_BOARD
+#define MIPI_DELAY 0xFF
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 
 struct data_val{
-	u8 data[7];
+	u8 data[48];
 };
 
-struct reg_val{
+struct mipi_reg_val{
 	u32 cmd;
 	u32 addr;
 	u32 cnt;
 	struct data_val data;
 };
 
-static struct reg_val mipi_init_data[]=
+#if defined(CONFIG_SECRET_3RD_BOARD)
+
+static struct mipi_reg_val mipi_init_data_tiny[]= // BOE init code tiny
+{
+ {MIPI_DELAY,  5, 0, {0}},
+ {0x39, 0xF0,  2, {0x5A, 0x5A}},
+ {0x39, 0xD0,  2, {0x00, 0x10}},
+
+ {MIPI_DELAY,  1, 0, {0}},
+ {0x39, 0xC3,  3, {0x40, 0x00, 0x28}},
+
+ {MIPI_DELAY,  5, 0, {0}},
+ {0x05, 0x00,  1, {0x11}}, 
+
+ {MIPI_DELAY,120, 0, {0}},
+ {0x39, 0xF0,  2, {0x5A, 0x5A}},
+ {0x15, 0x35,  1, {0x00}},
+ {0x05, 0x00,  1, {0x29}},
+};
+
+static struct mipi_reg_val mipi_init_data[]= // BOE init code
+{
+ {0x39, 0xF0,  2, {0x5A, 0x5A}},
+ {0x39, 0xF1,  2, {0x5A, 0x5A}},
+ {0x39, 0xFC,  2, {0xA5, 0xA5}},
+ {0x15, 0xB1,  1, {0x10}},
+ {0x39, 0xB2,  4, {0x14, 0x22, 0x2F, 0x04}},
+ {0x39, 0xD0,  2, {0x00, 0x10}},
+ {0x39, 0xF2,  5, {0x02, 0x08, 0x08, 0x40, 0x10}},
+ {0x15, 0xB0,  1, {0x03}},
+ {0x39, 0xFD,  2, {0x23, 0x09}},
+ {0x39, 0xF3, 10, {0x01, 0xD7, 0xE2, 0x62, 0xF4, 0xF7, 0x77, 0x3C, 0x26, 0x00}},
+ {0x39, 0xF4, 45, {0x00, 0x02, 0x03, 0x26, 0x03, 0x02, 0x09, 0x00, 0x07, 0x16, 0x16, 0x03, 0x00, 0x08, 0x08, 0x03, 0x0E, 0x0F, 0x12, 0x1C, 0x1D, 0x1E, 0x0C, 0x09, 0x01, 0x04, 0x02, 0x61, 0x74, 0x75, 0x72, 0x83, 0x80, 0x80, 0xB0, 0x00, 0x01, 0x01, 0x28, 0x04, 0x03, 0x28, 0x01, 0xD1, 0x32}},
+ {0x39, 0xF5, 26, {0xA2, 0x2F, 0x2F, 0x3A, 0xAB, 0x98, 0x52, 0x0F, 0x33, 0x43, 0x04, 0x59, 0x54, 0x52, 0x05, 0x40, 0x60, 0x4E, 0x60, 0x40, 0x27, 0x26, 0x52, 0x25, 0x6D, 0x18}},
+ {0x39, 0xEE,  8, {0x22, 0x00, 0x22, 0x00, 0x22, 0x00, 0x22, 0x00}},
+ {0x39, 0xEF,  8, {0x12, 0x12, 0x43, 0x43, 0xA0, 0x04, 0x24, 0x81}},
+ {0x39, 0xF7, 32, {0x0A, 0x0A, 0x08, 0x08, 0x0B, 0x0B, 0x09, 0x09, 0x04, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x0A, 0x0A, 0x08, 0x08, 0x0B, 0x0B, 0x09, 0x09, 0x04, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01}},
+ {0x39, 0xBC,  3, {0x01, 0x4E, 0x0A}},
+ {0x39, 0xE1,  5, {0x03, 0x10, 0x1C, 0xA0, 0x10}},
+ {0x39, 0xF6,  6, {0x60, 0x21, 0xA6, 0x00, 0x00, 0x00}},
+ {0x39, 0xFE,  6, {0x00, 0x0D, 0x03, 0x21, 0x00, 0x78}},
+ {0x15, 0xB0,  1, {0x22}},
+ {0x39, 0xFA, 17, {0x00, 0x35, 0x08, 0x10, 0x08, 0x0F, 0x14, 0x14, 0x17, 0x1F, 0x23, 0x24, 0x25, 0x24, 0x23, 0x23, 0x29}},
+ {0x15, 0xB0,  1, {0x22}},
+ {0x39, 0xFB, 17, {0x00, 0x35, 0x08, 0x10, 0x08, 0x0F, 0x14, 0x14, 0x17, 0x1F, 0x23, 0x24, 0x25, 0x24, 0x23, 0x23, 0x29}},
+ {0x15, 0xB0,  1, {0x11}},
+ {0x39, 0xFA, 17, {0x0B, 0x35, 0x11, 0x18, 0x0F, 0x14, 0x1A, 0x19, 0x1A, 0x22, 0x24, 0x25, 0x26, 0x25, 0x24, 0x24, 0x2A}},
+ {0x15, 0xB0,  1, {0x11}},
+ {0x39, 0xFB, 17, {0x0B, 0x35, 0x11, 0x18, 0x0F, 0x14, 0x1A, 0x19, 0x1A, 0x22, 0x24, 0x25, 0x26, 0x25, 0x24, 0x24, 0x2A}},
+ {0x39, 0xFA, 17, {0x1F, 0x35, 0x22, 0x24, 0x18, 0x1B, 0x1D, 0x1A, 0x1B, 0x20, 0x26, 0x25, 0x28, 0x27, 0x25, 0x25, 0x2B}},
+ {0x39, 0xFB, 17, {0x1F, 0x35, 0x22, 0x24, 0x18, 0x1B, 0x1D, 0x1A, 0x1B, 0x20, 0x26, 0x25, 0x28, 0x27, 0x25, 0x25, 0x2B}},
+ {MIPI_DELAY, 10, 0, {0}},
+ {0x39, 0xC3,  3, {0x40, 0x00, 0x28}},
+ {MIPI_DELAY,120, 0, {0}},
+ {0x15, 0x35,  1, {0x00}},
+ {0x05, 0x00,  1, {0x11}}, 
+ {0x05, 0x00,  1, {0x29}},
+};
+
+#elif defined(CONFIG_SECRET_2ND_BOARD)
+
+static struct mipi_reg_val mipi_init_data[]= // INNOLUX init code
 {
  {0x39, 0xFF, 4, {0xAA,0x55,0xA5,0x80}},
  {0x39, 0x6F, 2, {0x11,0x00}},
@@ -222,6 +308,18 @@ static struct reg_val mipi_init_data[]=
  {0x05, 0x00, 1, {0x29}},
 };
 
+#else
+
+static struct mipi_reg_val mipi_init_data[]= 
+{
+ {0x15, 0xB2,  1, {0x7D}},
+ {0x15, 0xAE,  1, {0x0B}},
+ {0x15, 0xB6,  1, {0x18}},
+ {0x15, 0xD2,  1, {0x64}},
+};
+
+#endif
+
 
 static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, U8* pByteData )
 {
@@ -232,9 +330,12 @@ static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, U8* pByteData )
 
 	NX_ASSERT( 512 >= DataCount32 );
 
-	//for(i=0; i< ByteCount; i++)
-	//	printf(",0x%02x", pByteData[i]);
-	//printf("\n");
+#if 0
+	printf("0x%02x %2d: ", cmd, ByteCount);
+	for(i=0; i< ByteCount; i++)
+		printf("%02x ", pByteData[i]);
+	printf("\n");
+#endif
 
 	for( i=0; i<DataCount32; i++ )
 	{
@@ -243,7 +344,6 @@ static void  mipilcd_dcs_long_write(U32 cmd, U32 ByteCount, U8* pByteData )
 	}
 	pmipi->DSIM_PKTHDR  = (cmd & 0xff) | (ByteCount<<8);
 }
-
 
 static void mipilcd_dcs_write( unsigned int id, unsigned int data0, unsigned int data1 )
 {
@@ -255,11 +355,11 @@ static void mipilcd_dcs_write( unsigned int id, unsigned int data0, unsigned int
 	switch(id)
 	{
 		case 0x05:
-			printf(",0x%02x\n", data0);
+			printf("0x05  1: %02x \n", data0);
 			break;
 
 		case 0x15:
-			printf(",0x%02x,0x%02x\n", data0, data1);
+			printf("0x15  2: %02x %02x \n", data0, data1);
 			break;
 	}
 #endif
@@ -267,19 +367,50 @@ static void mipilcd_dcs_write( unsigned int id, unsigned int data0, unsigned int
 	pmipi->DSIM_PKTHDR = id | (data0<<8) | (data1<<16);
 }
 
-static int LD070WX3_SL01(int width, int height, void *data)
+
+static int MIPI_LCD_INIT(int width, int height, void *data)
 {
 	int i=0;
 	int size=ARRAY_SIZE(mipi_init_data);
-	U32 index = 0;
-	U32 reg_val = 0;
-	u8 pByteData[8];
+	u32 index = 0;
+	u32 value = 0;
+	u8 pByteData[48];
+	u8 bitrate=BANDCTL;
+	
 
 	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
-	reg_val = pmipi->DSIM_ESCMODE;
-	pmipi->DSIM_ESCMODE = reg_val|(3 << 6);
-	reg_val = pmipi->DSIM_ESCMODE;
-	//printf("reg_val:0x%x\n", reg_val);
+	value = pmipi->DSIM_ESCMODE;
+	pmipi->DSIM_ESCMODE = value|(3 << 6);
+	value = pmipi->DSIM_ESCMODE;
+	printf("DSIM_ESCMODE : 0x%x\n", value);
+	switch(bitrate)
+	{
+		case 0xF:	printf("MIPI clk: 1000MHz \n");	break;
+		case 0xE:	printf("MIPI clk:  900MHz \n");	break;
+		case 0xD:	printf("MIPI clk:  840MHz \n");	break;
+		case 0xC:	printf("MIPI clk:  760MHz \n");	break;
+		case 0xB:	printf("MIPI clk:  660MHz \n");	break;
+		case 0xA:	printf("MIPI clk:  600MHz \n");	break;
+		case 0x9:	printf("MIPI clk:  540MHz \n");	break;
+		case 0x8:	printf("MIPI clk:  480MHz \n");	break;
+		case 0x7:	printf("MIPI clk:  420MHz \n");	break;
+		case 0x6:	printf("MIPI clk:  330MHz \n");	break;
+		case 0x5:	printf("MIPI clk:  300MHz \n");	break;
+		case 0x4:	printf("MIPI clk:  210MHz \n");	break;
+		case 0x3:	printf("MIPI clk:  180MHz \n");	break;
+		case 0x2:	printf("MIPI clk:  150MHz \n");	break;
+		case 0x1:	printf("MIPI clk:  100MHz \n");	break;
+		case 0x0:	printf("MIPI clk:   80MHz \n");	break;
+		default :	printf("MIPI clk:  unknown \n");	break;
+	}
+
+#if defined(CONFIG_SECRET_3RD_BOARD)
+	mdelay(1);
+
+	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), PAD_GET_FUNC(CFG_IO_PANEL_RESET));
+	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+#endif
 
 	mdelay(10);
 
@@ -308,47 +439,26 @@ static int LD070WX3_SL01(int width, int height, void *data)
 #endif
  			case 0x39:
 				pByteData[0] = mipi_init_data[i].addr;
-				memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 7);
+				memcpy(&pByteData[1], &mipi_init_data[i].data.data[0], 48);
 				mipilcd_dcs_long_write(mipi_init_data[i].cmd, mipi_init_data[i].cnt+1, &pByteData[0]);
 				break;
-			case 0xff:
+			case MIPI_DELAY:
+				//printf("delay %d\n", mipi_init_data[i].addr);
+				mdelay(mipi_init_data[i].addr);
 				break;
 		}
 		mdelay(1);
 	}
 
-	reg_val = pmipi->DSIM_ESCMODE;
-	pmipi->DSIM_ESCMODE = reg_val&(~(3 << 6));
-	reg_val = pmipi->DSIM_ESCMODE;
-	//printf("reg_val:0x%x\n", reg_val);
+	value = pmipi->DSIM_ESCMODE;
+	pmipi->DSIM_ESCMODE = value&(~(3 << 6));
+	value = pmipi->DSIM_ESCMODE;
+	printf("DSIM_ESCMODE : 0x%x\n", value);
 
 	mdelay(10);
 	return 0;
 }
-
-#else
-
-static void mipilcd_write( unsigned int id, unsigned int data0, unsigned int data1 )
-{
-    U32 index = 0;
-    volatile NX_MIPI_RegisterSet* pmipi =
-    	(volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
-    pmipi->DSIM_PKTHDR = id | (data0<<8) | (data1<<16);
-}
-
-static int LD070WX3_SL01(int width, int height, void *data)
-{
-	msleep(10);
-    mipilcd_write(0x15, 0xB2, 0x7D);
-    mipilcd_write(0x15, 0xAE, 0x0B);
-    mipilcd_write(0x15, 0xB6, 0x18);
-    mipilcd_write(0x15, 0xD2, 0x64);
-	msleep(10);
-
-	return 0;
-}
-#endif
-#endif
+#endif /* CONFIG_DISPLAY_OUT_MIPI */
 
 #define	INIT_VIDEO_SYNC(name)								\
 	struct disp_vsync_info name = {							\
@@ -411,7 +521,7 @@ static int LD070WX3_SL01(int width, int height, void *data)
 		.bandctl	= BANDCTL,      \
 		.pllctl		= PLLCTL,    	\
 		.phyctl		= DPHYCTL,      \
-		.lcd_init	= LD070WX3_SL01	\
+		.lcd_init	= MIPI_LCD_INIT	\
 	};
 
 int bd_display(void)
@@ -439,7 +549,18 @@ int bd_display(void)
 	/*
 	 * set vsync parameters
 	 */
-#ifdef CONFIG_SECRET_2ND_BOARD
+#if defined(CONFIG_SECRET_3RD_BOARD)
+	vsync.h_active_len =  800;
+	vsync.v_active_len = 1280;
+
+	vsync.h_sync_width = 16;
+	vsync.h_back_porch = 48;
+	vsync.h_front_porch = 16;
+
+	vsync.v_sync_width = 4;
+	vsync.v_back_porch = 4;
+	vsync.v_front_porch = 8;
+#elif defined(CONFIG_SECRET_2ND_BOARD)
 	vsync.h_active_len =  800;
 	vsync.v_active_len = 1280;
 	vsync.h_sync_width = 4;
