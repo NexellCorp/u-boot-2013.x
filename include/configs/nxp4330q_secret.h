@@ -555,12 +555,14 @@
 
 #ifdef CONFIG_SECRET_2ND_BOARD
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
+			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"			\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,2:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,2:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,2:cache:ext4:0x02CF00000,0x21000000;"	\
-			"flash=mmc,2:userdata:ext4:0x4df00000,0x0;"
+			"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"		\
+			"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"	\
+			"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"		\
+			"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"		\
+			"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"	\
+			"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
 #else
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
