@@ -58,7 +58,11 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #if defined(CONFIG_BAT_CHECK)
 #define CFG_KEY_POWER       (PAD_GPIO_C + 10)
+#define	CFG_KEY_UPDATA		(PAD_GPIO_E + 5)
+#define	UPDATE_CHECK_TIME	(3000)	/* ms */
+
 #endif
+
 
 
 /*------------------------------------------------------------------------------
@@ -391,15 +395,49 @@ int power_init_board(void)
 
 extern void	bd_display(void);
 
-static void auto_update(int io, int wait)
+struct audo_update_key {
+	int	io;
+	int	invert;
+};
+static int auto_update(struct audo_update_key *key0, struct audo_update_key *key1, int wait)
 {
-	unsigned int grp = PAD_GET_GROUP(io);
-	unsigned int bit = PAD_GET_BITNO(io);
-	int level = 1, i = 0;
+	unsigned int grp = PAD_GET_GROUP(key0->io);
+	unsigned int bit = PAD_GET_BITNO(key0->io);
+	unsigned int grp1 = PAD_GET_GROUP(key1->io);
+	unsigned int bit1 = PAD_GET_BITNO(key1->io);
+
+	int level = 1, level1 = 1, i = 0;
 	char *cmd = "fastboot";
 
-	for (i = 0; wait > i; i++) {
-		switch (io & ~(32-1)) {
+#if 0 
+	switch (key0->io & ~(32-1)) {
+		case PAD_GPIO_A:
+		case PAD_GPIO_B:
+		case PAD_GPIO_C:
+		case PAD_GPIO_D:
+		case PAD_GPIO_E:
+			level = NX_GPIO_GetInputValue(grp, bit);	break;
+		case PAD_GPIO_ALV:
+			level = NX_ALIVE_GetInputValue(bit);	break;
+	};
+
+	switch (key1->io & ~(32-1)) {
+		case PAD_GPIO_A:
+		case PAD_GPIO_B:
+		case PAD_GPIO_C:
+		case PAD_GPIO_D:
+		case PAD_GPIO_E:
+			level1 = NX_GPIO_GetInputValue(grp1, bit1);	break;
+		case PAD_GPIO_ALV:
+			level1 = NX_ALIVE_GetInputValue(bit1);	break;
+	};
+	printf("DOWNLOAD MODE Check : %d, %d : ", !level, level1);
+#endif
+
+	printf("DOWNLOAD MODE Check : ");
+
+	for(i = 0; wait > i; i++) {
+		switch(key0->io & ~(32-1)) {
 		case PAD_GPIO_A:
 		case PAD_GPIO_B:
 		case PAD_GPIO_C:
@@ -409,17 +447,42 @@ static void auto_update(int io, int wait)
 		case PAD_GPIO_ALV:
 			level = NX_ALIVE_GetInputValue(bit);	break;
 		};
-		if (level)
+
+		switch (key1->io & ~(32-1)) {
+		case PAD_GPIO_A:
+		case PAD_GPIO_B:
+		case PAD_GPIO_C:
+		case PAD_GPIO_D:
+		case PAD_GPIO_E:
+			level1 = NX_GPIO_GetInputValue(grp1, bit1);	break;
+		case PAD_GPIO_ALV:
+			level1 = NX_ALIVE_GetInputValue(bit1);	break;
+		};
+
+		if(key0->invert)
+			level = !level;
+
+		if(key1->invert)
+			level1 = !level1;
+
+		if(level || level1)
 			break;
+
 		mdelay(1);
 	}
 
-	if (i == wait)
+	if(i == wait)
+	{
+		printf("start\n");
 		run_command (cmd, 0);
+		return 0;
+	}
+	else
+	{
+		printf("skip\n");
+		return -1;
+	}
 }
-
-#define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
-#define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #if defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
@@ -635,6 +698,21 @@ int board_late_init(void)
 	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
+#if 1 // Power key + Home key => fastboot(download)
+	{
+		struct audo_update_key key0 = {
+				.io = CFG_KEY_POWER,
+				.invert = 1,		// High Active
+				};
+		struct audo_update_key key1 = {
+				.io = CFG_KEY_UPDATA,
+				.invert = 0,		// Low Active
+				};
+		if(auto_update(&key0, &key1, UPDATE_CHECK_TIME) == 0)
+			return 0;
+	}
+#endif
+
     if (power_key_depth > 1)
     {
         goto skip_bat_animation;
@@ -792,8 +870,8 @@ skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	/* Temp check gpio to update */
-    if (chrg == CHARGER_USB)
-    	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+    //if (chrg == CHARGER_USB)
+    //	auto_update(CFG_KEY_UPDATA, UPDATE_CHECK_TIME);
 
 	return 0;
 
@@ -873,9 +951,8 @@ int board_late_init(void)
 #endif
 
 	/* Temp check gpio to update */
-	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
-
-	//run_command("fastboot nexell", 0);
+	//auto_update(CFG_KEY_UPDATA, UPDATE_CHECK_TIME);
+	run_command("fastboot nexell", 0);
 
 	return 0;
 }
