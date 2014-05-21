@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#if 1// CONFIG_SECRET_2ND_BOARD
+#if 1// CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD
 /*------------------------------------------------------------------------------
  *
  *	(GROUP_A)
@@ -44,7 +44,7 @@
 #define PAD_GPIOA12	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[11]         ,2:_                    ,3:_                    =// MCU_TOUCH_INT
 #define PAD_GPIOA13	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[12]         ,2:_                    ,3:_                    =// MCU_BACKLIGHT_EN - NC
 #define PAD_GPIOA14	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[13]         ,2:_                    ,3:_                    =// MCU_VG_EN - NC
-#define PAD_GPIOA15	(PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[14]         ,2:_                    ,3:_                    =// PANEL_RESET
+#define PAD_GPIOA15	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[14]         ,2:_                    ,3:_                    =// PANEL_RESET
 #define PAD_GPIOA16	(PAD_MODE_IN  | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[15]         ,2:_                    ,3:-                    =// VGH_DETECT - NC
 #define PAD_GPIOA17	(PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_LOW  | PAD_PULL_DN  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[16]         ,2:_                    ,3:_                    =// MCU_WL_REG_ON
 #define PAD_GPIOA18	(PAD_MODE_OUT | PAD_FUNC_ALT0 | PAD_LEVEL_HIGH | PAD_PULL_UP  | PAD_STRENGTH_0)     // 0: GPIO          ,1: PDRGB24[17]         ,2:_                    ,3:_                    =// MCU_WL_DEVICE_WAKE
@@ -241,7 +241,7 @@
  *	GPIO LCD (Backlight Enable/PWM)
  */
 #define	CFG_IO_LCD_PWM						((PAD_GPIO_D + 1) | PAD_FUNC_ALT1)
-// #define CFG_IO_MCU_BACKLIGHT_EN				((PAD_GPIO_A + 13) | PAD_FUNC_ALT0)	// NC
+#define CFG_IO_MCU_BACKLIGHT_EN				((PAD_GPIO_A + 13) | PAD_FUNC_ALT0)	// NC
 // #define CFG_IO_MCU_VG_EN					((PAD_GPIO_A + 14) | PAD_FUNC_ALT0)	// NC
 #define CFG_IO_PANEL_RESET					((PAD_GPIO_A + 15) | PAD_FUNC_ALT0)
 //#define CFG_IO_TEST							((PAD_GPIO_D + 29) | PAD_FUNC_ALT0)
@@ -250,7 +250,8 @@
  */
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)		/* GPIO */
 
-#else // CONFIG_SECRET_2ND_BOARD
+#else // CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD
+
 /*------------------------------------------------------------------------------
  *
  *	(GROUP_A)
@@ -479,7 +480,7 @@
  */
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)		/* GPIO */
 
-#endif /* CONFIG_SECRET_2ND_BOARD */
+#endif /* CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD */
 
 #endif	/* __CFG_GPIO_H__ */
 

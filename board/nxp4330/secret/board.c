@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <mach-api.h>
 #include <nxp_rtc.h>
+#include <pm.h>
 
 #include <draw_lcd.h>
 
@@ -58,6 +59,10 @@ DECLARE_GLOBAL_DATA_PTR;
 #if defined(CONFIG_BAT_CHECK)
 #define CFG_KEY_POWER       (PAD_GPIO_C + 10)
 #endif
+#define	CFG_KEY_UPDATA1		(PAD_GPIO_E + 5)
+#define	CFG_KEY_UPDATA2		(-1)//(PAD_GPIO_C + 10)
+#define	UPDATE_CHECK_TIME	(3000)	/* ms */
+
 
 
 /*------------------------------------------------------------------------------
@@ -390,15 +395,18 @@ int power_init_board(void)
 
 extern void	bd_display(void);
 
-static void auto_update(int io, int wait)
+struct audo_update_key {
+	int	io;
+	int	invert;
+};
+
+static int get_gpio_status(int io)
 {
 	unsigned int grp = PAD_GET_GROUP(io);
 	unsigned int bit = PAD_GET_BITNO(io);
-	int level = 1, i = 0;
-	char *cmd = "fastboot";
+	int level = 0;
 
-	for (i = 0; wait > i; i++) {
-		switch (io & ~(32-1)) {
+	switch(io & ~(32-1)) {
 		case PAD_GPIO_A:
 		case PAD_GPIO_B:
 		case PAD_GPIO_C:
@@ -406,19 +414,60 @@ static void auto_update(int io, int wait)
 		case PAD_GPIO_E:
 			level = NX_GPIO_GetInputValue(grp, bit);	break;
 		case PAD_GPIO_ALV:
-			level = NX_ALIVE_GetInputValue(bit);	break;
-		};
-		if (level)
+			level = NX_ALIVE_GetInputValue(bit);		break;
+	};
+	return level;
+}
+
+static int auto_update(struct audo_update_key *key0, struct audo_update_key *key1, int wait)
+{
+	int level0 = 1, level1 = 1, i = 0;
+	char *cmd = "fastboot";
+
+	printf("DOWNLOAD MODE Check : ");
+
+	for(i = 0; wait > i; i++) {
+		if(key0->io > -1)
+		{
+			level0 = get_gpio_status(key0->io);
+			if(key0->invert)
+				level0 = !level0;
+		}
+		else
+		{
+			level0 = 0;
+		}
+
+
+		if(key1->io > -1)
+		{
+			level1 = get_gpio_status(key1->io);
+			if(key1->invert)
+				level1 = !level1;
+		}
+		else
+		{
+			level1 = 0;
+		}
+
+		if(level0 || level1)
 			break;
+
 		mdelay(1);
 	}
 
-	if (i == wait)
+	if(i == wait)
+	{
+		printf("start, %d, %d\n", level0, level1);
 		run_command (cmd, 0);
+		return 0;
+	}
+	else
+	{
+		printf("skip, %d, %d\n", level0, level1);
+		return -1;
+	}
 }
-
-#define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
-#define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #if defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
@@ -585,7 +634,10 @@ int board_late_init(void)
 			CFG_DISP_PRI_RESOL_HEIGHT,
 			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-#ifdef CFG_IO_PANEL_RESET
+#if defined(CONFIG_SECRET_2ND_BOARD)
+	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), PAD_GET_FUNC(CFG_IO_PANEL_RESET));
+	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+
 	mdelay(40);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
 	mdelay(10);
@@ -602,13 +654,17 @@ int board_late_init(void)
 
 	/* backlight */
 	mdelay(10);
-#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_MCU_BACKLIGHT_EN)
+#if defined(CONFIG_SECRET_3RD_BOARD)
+	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_FUNC(CFG_IO_MCU_BACKLIGHT_EN));
+	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 #endif
-#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_MCU_VG_EN)
+
+#if defined(CONFIG_SECRET_1ST_BOARD)
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_VG_EN), PAD_GET_BITNO(CFG_IO_MCU_VG_EN), CTRUE);
 #endif
-#ifdef CFG_IO_LCD_PWM
+
+#if defined(CONFIG_SECRET_1ST_BOARD) || defined(CONFIG_SECRET_2ND_BOARD) || defined(CONFIG_SECRET_3RD_BOARD)
 	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
 #endif
 
@@ -616,6 +672,31 @@ int board_late_init(void)
 	pwm_config(CFG_LCD_PRI_PWM_CH,
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
 		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+
+#if defined(CONFIG_RECOVERY_BOOT)
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+		printf("RECOVERY BOOT\n");
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
+
+#if 1 // UPDATA1 key + UPDATA2 key => fastboot(download)
+	{
+		struct audo_update_key key0 = {
+				.io = CFG_KEY_UPDATA1,
+				.invert = 0,		// High Active : 1, Low Active : 0
+				};
+		struct audo_update_key key1 = {
+				.io = CFG_KEY_UPDATA2,
+				.invert = 0,
+				};
+		if(auto_update(&key0, &key1, UPDATE_CHECK_TIME) == 0)
+			return 0;
+	}
+#endif
 
     if (power_key_depth > 1)
     {
@@ -774,8 +855,8 @@ skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	/* Temp check gpio to update */
-    if (chrg == CHARGER_USB)
-    	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+    //if (chrg == CHARGER_USB)
+    //	auto_update(CFG_KEY_UPDATA, UPDATE_CHECK_TIME);
 
 	return 0;
 
@@ -814,7 +895,10 @@ int board_late_init(void)
 			CFG_DISP_PRI_RESOL_HEIGHT,
 			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-#ifdef CFG_IO_PANEL_RESET
+#if defined(CONFIG_SECRET_2ND_BOARD)
+	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), PAD_GET_FUNC(CFG_IO_PANEL_RESET));
+	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
+
 	mdelay(40);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), CTRUE);
 	mdelay(10);
@@ -826,17 +910,22 @@ int board_late_init(void)
 	mdelay(20);
 #endif
 
+	/* display */
 	bd_display();
 
 	/* backlight */
 	mdelay(10);
-#if defined(CONFIG_DISPLAY_OUT_MIPI)&& defined(CFG_IO_MCU_BACKLIGHT_EN)
+#if defined(CONFIG_SECRET_3RD_BOARD)
+	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_FUNC(CFG_IO_MCU_BACKLIGHT_EN));
+	NX_GPIO_SetOutputEnable(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_BACKLIGHT_EN), PAD_GET_BITNO(CFG_IO_MCU_BACKLIGHT_EN), CTRUE);
 #endif
-#if defined(CONFIG_DISPLAY_OUT_LVDS)&& defined(CFG_IO_MCU_VG_EN)
+
+#if defined(CONFIG_SECRET_1ST_BOARD)
 	NX_GPIO_SetOutputValue(PAD_GET_GROUP(CFG_IO_MCU_VG_EN), PAD_GET_BITNO(CFG_IO_MCU_VG_EN), CTRUE);
 #endif
-#ifdef CFG_IO_LCD_PWM
+
+#if defined(CONFIG_SECRET_1ST_BOARD) || defined(CONFIG_SECRET_2ND_BOARD) || defined(CONFIG_SECRET_3RD_BOARD)
 	NX_GPIO_SetPadFunction (PAD_GET_GROUP(CFG_IO_LCD_PWM), PAD_GET_BITNO(CFG_IO_LCD_PWM), PAD_GET_FUNC(CFG_IO_LCD_PWM));
 #endif
 
@@ -847,9 +936,8 @@ int board_late_init(void)
 #endif
 
 	/* Temp check gpio to update */
-	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
-
-	//run_command("fastboot nexell", 0);
+	//auto_update(CFG_KEY_UPDATA, UPDATE_CHECK_TIME);
+	run_command("fastboot nexell", 0);
 
 	return 0;
 }

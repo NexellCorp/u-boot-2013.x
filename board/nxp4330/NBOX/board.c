@@ -23,7 +23,6 @@
 #include <config.h>
 #include <common.h>
 #include <mmc.h>
-//#include <pwm.h>
 #include <asm/io.h>
 #include <asm/gpio.h>
 
@@ -47,7 +46,6 @@
 
 DECLARE_GLOBAL_DATA_PTR;
 
-//#include "eth.c"
 
 #if (0)
 #define DBGOUT(msg...)		{ printf("BD: " msg); }
@@ -289,11 +287,6 @@ int board_late_init(void)
 
 	bd_display();
 
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 #endif
 
 	/* Temp check gpio to update */

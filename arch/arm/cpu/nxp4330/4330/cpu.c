@@ -148,12 +148,12 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 
 	/* reset gd->bd */
 	gd->bd = (bd_t *)bd;
-	
+
 	/* prevent dataabort, when access enva_addr + data (0x04) */
-#if (0)	
-	gd->env_addr = CONFIG_SYS_SDRAM_BASE;	
+#if (0)
+	gd->env_addr = CONFIG_SYS_SDRAM_BASE;
 	*(unsigned int*)CONFIG_SYS_SDRAM_BASE = CONFIG_SYS_SDRAM_BASE;
-#else	
+#else
 	gd->env_addr = (ulong)default_environment;
 #endif
 	/* get cpu info */
@@ -172,12 +172,13 @@ void global_data_setup(gd_t *gd, ulong text, ulong sp)
 	printf("PC   = 0x%08lx\n", pc);
 
 	printf("TAGS = 0x%08lx \n", gd->bd->bi_boot_params);
-	#ifdef CONFIG_MMU_ENABLE	
+	#ifdef CONFIG_MMU_ENABLE
 	ulong s_page =  (e_text & 0xffff0000) + 0x10000;
 	printf("PAGE = 0x%08lx~0x%08lx\n",s_page, s_page + 0xc000 );
 	#endif
 	printf("MACH = [%ld]   \n", gd->bd->bi_arch_number);
 	printf("VER  = %u      \n", nxp_cpu_version());
+	printf("BOARD= [%s]    \n", CONFIG_SYS_BOARD);
 }
 #endif
 

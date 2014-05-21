@@ -47,6 +47,8 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_NAND_MAX		1
 #define	FASTBOOT_MEM_MAX		1
 
+#define	FASTBOOT_DEV_PART_MAX	(16)				/* each device max partition max num */
+
 /* device types */
 #define	FASTBOOT_DEV_EEPROM		(1<<0)	/*  name "eeprom" */
 #define	FASTBOOT_DEV_NAND		(1<<1)	/*  name "nand" */
@@ -61,9 +63,9 @@ static const char *const f_parts_default = FASTBOOT_PARTS_DEFAULT;
 #define	FASTBOOT_FS_EXT4		(1<<5)	/*  name "ext4" */
 #define	FASTBOOT_FS_UBI			(1<<6)	/*  name "ubi" */
 #define	FASTBOOT_FS_UBIFS		(1<<7)	/*  name "ubifs" */
+#define	FASTBOOT_FS_RAW_PART	(1<<8)	/*  name "emmc" */
 
-#define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS)
-#define	FASTBOOT_DEV_PART_MAX	(8)	/* each device max partition max num, if mmc max is 4 */
+#define	FASTBOOT_FS_MASK		(FASTBOOT_FS_EXT4 | FASTBOOT_FS_FAT | FASTBOOT_FS_UBI | FASTBOOT_FS_UBIFS | FASTBOOT_FS_RAW_PART)
 
 #define	TCLK_TICK_HZ			(1000000)
 
@@ -104,7 +106,7 @@ struct fastboot_device {
 	unsigned int dev_type;
 	unsigned int part_type;
 	unsigned int fs_support;
-	uint64_t parts[FASTBOOT_DEV_PART_MAX][2];
+	uint64_t parts[FASTBOOT_DEV_PART_MAX][2];	/* 0: start, 1: length */
 	struct list_head link;
 	int (*write_part)(struct fastboot_part *fpart, void *buf, uint64_t length);
 	int (*capacity)  (struct fastboot_device *fd, int devno, uint64_t *length);
@@ -122,6 +124,7 @@ static struct fastboot_fs_type f_part_fs[] = {
 	{ "raw"		, FASTBOOT_FS_RAW		},
 	{ "fat"		, FASTBOOT_FS_FAT		},
 	{ "ext4"	, FASTBOOT_FS_EXT4		},
+	{ "emmc"	, FASTBOOT_FS_RAW_PART	},
 	{ "ubi"		, FASTBOOT_FS_UBI		},
 	{ "ubifs"	, FASTBOOT_FS_UBIFS		},
 };
@@ -180,6 +183,32 @@ static inline int mmc_make_parts(int dev, uint64_t (*parts)[2], int count)
 	return run_command(cmd, 0);
 }
 
+static int mmc_check_part_table(block_dev_desc_t *desc, struct fastboot_part *fpart)
+{
+	uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+	int i = 0, num = 0;
+	int ret = 1;
+
+	if (0 > mmc_get_part_table(desc, parts, &num))
+		return -1;
+
+	for (i = 0; num > i; i++) {
+		if (parts[i][0] == fpart->start &&
+			parts[i][1] == fpart->length)
+			return 0;
+		/* when last partition set value is zero,
+		   set avaliable length */
+		if ((num-1) == i &&
+			parts[i][0] == fpart->start &&
+			0 == fpart->length) {
+			fpart->length = parts[i][1];
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
+
 static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t length)
 {
 	block_dev_desc_t *desc;
@@ -188,7 +217,7 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	lbaint_t blk, cnt;
 	int blk_size = 512;
 	char cmd[32];
-	int i = 0, ret = 0;
+	int ret = 0;
 
 	sprintf(cmd, "mmc dev %d", dev);
 
@@ -227,27 +256,16 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 	}
 
 	if (fpart->fs_type & FASTBOOT_FS_MASK) {
-		uint64_t parts[4][2] = { {0,0}, };
-		int num = 0;
 
-		if (0 > mmc_get_part_table(desc, parts, &num))
+		ret = mmc_check_part_table(desc, fpart);
+		if (0 > ret)
 			return -1;
 
-		for (i = 0; num > i; i++) {
-			if (parts[i][0] == fpart->start &&
-				parts[i][1] == fpart->length)
-				break;
-			/* when last partition set value is zero,
-			   set avaliable length */
-			if ((num-1) == i &&
-				0 == fpart->length) {
-				fpart->length = parts[i][1];
-				break;
-			}
-		}
+		if (ret) {	/* new partition */
+			uint64_t parts[FASTBOOT_DEV_PART_MAX][2] = { {0,0}, };
+			int num;
 
-		if (i == num) {	/* new partition */
-			printf("Warn  : [%s] invalid, make new partitions ....\n", fpart->partition);
+			printf("Warn  : [%s] make new partitions ....\n", fpart->partition);
 			part_dev_print(fpart->fd);
 
 			get_parts_from_lists(fpart, parts, &num);
@@ -258,6 +276,9 @@ static int mmc_part_write(struct fastboot_part *fpart, void *buf, uint64_t lengt
 				return -1;
 			}
 		}
+
+		if (mmc_check_part_table(desc, fpart))
+			return -1;
 	}
 
  	if ((fpart->fs_type & FASTBOOT_FS_EXT4) &&
@@ -410,7 +431,8 @@ static struct fastboot_device f_devices[] = {
 		.dev_max	= FASTBOOT_MMC_MAX,
 		.dev_type	= FASTBOOT_DEV_MMC,
 		.part_type	= PART_TYPE_DOS,
-		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW | FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4),
+		.fs_support	= (FASTBOOT_FS_2NDBOOT | FASTBOOT_FS_BOOT | FASTBOOT_FS_RAW |
+						FASTBOOT_FS_FAT | FASTBOOT_FS_EXT4 | FASTBOOT_FS_RAW_PART),
 	#ifdef CONFIG_CMD_MMC
 		.write_part	= &mmc_part_write,
 		.capacity	= &mmc_part_capacity,
@@ -513,27 +535,6 @@ static int parse_part_device(const char *parts, const char **ret,
 				return -1;
 			}
 			p++;
-	#if (0)
-			/* dev no */
-			if (!(c = strchr(p, ','))) {
-				printf("no <part-no> identifier\n");
-				return -1;
-			}
-
-			parse_string(p, c, str, sizeof(str));	/* dev no*/
-			fpart->dev_no = simple_strtoul(str, NULL, 10);
-			if (fpart->dev_no >= fd->dev_max) {
-				printf("** Over dev-no max %s.%d : %d **\n",
-					fd->device, fd->dev_max-1, fpart->dev_no);
-				return -1;
-			}
-			debug(".%d", fpart->dev_no);
-
-			c++;
-			parse_string(c, c+id_len, str, sizeof(str));	/* dev no*/
-			fpart->part_no = simple_strtoul(str, NULL, 10);
-			debug(".%d\n", fpart->part_no);
-	#else
 			parse_string(p, p+id_len, str, sizeof(str));	/* dev no*/
 			/* dev no */
 			fpart->dev_no = simple_strtoul(str, NULL, 10);
@@ -542,8 +543,8 @@ static int parse_part_device(const char *parts, const char **ret,
 					fd->device, fd->dev_max-1, fpart->dev_no);
 				return -1;
 			}
+
 			debug(".%d\n", fpart->dev_no);
-	#endif
 			fpart->fd = fd;
 			return 0;
 		}
@@ -641,6 +642,7 @@ static int parse_part_fs(const char *parts, const char **ret,
 				printf("** '%s' not support '%s' fs **\n", fd->device, fs->name);
 				return -1;
 			}
+
 			fpart->fs_type = fs->fs_type;
 			debug("fs    : %s\n", fs->name);
 			return 0;
@@ -855,7 +857,8 @@ static void part_dev_print(struct fastboot_device *fd)
 			fp = list_entry(entry, struct fastboot_part, link);
 			printf(" %s.%d: %s, %s : 0x%llx, 0x%llx\n",
 				fd->device, fp->dev_no, fp->partition,
-				FASTBOOT_FS_MASK&fp->fs_type?"fs":"img", fp->start, fp->length);
+				FASTBOOT_FS_MASK&fp->fs_type?"fs":"img",
+				fp->start, fp->length);
 		}
 	}
 }
@@ -1031,6 +1034,13 @@ static int parse_cmd(const char *cmd, const char **ret, char *str, int len)
 	return 0;
 }
 
+static inline void print_response(char *response, char *string)
+{
+	if (response)
+		sprintf(response, "%s", string);
+	printf("%s\n", string);
+}
+
 static int fboot_setenv(const char *str, int len)
 {
 	const char *p = str;
@@ -1039,7 +1049,7 @@ static int fboot_setenv(const char *str, int len)
 	int err = -1;
 
 	debug("---fboot_setenv---\n");
-	while (1) {
+	do {
 		if (parse_env_head(p, &p, cmd, sizeof(cmd)))
 			break;
 
@@ -1050,7 +1060,8 @@ static int fboot_setenv(const char *str, int len)
 		setenv(cmd, (char *)arg);
 		saveenv();
 		err = 0;
-	}
+	} while (1);
+
 	return err;
 }
 
@@ -1061,7 +1072,7 @@ static int fboot_command(const char *str, int len)
 	int err = -1;
 
 	debug("---fboot_command---\n");
-	while (1) {
+	do {
 		if (parse_cmd(p, &p, cmd, sizeof(cmd)))
 			break;
 
@@ -1069,7 +1080,8 @@ static int fboot_command(const char *str, int len)
 		err = run_command(cmd, 0);
 		if (0 > err)
 			break;
-	}
+	} while (1);
+
 	return err;
 }
 
@@ -1084,13 +1096,6 @@ static int fboot_cmd_reboot(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 {
 	fboot_response("OKAY", strlen("OKAY"), FASTBOOT_TX_SYNC);
 	return do_reset (NULL, 0, 0, NULL);
-}
-
-static inline void s_reponse(char *response, char *string)
-{
-	if (response)
-		sprintf(response, "%s", string);
-	printf("%s\n", string);
 }
 
 static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
@@ -1109,7 +1114,7 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 			goto done_getvar;
 		}
 		printf("\nReady : ");
-		s_reponse(p, s);
+		print_response(p, s);
 		fboot_lcd_part(s, "wait...");
 		goto done_getvar;
 	}
@@ -1120,8 +1125,7 @@ static int fboot_cmd_getvar(const char *cmd, f_cmd_inf *inf, struct f_trans_stat
 	}
 
 	if (!strncmp(cmd, "product", strlen("product"))) {
-		if (inf->product_name)
-			strcpy(p, inf->product_name);
+		strcpy(p, CONFIG_SYS_BOARD);
 		goto done_getvar;
 	}
 
@@ -1178,13 +1182,11 @@ static int fboot_cmd_download(const char *cmd, f_cmd_inf *inf, struct f_trans_st
 	printf("Starting download of %lld bytes\n", fst->image_size);
 
 	if (0 == fst->image_size) {
-		s_reponse(resp, "FAIL data invalid size");	/* bad user input */
+		print_response(resp, "FAIL data invalid size");	/* bad user input */
 	} else if (fst->image_size > inf->transfer_buffer_size) {
-		s_reponse(resp, "FAIL data too large");
+		print_response(resp, "FAIL data too large");
 		fst->image_size = 0;
 	} else {
-		/* The default case, the transfer fits
-		   completely in the interface buffer */
 		sprintf(resp, "DATA%08llx", fst->image_size);
 	}
 
@@ -1203,7 +1205,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 	fboot_lcd_flash((char*)cmd, "flashing");
 
 	if (fst->down_bytes == 0) {
-		s_reponse(resp, "FAIL no image downloaded");
+		print_response(resp, "FAIL no image downloaded");
 		return fboot_response(resp, strlen(resp), FASTBOOT_TX_SYNC);
 	}
 
@@ -1212,9 +1214,10 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		const char *p = (const char *)inf->transfer_buffer;
 
 		if (0 > part_lists_make(p, strlen(p))) {
-			s_reponse(resp, "FAIL partition map parse");
+			print_response(resp, "FAIL partition map parse");
 			goto err_flash;
 		}
+
 		part_lists_print();
 		parse_comment(p, &p);
 
@@ -1227,7 +1230,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		char *p = (char *)inf->transfer_buffer;
 
 		if(0 > fboot_setenv(p, fst->down_bytes)){
-			s_reponse(resp, "FAIL environment parse");
+			print_response(resp, "FAIL environment parse");
 			goto err_flash;
 		}
 		goto done_flash;
@@ -1237,7 +1240,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 		char *p = (char *)inf->transfer_buffer;
 
 		if(0 > fboot_command(p, fst->down_bytes)){
-			s_reponse(resp, "FAIL cmd parse");
+			print_response(resp, "FAIL cmd parse");
 			goto err_flash;
 		}
 		goto done_flash;
@@ -1258,7 +1261,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 			if (!strcmp(fp->partition, cmd)) {
 
 				if ((fst->down_bytes > fp->length) && (fp->length != 0)) {
-					s_reponse(resp, "FAIL image too large for partition");
+					print_response(resp, "FAIL image too large for partition");
 					goto err_flash;
 				}
 
@@ -1266,7 +1269,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 					fd->write_part) {
 					char *p = (char *)inf->transfer_buffer;
 					if (0 > fd->write_part(fp, p, fst->down_bytes))
-						s_reponse(resp, "FAIL to flash partition");
+						print_response(resp, "FAIL to flash partition");
 				}
 
 				goto done_flash;
@@ -1276,7 +1279,7 @@ static int fboot_cmd_flash(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 
 err_flash:
 	err = -1;
-	s_reponse(resp, "FAIL partition does not exist");
+	print_response(resp, "FAIL partition does not exist");
 
 done_flash:
 	printf("Flash : %s - %s\n", cmd, 0 > err ? "FAIL":"DONE");
@@ -1309,9 +1312,6 @@ static int fboot_cmd_erase(const char *cmd, f_cmd_inf *inf, struct f_trans_stat 
 static int fboot_cmd_oem(const char *cmd, f_cmd_inf *inf, struct f_trans_stat *fst)
 {
 	char resp[RESP_SIZE] = "INFO unknown OEM command";
-	fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
-
-	sprintf(resp,"OKAY");
 	fboot_response(resp, strlen(resp), FASTBOOT_TX_ASYNC);
 	return 0;
 }
@@ -1348,9 +1348,7 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 	struct f_trans_stat *fst = &f_status;
 	int i = 0, ret = 0;
 
-	/*
-	 * Command
-	 */
+	/* Command */
 	if (!fst->image_size) {
 		const char *cmd = (char *)buffer;
 		debug("[CMD = %s]\n", cmd);
@@ -1371,9 +1369,8 @@ static int fboot_rx_handler(const unsigned char *buffer, unsigned int length)
 			printf("-- unknown fastboot cmd [%s] --\n", cmd);
 			fboot_response("ERROR", strlen("ERROR"), FASTBOOT_TX_ASYNC);
 		}
-	/*
-	 * Download
-	 */
+
+	/* Download */
 	} else {
 		if (length) {
 			char resp[RESP_SIZE];

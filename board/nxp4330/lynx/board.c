@@ -29,8 +29,8 @@
 
 #include <platform.h>
 #include <mach-api.h>
-
 #include <nxp_rtc.h>
+#include <pm.h>
 
 #include <draw_lcd.h>
 
@@ -39,9 +39,6 @@
 #include <power/pmic.h>
 #include <power/battery.h>
 #include <asm/arch/nxe2000-private.h>
-#if defined(CONFIG_PMIC_NXE1100)
-#include <nxe1100_power.h>
-#endif
 #if defined(CONFIG_PMIC_NXE2000)
 #include <nxe2000_power.h>
 #endif
@@ -67,9 +64,6 @@ DECLARE_GLOBAL_DATA_PTR;
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
-#if defined(CONFIG_PMIC_NXE1100)
-struct nxe1100_power	nxe_power_config;
-#endif
 #if defined(CONFIG_PMIC_NXE2000)
 struct nxe2000_power	nxe_power_config;
 #endif
@@ -231,37 +225,6 @@ static void bd_alive_init(void)
 
 int bd_pmic_init(void)
 {
-#if defined(CONFIG_PMIC_NXE1100)
-	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= 0;
-
-	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE1100_DEF_LDO1_VOL;
-	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE1100_DEF_LDO2_VOL;
-	nxe_power_config.policy.ldo.ldo_3_out_vol = NXE1100_DEF_LDO3_VOL;
-	nxe_power_config.policy.ldo.ldo_4_out_vol = NXE1100_DEF_LDO4_VOL;
-	nxe_power_config.policy.ldo.ldo_5_out_vol = NXE1100_DEF_LDO5_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_vol = NXE1100_DEF_LDORTC1_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_vol = NXE1100_DEF_LDORTC2_VOL;
-
-	nxe_power_config.policy.ldo.ldo_1_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_2_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_3_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_4_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_5_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_enb = 0;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_enb = 0;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_vol = NXE1100_DEF_DDC1_VOL;
-	nxe_power_config.policy.dcdc.ddc_2_out_vol = NXE1100_DEF_DDC2_VOL;
-	nxe_power_config.policy.dcdc.ddc_3_out_vol = NXE1100_DEF_DDC3_VOL;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_2_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_3_out_enb = 1;
-
-	nxe1100_device_setup(&nxe_power_config);
-#endif  // #if defined(CONFIG_PMIC_NXE1100)
-
 #if defined(CONFIG_PMIC_NXE2000)
 	nxe_power_config.i2c_addr	= (0x64>>1);
 	nxe_power_config.i2c_bus	= 0;
@@ -389,6 +352,32 @@ int power_init_board(void)
 #endif  /* CONFIG_BAT_CHECK */
 
 extern void	bd_display(void);
+static void bd_display_run(char *cmd, int bl_duty, int bl_on)
+{
+	static int display_init = 0;
+
+	if (cmd) {
+		run_command(cmd, 0);
+		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	}
+
+	if (!display_init) {
+		bd_display();
+		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+		display_init = 1;
+	}
+
+	pwm_config(CFG_LCD_PRI_PWM_CH,
+		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+
+	if (bl_on)
+		pwm_enable(CFG_LCD_PRI_PWM_CH);
+}
+
+#define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
+#define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #if defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
@@ -505,6 +494,17 @@ int board_late_init(void)
         }
     }
 
+#if defined CONFIG_RECOVERY_BOOT
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+		printf("RECOVERY BOOT\n");
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
+
 /*===========================================================*/
 
 #ifdef CONFIG_FAST_BOOTUP
@@ -531,27 +531,13 @@ int board_late_init(void)
 
 	if (power_key_depth > 1)
 	{
-		run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 	else if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-		run_command(CONFIG_CMD_LOGO_BATTERY, 0);
+		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
 	}
-
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-	/* display */
-	bd_display();
-
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
     if (power_key_depth > 1)
     {
@@ -644,14 +630,11 @@ int board_late_init(void)
                 power_depth--;
                 if (power_depth > 1)
                 {
-                    pwm_config(CFG_LCD_PRI_PWM_CH,
-                        TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-                        TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+                	bd_display_run(NULL, bl_duty, 1);
                 }
                 else
                 {
-                    pwm_disable(CFG_LCD_PRI_PWM_CH);
-
+                	bd_display_run(NULL, 0, 0);
                     memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
                 }
             }
@@ -693,18 +676,7 @@ int board_late_init(void)
             }
         }
 
-        run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
-
-        lcd_draw_boot_logo(CONFIG_FB_ADDR,
-                CFG_DISP_PRI_RESOL_WIDTH,
-                CFG_DISP_PRI_RESOL_HEIGHT,
-                CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-        pwm_config(CFG_LCD_PRI_PWM_CH,
-            TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-            TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-
-        pwm_enable(CFG_LCD_PRI_PWM_CH);
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 
 skip_bat_animation:
@@ -729,24 +701,97 @@ int board_late_init(void)
 #endif
 
 #if defined(CONFIG_DISPLAY_OUT)
-	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
-
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-	bd_display();
-
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
+
+	/* Temp check gpio to update */
+	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 	return 0;
 }
 #endif	/* CONFIG_BAT_CHECK */
 
+#ifdef CONFIG_FASTBOOT
+
+#define	LOGO_BGCOLOR	(0xffffff)
+static int _logo_left   = CFG_DISP_PRI_RESOL_WIDTH /2 +  50;
+static int _logo_top    = CFG_DISP_PRI_RESOL_HEIGHT/2 + 180;
+static int _logo_width  = 8*24;
+static int _logo_height = 16;
+
+void fboot_lcd_start(void)
+{
+	lcd_info lcd = {
+		.fb_base		= CONFIG_FB_ADDR,
+		.bit_per_pixel	= CFG_DISP_PRI_SCREEN_PIXEL_BYTE * 8,
+		.lcd_width		= CFG_DISP_PRI_RESOL_WIDTH,
+		.lcd_height		= CFG_DISP_PRI_RESOL_HEIGHT,
+		.back_color		= LOGO_BGCOLOR,
+		.text_color		= 0xFF,
+		.alphablend		= 0,
+	};
+	lcd_debug_init(&lcd);
+
+	// clear FB
+	memset((void*)CONFIG_FB_ADDR, 0xFF,
+		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
+		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+
+#if defined (CONFIG_CMD_LOGO_UPDATE)
+	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
+#endif
+
+	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
+}
+
+void fboot_lcd_stop(void)
+{
+	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+}
+
+void fboot_lcd_part(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_down(int percent)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "down %d%%", percent);
+}
+
+void fboot_lcd_flash(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_status(char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s", stat);
+}
+
+#endif
 
