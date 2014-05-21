@@ -58,10 +58,10 @@ DECLARE_GLOBAL_DATA_PTR;
 
 #if defined(CONFIG_BAT_CHECK)
 #define CFG_KEY_POWER       (PAD_GPIO_C + 10)
-#define	CFG_KEY_UPDATA		(PAD_GPIO_E + 5)
-#define	UPDATE_CHECK_TIME	(3000)	/* ms */
-
 #endif
+#define	CFG_KEY_UPDATA1		(PAD_GPIO_E + 5)
+#define	CFG_KEY_UPDATA2		(-1)//(PAD_GPIO_C + 10)
+#define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 
 
@@ -399,18 +399,14 @@ struct audo_update_key {
 	int	io;
 	int	invert;
 };
-static int auto_update(struct audo_update_key *key0, struct audo_update_key *key1, int wait)
+
+static int get_gpio_status(int io)
 {
-	unsigned int grp = PAD_GET_GROUP(key0->io);
-	unsigned int bit = PAD_GET_BITNO(key0->io);
-	unsigned int grp1 = PAD_GET_GROUP(key1->io);
-	unsigned int bit1 = PAD_GET_BITNO(key1->io);
+	unsigned int grp = PAD_GET_GROUP(io);
+	unsigned int bit = PAD_GET_BITNO(io);
+	int level = 0;
 
-	int level = 1, level1 = 1, i = 0;
-	char *cmd = "fastboot";
-
-#if 0 
-	switch (key0->io & ~(32-1)) {
+	switch(io & ~(32-1)) {
 		case PAD_GPIO_A:
 		case PAD_GPIO_B:
 		case PAD_GPIO_C:
@@ -418,54 +414,43 @@ static int auto_update(struct audo_update_key *key0, struct audo_update_key *key
 		case PAD_GPIO_E:
 			level = NX_GPIO_GetInputValue(grp, bit);	break;
 		case PAD_GPIO_ALV:
-			level = NX_ALIVE_GetInputValue(bit);	break;
+			level = NX_ALIVE_GetInputValue(bit);		break;
 	};
+	return level;
+}
 
-	switch (key1->io & ~(32-1)) {
-		case PAD_GPIO_A:
-		case PAD_GPIO_B:
-		case PAD_GPIO_C:
-		case PAD_GPIO_D:
-		case PAD_GPIO_E:
-			level1 = NX_GPIO_GetInputValue(grp1, bit1);	break;
-		case PAD_GPIO_ALV:
-			level1 = NX_ALIVE_GetInputValue(bit1);	break;
-	};
-	printf("DOWNLOAD MODE Check : %d, %d : ", !level, level1);
-#endif
+static int auto_update(struct audo_update_key *key0, struct audo_update_key *key1, int wait)
+{
+	int level0 = 1, level1 = 1, i = 0;
+	char *cmd = "fastboot";
 
 	printf("DOWNLOAD MODE Check : ");
 
 	for(i = 0; wait > i; i++) {
-		switch(key0->io & ~(32-1)) {
-		case PAD_GPIO_A:
-		case PAD_GPIO_B:
-		case PAD_GPIO_C:
-		case PAD_GPIO_D:
-		case PAD_GPIO_E:
-			level = NX_GPIO_GetInputValue(grp, bit);	break;
-		case PAD_GPIO_ALV:
-			level = NX_ALIVE_GetInputValue(bit);	break;
-		};
+		if(key0->io > -1)
+		{
+			level0 = get_gpio_status(key0->io);
+			if(key0->invert)
+				level0 = !level0;
+		}
+		else
+		{
+			level0 = 0;
+		}
 
-		switch (key1->io & ~(32-1)) {
-		case PAD_GPIO_A:
-		case PAD_GPIO_B:
-		case PAD_GPIO_C:
-		case PAD_GPIO_D:
-		case PAD_GPIO_E:
-			level1 = NX_GPIO_GetInputValue(grp1, bit1);	break;
-		case PAD_GPIO_ALV:
-			level1 = NX_ALIVE_GetInputValue(bit1);	break;
-		};
 
-		if(key0->invert)
-			level = !level;
+		if(key1->io > -1)
+		{
+			level1 = get_gpio_status(key1->io);
+			if(key1->invert)
+				level1 = !level1;
+		}
+		else
+		{
+			level1 = 0;
+		}
 
-		if(key1->invert)
-			level1 = !level1;
-
-		if(level || level1)
+		if(level0 || level1)
 			break;
 
 		mdelay(1);
@@ -473,13 +458,13 @@ static int auto_update(struct audo_update_key *key0, struct audo_update_key *key
 
 	if(i == wait)
 	{
-		printf("start\n");
+		printf("start, %d, %d\n", level0, level1);
 		run_command (cmd, 0);
 		return 0;
 	}
 	else
 	{
-		printf("skip\n");
+		printf("skip, %d, %d\n", level0, level1);
 		return -1;
 	}
 }
@@ -698,15 +683,15 @@ int board_late_init(void)
 	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
-#if 1 // Power key + Home key => fastboot(download)
+#if 1 // UPDATA1 key + UPDATA2 key => fastboot(download)
 	{
 		struct audo_update_key key0 = {
-				.io = CFG_KEY_POWER,
-				.invert = 1,		// High Active
+				.io = CFG_KEY_UPDATA1,
+				.invert = 0,		// High Active : 1, Low Active : 0
 				};
 		struct audo_update_key key1 = {
-				.io = CFG_KEY_UPDATA,
-				.invert = 0,		// Low Active
+				.io = CFG_KEY_UPDATA2,
+				.invert = 0,
 				};
 		if(auto_update(&key0, &key1, UPDATE_CHECK_TIME) == 0)
 			return 0;
