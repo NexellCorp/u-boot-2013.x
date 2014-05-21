@@ -35,8 +35,6 @@
 
 #define	CONFIG_MACH_NXP4330Q
 #define CONFIG_NXP4330_GPIO
-#define CONFIG_SECRET_2ND_BOARD	// 2014.04 H/W 2nd
-//#define CONFIG_SECRET_3RD_BOARD	// 2014.05 H/W 3rd
 
 /*-----------------------------------------------------------------------
  *  System memory Configuration
@@ -106,7 +104,7 @@
  *	U-Boot Environments
  */
 /* refer to common/env_common.c	*/
-#define CONFIG_BOOTDELAY				3
+#define CONFIG_BOOTDELAY	   			0
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR		   			00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK		   			255.255.255.0
@@ -115,14 +113,14 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
  */
-#define CONFIG_SYS_PROMPT				"nxp4330# "     									/* Monitor Command Prompt   */
+#define CONFIG_SYS_PROMPT				"nxp4330# "     										/* Monitor Command Prompt   */
 #define CONFIG_SYS_LONGHELP				       												/* undef to save memory	   */
-#define CONFIG_SYS_CBSIZE		   		1024		   										/* Console I/O Buffer Size  */
+#define CONFIG_SYS_CBSIZE		   		1024		   											/* Console I/O Buffer Size  */
 #define CONFIG_SYS_PBSIZE		   		(CONFIG_SYS_CBSIZE+sizeof(CONFIG_SYS_PROMPT)+16) 	/* Print Buffer Size */
 #define CONFIG_SYS_MAXARGS			   	16		       										/* max number of command args   */
 #define CONFIG_SYS_BARGSIZE			   	CONFIG_SYS_CBSIZE	       							/* Boot Argument Buffer Size    */
@@ -176,7 +174,7 @@
 #if defined(CONFIG_CMD_NET)
 	/* DM9000 Ethernet device */
 	#if defined(CONFIG_DRIVER_DM9000)
-	#define CONFIG_DM9000_BASE			CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
+	#define CONFIG_DM9000_BASE	   		CFG_ETHER_EXT_PHY_BASEADDR		/* DM9000: 0x04000000(CS1) */
 	#define DM9000_IO	   				CONFIG_DM9000_BASE
 	#define DM9000_DATA	   				(CONFIG_DM9000_BASE + 0x4)
 //	#define CONFIG_DM9000_DEBUG
@@ -241,11 +239,9 @@
  * EEPROM
  */
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
-#endif
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -363,13 +359,14 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
+#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
-#define CONFIG_PMIC_CHARGING_PATH_ADP				(0) // Support only VADP. Do not supported USB ADP.
-#define CONFIG_PMIC_CHARGING_PATH_UBC				(1) // Support only VUSB. (USB connector - USB ADP & PC)
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC			(2) // Using VADP, VUSB power path. Separated power path.
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED	(3) // Using VADP, VUSB power path. Linked power path.
+#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
+#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
 
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH			CONFIG_PMIC_CHARGING_PATH_UBC
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_UBC
 
 #define CONFIG_NXP_RTC_USE
 #endif
@@ -395,10 +392,8 @@
 #define CONFIG_POWER_BATTERY
 #define CONFIG_POWER_BATTERY_NXE2000
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-#define	CFG_IO_I2C0_SCL	((PAD_GPIO_A + 25) | PAD_FUNC_ALT0)
-#define	CFG_IO_I2C0_SDA	((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
-#endif
+#define	CFG_IO_I2C0_SCL	((PAD_GPIO_E + 14) | PAD_FUNC_ALT0)
+#define	CFG_IO_I2C0_SDA	((PAD_GPIO_E + 15) | PAD_FUNC_ALT0)
 
 #endif
 
@@ -457,36 +452,24 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-//#define CONFIG_ENV_IS_IN_MMC
-#endif
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
-    #define CONFIG_MMC0_NEXELL                  /* 0 = MMC0 */
-    #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
-    #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-    #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
-    #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
-    #define CONFIG_MMC2_ATTACH          TRUE	/* 2 = MMC2 */
-#else
-    #define CONFIG_MMC0_ATTACH          TRUE	/* 0 = MMC0 */
-    #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
-    #define CONFIG_MMC2_ATTACH          FALSE	/* 2 = MMC2 */
-#endif
+	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
+	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC1 */
+	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
+	#define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
+	#define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)
-#else
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
-#endif
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
@@ -553,17 +536,6 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-#define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"			\
-			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,2:boot:ext4:0x00100000,0x04000000;"		\
-			"flash=mmc,2:system:ext4:0x04100000,0x28E00000;"	\
-			"flash=mmc,2:cache:ext4:0x2CF00000,0x21000000;"		\
-			"flash=mmc,2:misc:emmc:0x4E000000,0x00800000;"		\
-			"flash=mmc,2:recovery:emmc:0x4E900000,0x01600000;"	\
-			"flash=mmc,2:userdata:ext4:0x50000000,0x0;"
-#else
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
 			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
@@ -571,7 +543,6 @@
 			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
 			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
 			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
-#endif
 #endif
 
 /*-----------------------------------------------------------------------
@@ -588,24 +559,33 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
-	#define	CONFIG_DISPLAY_OUT_MIPI
-#else
-	#define	CONFIG_DISPLAY_OUT_LVDS
-#endif
+	#define	CONFIG_DISPLAY_OUT_RGB
 
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
 //	#define CONFIG_CMD_LOGO_LOAD
 
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 2:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 2:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 2:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	/* Logo command: board.c */
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#else
+	/* From MMC */
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
+	#endif
 #endif
 
-#define CONFIG_RECOVERY_BOOT
-#if defined(CONFIG_RECOVERY_BOOT)
-    #define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 2:1 0x48000000 uImage;ext4load mmc 2:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+
+/*-----------------------------------------------------------------------
+ * Recover boot
+ */
+#define	CONFIG_RECOVERY_BOOT
+#if defined (CONFIG_RECOVERY_BOOT)
+	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
 #endif
 
 /*-----------------------------------------------------------------------
