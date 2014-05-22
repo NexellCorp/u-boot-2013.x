@@ -46,7 +46,7 @@
 
 /* malloc() pool */
 #define	CONFIG_MEM_MALLOC_START			0x41000000
-#define CONFIG_MEM_MALLOC_LENGTH		8*1024*1024								/* more than 2M for ubifs: MAX 16M */
+#define CONFIG_MEM_MALLOC_LENGTH		32*1024*1024								/* more than 2M for ubifs: MAX 16M */
 
 /* when CONFIG_LCD */
 #define CONFIG_FB_ADDR					0x46000000
@@ -85,7 +85,7 @@
 #define	CONFIG_ARCH_MISC_INIT													/* board_init_r, call arch_misc_init */
 //#define	CONFIG_SYS_ICACHE_OFF
 
-//#define CONFIG_MMU_ENABLE
+#define CONFIG_MMU_ENABLE
 #ifdef  CONFIG_MMU_ENABLE
 #undef	CONFIG_SYS_DCACHE_OFF
 #endif
@@ -108,13 +108,12 @@
 #define CONFIG_ZERO_BOOTDELAY_CHECK
 #define CONFIG_ETHADDR					00:e2:1c:ba:e8:60
 #define CONFIG_NETMASK					255.255.255.0
-#define CONFIG_IPADDR					192.168.1.151
-#define CONFIG_SERVERIP					192.168.1.133
+#define CONFIG_IPADDR					192.168.1.165
+#define CONFIG_SERVERIP					192.168.1.164
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"		/* File to load	*/
 
-/* Image - external sd card */
-#define CONFIG_BOOTCOMMAND				"ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 1:1 0x48000000 uImage;ext4load mmc 1:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -151,7 +150,7 @@
 
 #undef	CONFIG_BOOTM_NETBSD
 #undef	CONFIG_BOOTM_RTEMS
-#undef	CONFIG_GZIP
+//#undef	CONFIG_GZIP
 
 /*-----------------------------------------------------------------------
  * serial console configuration
@@ -491,10 +490,10 @@
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,0:data:ext4:0x02CF00000,0x21000000;"	\
-			"flash=mmc,0:cache:ext4:0x4df00000,0x0;"
+			"flash=mmc,1:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,1:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,1:data:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,1:cache:ext4:0x4df00000,0x0;"
 #endif
 /*-----------------------------------------------------------------------
  * Debug message
