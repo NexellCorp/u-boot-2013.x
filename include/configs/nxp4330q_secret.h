@@ -36,6 +36,7 @@
 #define	CONFIG_MACH_NXP4330Q
 #define CONFIG_NXP4330_GPIO
 #define CONFIG_SECRET_2ND_BOARD	// 2014.04 H/W 2nd
+//#define CONFIG_SECRET_2P1ND_BOARD	// 2014.05 H/W 2.1
 //#define CONFIG_SECRET_3RD_BOARD	// 2014.05 H/W 3rd
 
 /*-----------------------------------------------------------------------
@@ -241,7 +242,7 @@
  * EEPROM
  */
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 #define CONFIG_CMD_EEPROM
 #define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
 #define CONFIG_ENV_IS_IN_EEPROM
@@ -396,7 +397,7 @@
 #define CONFIG_POWER_BATTERY
 #define CONFIG_POWER_BATTERY_NXE2000
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 #define	CFG_IO_I2C0_SCL	((PAD_GPIO_A + 25) | PAD_FUNC_ALT0)
 #define	CFG_IO_I2C0_SDA	((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
 #endif
@@ -458,9 +459,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 //#define CONFIG_ENV_IS_IN_MMC
-#endif
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
@@ -470,7 +469,7 @@
     #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
     #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
     #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
     #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
     #define CONFIG_MMC2_ATTACH          TRUE	/* 2 = MMC2 */
@@ -483,7 +482,7 @@
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(2)
 #else
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
@@ -554,7 +553,7 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 #define	FASTBOOT_PARTS_DEFAULT		\
 			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"			\
 			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
@@ -589,7 +588,7 @@
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 	#define	CONFIG_DISPLAY_OUT_MIPI
 #else
 	#define	CONFIG_DISPLAY_OUT_LVDS
