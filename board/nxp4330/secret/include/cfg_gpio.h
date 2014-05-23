@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#if 1// CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD
+#if 1// CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_2P1ND_BOARD, CONFIG_SECRET_3RD_BOARD
 /*------------------------------------------------------------------------------
  *
  *	(GROUP_A)
@@ -232,10 +232,8 @@
 #define PAD_GPIOALV1	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
 #define PAD_GPIOALV2	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
 #define PAD_GPIOALV3	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
-#define PAD_GPIOALV4	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
+#define PAD_GPIOALV4	(PAD_MODE_OUT | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
 #define PAD_GPIOALV5	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_UP)				//
-#define PAD_GPIOALV6	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)				//
-#define PAD_GPIOALV7	(PAD_MODE_IN  | PAD_LEVEL_LOW  | PAD_PULL_OFF)				//
 
 /*------------------------------------------------------------------------------
  *	GPIO LCD (Backlight Enable/PWM)
@@ -250,7 +248,7 @@
  */
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)		/* GPIO */
 
-#else // CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD
+#else // CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_2P1ND_BOARD, CONFIG_SECRET_3RD_BOARD
 
 /*------------------------------------------------------------------------------
  *
@@ -480,7 +478,7 @@
  */
 #define CFG_IO_SPI_EEPROM_WP				((PAD_GPIO_C + 27) | PAD_FUNC_ALT1)		/* GPIO */
 
-#endif /* CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_3RD_BOARD */
+#endif /* CONFIG_SECRET_2ND_BOARD, CONFIG_SECRET_2P1ND_BOARD, CONFIG_SECRET_3RD_BOARD */
 
 #endif	/* __CFG_GPIO_H__ */
 

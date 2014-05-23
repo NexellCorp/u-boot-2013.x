@@ -36,7 +36,7 @@ extern void display_mipi(int module, unsigned int fbbase,
 				struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
 				struct disp_multily_param *pmly, struct disp_mipi_param *pmipi);
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 #define	MIPI_BITRATE_480M
 #else
 #define	MIPI_BITRATE_750M
@@ -96,7 +96,7 @@ struct mipi_reg_val{
 	struct data_val data;
 };
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 
 static struct mipi_reg_val mipi_init_data_tiny[]= // BOE init code tiny
 {
@@ -404,7 +404,7 @@ static int MIPI_LCD_INIT(int width, int height, void *data)
 		default :	printf("MIPI clk:  unknown \n");	break;
 	}
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 	mdelay(1);
 
 	NX_GPIO_SetPadFunction(PAD_GET_GROUP(CFG_IO_PANEL_RESET), PAD_GET_BITNO(CFG_IO_PANEL_RESET), PAD_GET_FUNC(CFG_IO_PANEL_RESET));
@@ -549,7 +549,7 @@ int bd_display(void)
 	/*
 	 * set vsync parameters
 	 */
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
 	vsync.h_active_len =  800;
 	vsync.v_active_len = 1280;
 
