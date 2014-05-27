@@ -213,7 +213,7 @@ static int dw_eth_init(struct eth_device *dev, bd_t *bis)
 	u32 conf;
 
 ENTER_FUNC();
-    
+
 	if ((priv->phy_configured != 1) || (priv->link_configured != 1))
 		configure_phy(dev);
 
@@ -229,24 +229,27 @@ ENTER_FUNC();
 	if (mac_reset(dev) < 0)
 		return -1;
 
-    /* Set AXI bus mode */
+	/* Set AXI bus mode */
 	writel((8 << WROSRLMT_SHIFT) | (8 << RDOSRLMT_SHIFT) | AXI_BURST_8,
 			&dma_p->axibusmode);
-	/* Resore the HW MAC address as it has been lost during MAC reset */
+	/* Soft reset above clears HW address registers.
+	 * So we have to set it here once again */
 	dw_write_hwaddr(dev);
 
 #if 0
 	writel(FIXEDBURST | PRIORXTX_41 | BURST_16,
 			&dma_p->busmode);
 #else
-	writel((1<<24) | (1<<17) | (1<<8) | PRIORXTX_11,
+	/* PBL = 8 burst / 8 = 1 */
+	writel(PBLx8 | (1<<RPBL_SHIFT) | (1<<PBL_SHIFT) | PRIORXTX_11,
 			&dma_p->busmode);
 #endif
 
 	writel(readl(&dma_p->opmode) | FLUSHTXFIFO | STOREFORWARD |
 		TXSECONDFRAME, &dma_p->opmode);
 
-	conf = FRAMEBURSTENABLE | DISABLERXOWN;
+//	conf = FRAMEBURSTENABLE | DISABLERXOWN;
+	conf = readl(&mac_p->conf) | FRAMEBURSTENABLE | DISABLERXOWN;
 
 	if (priv->speed != 1000)
 		conf |= MII_PORTSELECT;
@@ -292,8 +295,10 @@ ENTER_FUNC();
 
 	writel(readl(&mac_p->conf) | RXENABLE | TXENABLE, &mac_p->conf);
 
+	if (init_phy(dev) < 0)
+		return -1;
 EXIT_FUNC();
-    
+
 	return 0;
 }
 
@@ -644,7 +649,7 @@ ENTER_FUNC();
 	priv->duplex = miiphy_duplex(dev->name, phy_addr);
 
 EXIT_FUNC();
-    
+
 	return 0;
 }
 

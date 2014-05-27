@@ -103,9 +103,9 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	writel(readl(0xc0011014) |  (2<<23), 0xc0011014);
 
 	// 2. HSIC Enable in PORT1 of LINK
-	writel( readl( 0xc0011014 ) & ~(7<<14), 0xc0011014 );
-	writel( readl( 0xc0011014 ) |  (2<<14), 0xc0011014 );
-	
+	writel(readl(0xc0011014) & ~(7<<14), 0xc0011014);
+	writel(readl(0xc0011014) |  (2<<14), 0xc0011014);
+
 	// Program AHB Burst type
 	writel(readl(0xc001101c) & ~(7<<25), 0xc001101c);
 	writel(readl(0xc001101c) |  (7<<25), 0xc001101c);
@@ -133,7 +133,7 @@ int ehci_hcd_init(int index, struct ehci_hccr **hccr, struct ehci_hcor **hcor)
 	NX_CONSOLE_Printf( "\n HSIC PHY Init!!!\n" );
 
 	udelay(10); // 10us delay need.
-	
+
 	// word interface in HSIC PHY
 	writel(readl(0xc001102c) & ~(3<<12), 0xc001102c);
 	writel(readl(0xc001102c) |  (3<<12), 0xc001102c);				// 2'b01 8bit, 2'b11 16bit word
