@@ -63,6 +63,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define	CFG_KEY_UPDATA2		(-1)//(PAD_GPIO_C + 10)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
+#define FASTBOOT_SIGNATURE		0x46415354 /* (ASCII) : FAST  */
 
 
 /*------------------------------------------------------------------------------
@@ -680,6 +681,17 @@ int board_late_init(void)
 		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
 	}
 	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
+
+#if 1 // reboot bootloader -> fastboot(download)
+	if (FASTBOOT_SIGNATURE == readl(SCR_USER_SIG6_READ)) {
+		writel((-1UL), SCR_USER_SIG6_RESET); /* clear */
+		printf("\nuser reset : fastboot\n");
+		run_command ("fastboot", 0);	/* fastboot */
+		writel((-1UL), SCR_USER_SIG6_RESET);
+		return 0;
+	}
+	writel((-1UL), SCR_USER_SIG6_RESET);
 #endif
 
 #if 1 // UPDATA1 key + UPDATA2 key => fastboot(download)
