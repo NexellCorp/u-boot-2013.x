@@ -35,9 +35,9 @@
 
 #define	CONFIG_MACH_NXP4330Q
 #define CONFIG_NXP4330_GPIO
-#define CONFIG_SECRET_2ND_BOARD	// 2014.04 H/W 2nd
+//#define CONFIG_SECRET_2ND_BOARD	// 2014.04 H/W 2nd
 //#define CONFIG_SECRET_2P1ND_BOARD	// 2014.05 H/W 2.1
-//#define CONFIG_SECRET_3RD_BOARD	// 2014.05 H/W 3rd
+#define CONFIG_SECRET_3RD_BOARD	// 2014.05 H/W 3rd
 
 /*-----------------------------------------------------------------------
  *  System memory Configuration
