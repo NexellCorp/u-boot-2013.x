@@ -172,23 +172,39 @@
 #define CONFIG_DESIGNWARE_ETH			1
 
 #if defined(CONFIG_CMD_NET)
-    /* DWC Ethernet driver configuration */
-    #if defined(CONFIG_DESIGNWARE_ETH)
+
+//#define CONFIG_PHY_REALTEK
+#define CONFIG_PHY_MICREL
+#define CONFIG_PHY_MICREL_KSZ9031
+
+	/* DWC Ethernet driver configuration */
+	#if defined(CONFIG_DESIGNWARE_ETH)
+	#define CONFIG_PHYLIB
 	#define CONFIG_DWCGMAC_BASE			IO_ADDRESS(PHY_BASEADDR_GMAC)
+#if defined(CONFIG_PHY_REALTEK)
+	#define CONFIG_ETHPRIME				"RTL8211"
 	#define CONFIG_PHY_ADDR				3           /* RTL8211 PHY address */
+#endif
+#if defined(CONFIG_PHY_MICREL)
+	#define CONFIG_ETHPRIME				"KSZ9031"
+	#define CONFIG_PHY_ADDR				7           /* KSZ9031 PHY address */
+#endif
 	#define CONFIG_PHY_RESET_DELAY		10000       /* in usec */
 
 	#define CONFIG_DW_ALTDESCRIPTOR
 	#define CONFIG_DW_SEARCH_PHY
-//	#define CONFIG_DW_AUTONEG
-//	#define CONFIG_DW_SPEED10M		/* #ifndef CONFIG_DW_AUTONEG */
-//	#define CONFIG_DW_DUPLEXHALF	/* #ifndef CONFIG_DW_AUTONEG */
+	#define CONFIG_DW_AUTONEG
+	#define CONFIG_DW_SPEED1000M		/* #ifndef CONFIG_DW_AUTONEG */
+//	#define CONFIG_DW_SPEED100M			/* #ifndef CONFIG_DW_AUTONEG */
+//	#define CONFIG_DW_SPEED10M			/* #ifndef CONFIG_DW_AUTONEG */
+//	#define CONFIG_DW_DUPLEXHALF		/* #ifndef CONFIG_DW_AUTONEG */
 
 	#define CONFIG_PHY_GIGE			/* Include GbE speed/duplex detection */
 	#define CONFIG_PHY_DYNAMIC_ANEG		1
 	#define CONFIG_MII
 	#define CONFIG_CMD_MII
 	#define CONFIG_CMD_PING
+//	#define CONFIG_CMD_DHCP
 	#endif
 #endif
 
@@ -228,29 +244,29 @@
 		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
 
 		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
- 		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
- 			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
- 			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
- 	 	#endif
+		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
+			#define CONFIG_SPI_EEPROM_WP_PAD			CFG_IO_SPI_EEPROM_WP
+			#define CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
+		#endif
 
- 	 	#define CONFIG_CMD_SPI_EEPROM_UPDATE
- 	 	#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
- 		/*
- 	  	 *	EEPROM Environment Organization
- 	 	 *	[Note R/W unit 64K]
- 	 	 *
- 	 	 *    0 ~   16K Second Boot [NSIH + Sencond boot]
-		 *	 16 ~ 	32K Reserved
- 	 	 *   32 ~   64K Enviroment
- 	 	 *   64 ~  512K U-Boot
- 	 	 */
-			#define	CONFIG_2STBOOT_OFFSET			   	0
-			#define	CONFIG_2STBOOT_SIZE				   	16*1024
-			#define	CONFIG_UBOOT_OFFSET				   	64*1024
-			#define	CONFIG_UBOOT_SIZE				   (512-64)*1024
- 	 	#endif
+		#define CONFIG_CMD_SPI_EEPROM_UPDATE
+		#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
+		/*
+		 *	EEPROM Environment Organization
+		 *	[Note R/W unit 64K]
+		 *
+		 *    0 ~   16K Second Boot [NSIH + Sencond boot]
+		 *   16 ~   32K Reserved
+		 *   32 ~   64K Enviroment
+		 *   64 ~  512K U-Boot
+		 */
+			#define CONFIG_2STBOOT_OFFSET				0
+			#define CONFIG_2STBOOT_SIZE					16*1024
+			#define CONFIG_UBOOT_OFFSET					64*1024
+			#define CONFIG_UBOOT_SIZE					(512-64)*1024
+		#endif
 		#if defined(CONFIG_ENV_IS_IN_EEPROM)
-			#define	CONFIG_ENV_OFFSET					32*1024	/* 16 ~ 20K Environment */
+			#define CONFIG_ENV_OFFSET					32*1024	/* 16 ~ 20K Environment */
 			#define CONFIG_ENV_SIZE						32*1024
 			#define CONFIG_ENV_RANGE					CONFIG_ENV_SIZE
 			#define CONFIG_SYS_DEF_EEPROM_ADDR			0					/* Need 0, when SPI */
@@ -269,13 +285,13 @@
 		#define CONFIG_SPI_MODULE_0_SOURCE_CLOCK	CFG_SPI0_SRC_CLK
 		#define CONFIG_SPI_MODULE_0_CLOCK			CFG_SPI0_OUT_CLK
 		#define CONFIG_SPI_MODULE_0_EEPROM			CONFIG_SPI0_TYPE	/* 1: EEPROM, 0: SPI device */
- 	#endif
-	#if defined	(CONFIG_SPI_MODULE_1)
+	#endif
+	#if defined (CONFIG_SPI_MODULE_1)
 		#define CONFIG_SPI_MODULE_1_SOURCE_CLOCK	CFG_SPI1_SRC_CLK
 		#define CONFIG_SPI_MODULE_1_CLOCK			CFG_SPI0_OUT_CLK
 		#define CONFIG_SPI_MODULE_1_EEPROM			CONFIG_SPI1_TYPE	/* 1: EEPROM, 0: SPI device */
 	#endif
-	#if defined	(CONFIG_SPI_MODULE_2)
+	#if defined (CONFIG_SPI_MODULE_2)
 		#define CONFIG_SPI_MODULE_2_SOURCE_CLOCK	CFG_SPI2_SRC_CLK
 		#define CONFIG_SPI_MODULE_2_CLOCK			CFG_SPI0_OUT_CLK
 		#define CONFIG_SPI_MODULE_2_EEPROM			CONFIG_SPI2_TYPE	/* 1: EEPROM, 0: SPI device */
@@ -304,7 +320,7 @@
 #endif
 
 /* Gadget */
-#define	CONFIG_USB_GADGET
+#define CONFIG_USB_GADGET
 #if defined(CONFIG_USB_GADGET)
 	#define CONFIG_NXP_USBD
 	#define CONFIG_USBD_DOWN_ADDR				CONFIG_MEM_LOAD_ADDR
@@ -411,16 +427,16 @@
 //	#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
-	#define	CONFIG_MMC
+	#define CONFIG_MMC
 	#define CONFIG_GENERIC_MMC
 	#define HAVE_BLOCK_DEVICE
 
-	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
-	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
-	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
-	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
-    #define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
-    #define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
+	#define CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
+	#define CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	#define CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	#define CONFIG_MMC0_ATTACH			TRUE    /* 0 = MMC0 */
+	#define CONFIG_MMC1_ATTACH			TRUE    /* 1 = MMC1 */
+	#define CONFIG_MMC2_ATTACH			FALSE   /* 2 = MMC2 */
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
@@ -428,10 +444,10 @@
 	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
-	#define	CONFIG_ENV_OFFSET			512*1024										/* 0x00080000 */
-	#define CONFIG_ENV_SIZE           	16*1024											/* 1 block size */
+	#define CONFIG_ENV_OFFSET			512*1024										/* 0x00080000 */
+	#define CONFIG_ENV_SIZE				16*1024											/* 1 block size */
 	#define CONFIG_ENV_RANGE			CONFIG_ENV_SIZE * 4 							/* avoid bad block */
-	#define CONFIG_SYS_MMC_ENV_DEV  	CONFIG_SYS_MMC_BOOT_DEV
+	#define CONFIG_SYS_MMC_ENV_DEV		CONFIG_SYS_MMC_BOOT_DEV
 	#endif
 #endif
 
@@ -441,8 +457,8 @@
 #if !defined(CONFIG_ENV_IS_IN_MMC) && !defined(CONFIG_ENV_IS_IN_NAND) &&	\
 	!defined(CONFIG_ENV_IS_IN_FLASH) && !defined(CONFIG_ENV_IS_IN_EEPROM)
 	#define CONFIG_ENV_IS_NOWHERE						/* default: CONFIG_ENV_IS_NOWHERE */
-	#define	CONFIG_ENV_OFFSET			  	  1024
-	#define CONFIG_ENV_SIZE           		4*1024		/* env size */
+	#define	CONFIG_ENV_OFFSET				1024
+	#define CONFIG_ENV_SIZE					4*1024		/* env size */
 	#undef	CONFIG_CMD_IMLS								/* imls - list all images found in flash, default enable so disable */
 #endif
 

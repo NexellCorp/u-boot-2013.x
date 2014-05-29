@@ -55,6 +55,7 @@ struct eth_mac_regs {
 /* MAC configuration register definitions */
 #define SARC3               (3 << 28)
 #define SARC2               (2 << 28)
+#define TWOKPE_802_3        (1 << 27)
 #define FRAMEBURSTENABLE    (1 << 21)
 #define MII_PORTSELECT      (1 << 15)
 #define FES_100             (1 << 14)
@@ -113,22 +114,26 @@ struct eth_dma_regs {
     u32 currhostrxdesc;         /* 0x4c */
     u32 currhosttxbuffaddr;     /* 0x50 */
     u32 currhostrxbuffaddr;     /* 0x54 */
+    u32 hwfeatures;             /* 0x58 */
 };
 
 #define DW_DMA_BASE_OFFSET  (0x1000)
 
 /* Bus mode register definitions */
+#define PBLx8           (1 << 24)
+#define RPBL_SHIFT      (17)
 #define FIXEDBURST      (1 << 16)
 #define PRIORXTX_41     (3 << 14)
 #define PRIORXTX_31     (2 << 14)
 #define PRIORXTX_21     (1 << 14)
 #define PRIORXTX_11     (0 << 14)
-#define BURST_1         (1 << 8)
-#define BURST_2         (2 << 8)
-#define BURST_4         (4 << 8)
-#define BURST_8         (8 << 8)
-#define BURST_16        (16 << 8)
-#define BURST_32        (32 << 8)
+#define PBL_SHIFT       (8)
+#define BURST_1         (1)
+#define BURST_2         (2)
+#define BURST_4         (4)
+#define BURST_8         (8)
+#define BURST_16        (16)
+#define BURST_32        (32)
 #define RXHIGHPRIO      (1 << 1)
 #define DMAMAC_SRST     (1 << 0)
 
@@ -155,9 +160,9 @@ struct eth_dma_regs {
 
 
 /* Descriptior related definitions */
-//#define MAC_MAX_FRAME_SZ    (1600)
+#define MAC_MAX_FRAME_SZ    (1600)
 //#define MAC_MAX_FRAME_SZ    (1536)
-#define MAC_MAX_FRAME_SZ    (1664)
+//#define MAC_MAX_FRAME_SZ    (1664)
 
 
 struct dmamacdescr {
@@ -165,7 +170,7 @@ struct dmamacdescr {
     u32 dmamac_cntl;
     void *dmamac_addr;
     struct dmamacdescr *dmamac_next;
-};
+} __aligned(ARCH_DMA_MINALIGN);
 
 /*
  * txrx_status definitions
@@ -303,6 +308,8 @@ struct dw_eth_dev {
     struct eth_dma_regs *dma_regs_p;
 
     struct eth_device *dev;
+    struct phy_device *phydev;
+    struct mii_dev *bus;
 } __attribute__ ((aligned(8)));
 
 
