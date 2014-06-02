@@ -567,7 +567,6 @@ int board_late_init(void)
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
 
-	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
 	for(i=0; i<5; i++)
 	{
 		p_fg->fg->fg_battery_check(p_fg, p_bat);
@@ -576,7 +575,22 @@ int board_late_init(void)
 	}
 	avg_voltage = sum_voltage/5;
 
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+
 #if 1
+    if(chrg == CHARGER_USB)// (chg_state & NXE2000_POS_CHGSTATE_USEUSB)
+    {
+        shutdown_ilim_uA = NXE2000_DEF_LOWBAT2_VOL;
+    }
+    else if(chrg == CHARGER_TA)// (chg_state & NXE2000_POS_CHGSTATE_USEADP)
+    {
+        shutdown_ilim_uA = NXE2000_DEF_LOWBAT3_VOL;
+    }
+	else
+	{
+        shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
+	}
+
 	printf("\n");
     if (GPIO_PMIC_VUSB_DET > -1)
     {
@@ -585,7 +599,7 @@ int board_late_init(void)
 
 	printf("power_key_depth:%d\n", power_key_depth);
 	printf("avg_voltage:%d, shutdown_ilim_uA:%d\n", avg_voltage, shutdown_ilim_uA);
-	printf("chg_state:0x%x\n", chg_state);
+	printf("chg_state:0x%x, chrg_type=%d\n", chg_state, chrg);
 
 	{
 		u8 val[7]={0};
@@ -601,29 +615,27 @@ int board_late_init(void)
 	}
 #endif
 
-    if (avg_voltage < shutdown_ilim_uA)
+	if(avg_voltage <= NXE2000_DEF_CUTOFF_VOL)
+	{
+		printf("enter_shutdown,%d\n", __LINE__);
+		goto enter_shutdown;
+	}
+    else if (avg_voltage <= shutdown_ilim_uA)
     {
         bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
-
-        if (!(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK))
-        {
-			printf("enter_shutdown,%d\n", __LINE__);
-            goto enter_shutdown;
-        }
-		else
-		{
-			show_bat_state = 1;
-		}
+		show_bat_state = 1;
+		power_key_depth = 0;
     }
 	else
 	{
+		show_bat_state = 0;
 		power_key_depth = 2;
 	}
 
 	//show_bat_state = 1;
 	//power_key_depth = 0;
 
-/*===========================================================*/
+	/*===========================================================*/
 
 	if (power_key_depth > 1)
 	{
@@ -755,7 +767,7 @@ int board_late_init(void)
 
         time_pwr_prev = nxp_rtc_get();
 
-		while(show_bat_state && !ctrlc())
+		while(show_bat_state)// && !ctrlc())
         {
             if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
             {
@@ -819,7 +831,7 @@ int board_late_init(void)
 
             if ((!power_state) || (!power_depth))
             {
-                if ((pb->bat->voltage_uV < shutdown_ilim_uA) || (!power_depth))
+                if ((pb->bat->voltage_uV <= shutdown_ilim_uA) || (!power_depth))
                 {
 					printf("enter_shutdown,%d\n", __LINE__);
                     goto enter_shutdown;
@@ -885,7 +897,7 @@ enter_shutdown:
 		secret_i2c_read(0x00, 0x30, 0x00, &temp_val);
 		printf("temp_val:%d \n", temp_val);
 		result = secret_i2c_write(0x00, 0x30, 0x00, 0x00);
-		printf("NXP4330 Poweroff -> Micom, result:%d \n", result);
+		printf("NXP4330 PowerOff -> Micom, result:%d \n", result);
 	}
 #endif
 	mdelay(100);
