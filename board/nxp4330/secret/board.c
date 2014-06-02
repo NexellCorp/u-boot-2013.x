@@ -59,7 +59,13 @@ DECLARE_GLOBAL_DATA_PTR;
 #if defined(CONFIG_BAT_CHECK)
 #define CFG_KEY_POWER       (PAD_GPIO_C + 10)
 #endif
-#define	CFG_KEY_UPDATA1		(PAD_GPIO_E + 5)
+
+#if defined(CONFIG_SECRET_3RD_BOARD)
+	#define	CFG_KEY_UPDATA1		(PAD_GPIO_ALV + 2)	// home key
+#else
+	#define	CFG_KEY_UPDATA1		(PAD_GPIO_E + 5)	// home key
+#endif
+
 #define	CFG_KEY_UPDATA2		(-1)//(PAD_GPIO_C + 10)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
