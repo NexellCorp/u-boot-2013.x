@@ -469,6 +469,9 @@
     #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
     #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
+    #define CONFIG_MMC0_CLOCK					52000000                  
+    #define CONFIG_MMC1_CLOCK					52000000                  
+    #define CONFIG_MMC2_CLOCK					100000000                  
 #if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
     #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
     #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
