@@ -44,7 +44,7 @@ static unsigned int get_mmc_clk(int dev_index)
 	if (!clk)
 		return 0;
 
-	return clk_get_rate(clk);
+	return clk_get_rate(clk)/2;
 }
 
 static unsigned long set_mmc_clk(int dev_index, unsigned  rate)
@@ -72,7 +72,8 @@ static void nxp_dwmci_clksel(struct dwmci_host *host)
 	dwmci_writel(host, DWMCI_CLKSEL, val);
 }
 
-int nxp_dwmci_init(u32 regbase, int bus_width, int index)
+//int nxp_dwmci_init(u32 regbase, int bus_width, int index)
+int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 {
 	struct dwmci_host *host = NULL;
 
@@ -81,8 +82,10 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index)
 		printf("dwmci_host malloc fail!\n");
 		return 1;
 	}
-
-	set_mmc_clk(index, 100000000L);
+	if(max_clock >= 100000000L)
+		set_mmc_clk(index, 200000000L);
+	else
+		set_mmc_clk(index, 100000000L);
 	host->name = NXP_NAME;
 	host->ioaddr = (void *)regbase;
 	host->buswidth = bus_width;
@@ -90,8 +93,10 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index)
 	host->dev_index = index;
 	host->mmc_clk = get_mmc_clk;
 
-	add_dwmci(host, 52000000, 400000);
-
+	if(max_clock == 100000000)
+		add_dwmci(host, 100000000, 400000);
+	else
+		add_dwmci(host, 52000000, 400000);
 	return 0;
 }
 
@@ -101,17 +106,27 @@ int board_mmc_init(bd_t *bis)
 #if(CONFIG_MMC0_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<7), 0xC0012004);
 #endif
-	err = nxp_dwmci_init(0xC0062000, 4,0);
-
+#if(CONFIG_MMC0_CLOCK)
+	err = nxp_dwmci_init(0xC0062000, 4, 0, CONFIG_MMC0_CLOCK);
+#else 
+	err = nxp_dwmci_init(0xC0062000, 4, 0, 52000000);
+#endif
 #if(CONFIG_MMC1_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
 #endif
-	err = nxp_dwmci_init(0xC0068000, 4,1);
+#if(CONFIG_MMC1_CLOCK)
+	err = nxp_dwmci_init(0xC0068000, 4, 1, CONFIG_MMC1_CLOCK);
+#else
+	err = nxp_dwmci_init(0xC0068000, 4, 1, 52000000);
+#endif
 
 #if(CONFIG_MMC2_ATTACH == TRUE)	
 	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
 #endif
-	err = nxp_dwmci_init(0xC0069000, 4,2);
-
+#if(CONFIG_MMC2_CLOCK)
+	err = nxp_dwmci_init(0xC0069000, 4,2, CONFIG_MMC2_CLOCK);
+#else
+	err = nxp_dwmci_init(0xC0069000, 4,2, 52000000);
+#endif
 	return err;
 }
