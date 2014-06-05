@@ -108,7 +108,7 @@ static struct mipi_reg_val mipi_init_data_tiny[]= // BOE init code tiny
  {0x39, 0xC3,  3, {0x40, 0x00, 0x28}},
 
  {MIPI_DELAY,  5, 0, {0}},
- {0x05, 0x00,  1, {0x11}}, 
+ {0x05, 0x00,  1, {0x11}},
 
  {MIPI_DELAY,120, 0, {0}},
  {0x39, 0xF0,  2, {0x5A, 0x5A}},
@@ -151,7 +151,7 @@ static struct mipi_reg_val mipi_init_data[]= // BOE init code
  {0x39, 0xC3,  3, {0x40, 0x00, 0x28}},
  {MIPI_DELAY,120, 0, {0}},
  {0x15, 0x35,  1, {0x00}},
- {0x05, 0x00,  1, {0x11}}, 
+ {0x05, 0x00,  1, {0x11}},
  {0x05, 0x00,  1, {0x29}},
 };
 
@@ -310,7 +310,7 @@ static struct mipi_reg_val mipi_init_data[]= // INNOLUX init code
 
 #else
 
-static struct mipi_reg_val mipi_init_data[]= 
+static struct mipi_reg_val mipi_init_data[]=
 {
  {0x15, 0xB2,  1, {0x7D}},
  {0x15, 0xAE,  1, {0x0B}},
@@ -376,7 +376,6 @@ static int MIPI_LCD_INIT(int width, int height, void *data)
 	u32 value = 0;
 	u8 pByteData[48];
 	u8 bitrate=BANDCTL;
-	
 
 	volatile NX_MIPI_RegisterSet* pmipi = (volatile NX_MIPI_RegisterSet*)IO_ADDRESS(NX_MIPI_GetPhysicalAddress(index));
 	value = pmipi->DSIM_ESCMODE;
@@ -557,7 +556,7 @@ int bd_display(void)
 	vsync.h_back_porch = 48;
 	vsync.h_front_porch = 16;
 
-	vsync.v_sync_width = 4;
+	vsync.v_sync_width = 6;
 	vsync.v_back_porch = 4;
 	vsync.v_front_porch = 8;
 #elif defined(CONFIG_SECRET_2ND_BOARD)
