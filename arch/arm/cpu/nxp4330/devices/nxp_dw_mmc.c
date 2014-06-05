@@ -72,7 +72,6 @@ static void nxp_dwmci_clksel(struct dwmci_host *host)
 	dwmci_writel(host, DWMCI_CLKSEL, val);
 }
 
-//int nxp_dwmci_init(u32 regbase, int bus_width, int index)
 int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 {
 	struct dwmci_host *host = NULL;
