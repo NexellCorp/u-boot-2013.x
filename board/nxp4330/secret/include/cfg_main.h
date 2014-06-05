@@ -88,8 +88,13 @@
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH           4
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
-#define CFG_DISP_PRI_CLKGEN0_DIV                12
+#if (0)
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV                8
+#else
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV                22
+#endif
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
