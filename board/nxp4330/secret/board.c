@@ -61,12 +61,11 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 #if defined(CONFIG_SECRET_3RD_BOARD)
-	#define	CFG_KEY_UPDATA1		(PAD_GPIO_ALV + 2)	// home key
+	#define	CFG_KEY_UPDATE1		(PAD_GPIO_ALV + 1)	// VOLDN key
 #else
-	#define	CFG_KEY_UPDATA1		(PAD_GPIO_E + 5)	// home key
+	#define	CFG_KEY_UPDATE1		(PAD_GPIO_E + 5)	// home key
 #endif
-
-#define	CFG_KEY_UPDATA2		(-1)//(PAD_GPIO_C + 10)
+#define	CFG_KEY_UPDATE2		(-1)//(PAD_GPIO_C + 10)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #define FASTBOOT_SIGNATURE		0x46415354 /* (ASCII) : FAST  */
@@ -715,11 +714,11 @@ int board_late_init(void)
 #if 1 // UPDATA1 key + UPDATA2 key => fastboot(download)
 	{
 		struct audo_update_key key0 = {
-				.io = CFG_KEY_UPDATA1,
+				.io = CFG_KEY_UPDATE1,
 				.invert = 0,		// High Active : 1, Low Active : 0
 				};
 		struct audo_update_key key1 = {
-				.io = CFG_KEY_UPDATA2,
+				.io = CFG_KEY_UPDATE2,
 				.invert = 0,
 				};
 		if(auto_update(&key0, &key1, UPDATE_CHECK_TIME) == 0)
