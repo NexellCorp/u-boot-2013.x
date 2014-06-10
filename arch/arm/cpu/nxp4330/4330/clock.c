@@ -60,13 +60,28 @@
 
 #define	INPUT_CLKS		6		/* PLL0, PLL1, PLL2, PLL3, EXT1, EXT2 */
 
-#ifdef  CONFIG_ARM_NXP4330_CPUFREQ
-#define	DVFS_CPU_PLL	CONFIG_NXP4330_CPUFREQ_PLLDEV
-#define IGNORE_PLL		~(1<<DVFS_CPU_PLL)
+#if defined(CONFIG_NEXELL_DFS_BCLK)
+	#if defined(CONFIG_NXP4330_DFS_BCLK_PLL_0)
+	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV 	0
+	#elif defined(CONFIG_NXP4330_DFS_BCLK_PLL_1)
+	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV 	1
+	#else
+	#define CONFIG_NXP4330_BCLKFREQ_PLLDEV	0
+	#endif
+#define	DVFS_BCLK_PLL	~(1<<CONFIG_NXP4330_BCLKFREQ_PLLDEV)
 #else
-#define IGNORE_PLL		(-1)
+#define	DVFS_BCLK_PLL	(-1UL)
 #endif
-#define	INPUT_MASK 		(((1<<INPUT_CLKS) - 1) & IGNORE_PLL)
+
+#ifdef  CONFIG_ARM_NXP4330_CPUFREQ
+#define	DVFS_CPU_PLL	~(1<<CONFIG_NXP4330_CPUFREQ_PLLDEV)
+#define	nxp_cpu_pll_change_frequency(c, l)	do { } while(0);
+#else
+#define	DVFS_CPU_PLL	(-1UL)
+#endif
+
+#define IGNORE_PLLs		(DVFS_CPU_PLL & DVFS_BCLK_PLL)
+#define	INPUT_MASK 		(((1<<INPUT_CLKS) - 1) & IGNORE_PLLs)
 
 #define	_PLL0_ 			(1 << _InPLL0_)
 #define	_PLL1_ 			(1 << _InPLL1_)
@@ -231,6 +246,15 @@ static inline void peri_clk_rate(void *base, int level, int src, int div)
 {
 	struct clkgen_register *preg = base;
 	register U32 val;
+
+#ifdef CONFIG_NXP4330_CPUFREQ_PLLDEV
+	if (CONFIG_NXP4330_CPUFREQ_PLLDEV == src)
+		printk("*** %s: Fail pll.%d for CPU  DFS ***\n", __func__, src);
+#endif
+#ifdef CONFIG_NXP4330_BCLKFREQ_PLLDEV
+	if (CONFIG_NXP4330_BCLKFREQ_PLLDEV == src)
+		printk("*** %s: Fail pll.%d for BCLK DFS ***\n", __func__, src);
+#endif
 
 	val  = ReadIODW(&preg->CLKGEN[level<<1]);
 	val &= ~(0x07   << 2);
@@ -505,7 +529,7 @@ EXPORT_SYMBOL(clk_get_rate);
  */
 long clk_round_rate(struct clk *clk, unsigned long rate)
 {
-	struct nxp_clk_dev *pll, *cdev = clk_container(clk);
+	struct nxp_clk_dev *pll = NULL, *cdev = clk_container(clk);
 	struct nxp_clk_periph *peri = cdev->peri;
 	unsigned long request = rate, rate_hz = 0, flags;
 	unsigned long clock_hz, freq_hz = 0;
@@ -554,6 +578,9 @@ next:
 
 		if (rate_hz && (abs(rate-request) > abs(rate_hz-request)))
 			continue;
+
+		pr_debug("clk: %s.%d, pll.%d[%u] request[%ld] calc[%ld]\n",
+			peri->dev_name, peri->dev_id, n, pll->clk.rate, request, rate);
 
 		if (clk2) {
 			s1 = -1, d1 = -1;	/* not use */
@@ -613,7 +640,6 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
 		int d = (0 == i ? peri->clk_div0: peri->clk_div1);
 		if (-1 == s)
 			continue;
-
 		peri_clk_rate(peri->base_addr, i, s, d);
 		pr_debug("clk: %s.%d (%p) set_rate [%d] src[%d] div[%d]\n",
 			peri->dev_name, peri->dev_id, peri->base_addr, i, s, d);
