@@ -469,9 +469,9 @@
     #define CONFIG_MMC1_NEXELL                  /* 1 = MMC1 */
     #define CONFIG_MMC2_NEXELL                  /* 2 = MMC2 */
 
-    #define CONFIG_MMC0_CLOCK					52000000                  
-    #define CONFIG_MMC1_CLOCK					52000000                  
-    #define CONFIG_MMC2_CLOCK					100000000                  
+    #define CONFIG_MMC0_CLOCK					52000000
+    #define CONFIG_MMC1_CLOCK					52000000
+    #define CONFIG_MMC2_CLOCK					100000000
 #if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
     #define CONFIG_MMC0_ATTACH          FALSE	/* 0 = MMC0 */
     #define CONFIG_MMC1_ATTACH          FALSE	/* 1 = MMC1 */
@@ -575,6 +575,19 @@
 			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
 			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
 #endif
+#endif
+
+/*-----------------------------------------------------------------------
+ * DFS CLOCK
+ */
+#define CONFIG_ARM_NXP4330_CPUFREQ
+#if defined(CONFIG_ARM_NXP4330_CPUFREQ)
+#define	CONFIG_NXP4330_CPUFREQ_PLLDEV		1	// 0, 1
+#endif
+
+#define	CONFIG_NEXELL_DFS_BCLK
+#if defined(CONFIG_NEXELL_DFS_BCLK)
+#define	CONFIG_NXP4330_DFS_BCLK_PLL_0			// 0, 1
 #endif
 
 /*-----------------------------------------------------------------------
