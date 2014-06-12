@@ -262,10 +262,17 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 	temp |= 0x10;	// High(Hi-Z)
 	nxe2000_i2c_write(NXE2000_REG_IOOUT, temp, power);
 
+#if defined(CONFIG_SW_UBC_DETECT)
+	/* Set GPIO4 Direction */
+	nxe2000_i2c_read(NXE2000_REG_IOSEL, &temp, power);
+	temp &= ~0x10;   // input
+	nxe2000_i2c_write(NXE2000_REG_IOSEL, temp, power);
+#else
 	/* Set GPIO4 Direction */
 	nxe2000_i2c_read(NXE2000_REG_IOSEL, &temp, power);
 	temp |= 0x10;	// output
 	nxe2000_i2c_write(NXE2000_REG_IOSEL, temp, power);
+#endif
 
 	nxe2000_i2c_read(NXE2000_REG_CHGSTATE	, &cache[NXE2000_REG_CHGSTATE]	, power);
 	nxe2000_i2c_read(NXE2000_REG_PWRONTIMSET, &cache[NXE2000_REG_PWRONTIMSET], power);
@@ -509,9 +516,11 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 #else
 
 #if defined(CONFIG_SW_UBC_DETECT)
-		cache[NXE2000_REG_CHGISET]  = (NXE2000_DEF_CHG_ADP_AMP / 100000) - 1;
+		cache[NXE2000_REG_CHGISET]	=   ( (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG)
+										| ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1) );
 #else
-		cache[NXE2000_REG_CHGISET]  = (NXE2000_DEF_CHG_USB_AMP / 100000) - 1;
+		cache[NXE2000_REG_CHGISET]	=   ( (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG)
+										| ((NXE2000_DEF_CHG_USB_AMP / 100000) - 1) );
 #endif
 #endif
 
