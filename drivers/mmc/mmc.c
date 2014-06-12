@@ -1110,11 +1110,9 @@ static int mmc_startup(struct mmc *mmc)
 		}
 
 		if (mmc->card_caps & MMC_MODE_HS) {
+			printf("%s %d\n ",__func__, mmc->f_max);
 			if (mmc->card_caps & MMC_MODE_HS_52MHz)	{
-				if(mmc->f_max == 100000000)
-					mmc->tran_speed = 100000000;
-				else
-					mmc->tran_speed = 52000000;
+					mmc->tran_speed = mmc->f_max;
 			} else
 				mmc->tran_speed = 26000000;
 		}

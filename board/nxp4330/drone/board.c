@@ -60,6 +60,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
 #endif
 
+#define CFG_BACKLIGHT_EN	(PAD_GPIO_B + 27)
 
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
@@ -383,6 +384,8 @@ static void auto_update(int io, int wait)
 static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
+	
+	bl_duty = 100 - bl_duty;
 
 	if (cmd) {
 		run_command(cmd, 0);
@@ -400,8 +403,12 @@ static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
 		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
-	if (bl_on)
+	if (bl_on){
 		pwm_enable(CFG_LCD_PRI_PWM_CH);
+		gpio_set_value(CFG_BACKLIGHT_EN, 1);
+	} else {
+		gpio_set_value(CFG_BACKLIGHT_EN, 0);
+	}
 }
 
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
@@ -494,13 +501,9 @@ int board_late_init(void)
 
     /* Check to Power-Key status */
 #ifndef CONFIG_FAST_BOOTUP
-    if (gpio_get_value(GPIO_PMIC_VUSB_DET) || power_key_depth)
+    if ( power_key_depth)
     {
         show_bat_state = 1;
-    }
-    else
-    {
-        goto enter_shutdown;
     }
 #endif
 
@@ -557,6 +560,13 @@ int board_late_init(void)
     }
 #endif
 
+	// check adp charge
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+
+	if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)){
+		show_bat_state = 1;
+	}
+
 	if (power_key_depth > 1)
 	{
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
@@ -565,6 +575,8 @@ int board_late_init(void)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
 		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
+	} else {
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 
     if (power_key_depth > 1)
@@ -710,7 +722,7 @@ skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	/* Temp check gpio to update */
-    if (chrg == CHARGER_USB)
+//	if (chrg == CHARGER_USB)
     	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 	return 0;

@@ -81,10 +81,9 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 		printf("dwmci_host malloc fail!\n");
 		return 1;
 	}
-	if(max_clock >= 100000000L)
-		set_mmc_clk(index, 200000000L);
-	else
-		set_mmc_clk(index, 100000000L);
+		
+	set_mmc_clk(index, max_clock * 2);
+
 	host->name = NXP_NAME;
 	host->ioaddr = (void *)regbase;
 	host->buswidth = bus_width;
@@ -92,10 +91,7 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 	host->dev_index = index;
 	host->mmc_clk = get_mmc_clk;
 
-	if(max_clock == 100000000)
-		add_dwmci(host, 100000000, 400000);
-	else
-		add_dwmci(host, 52000000, 400000);
+	add_dwmci(host, max_clock, 400000);
 	return 0;
 }
 
