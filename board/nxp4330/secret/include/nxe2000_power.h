@@ -36,7 +36,8 @@
 #define CHARGER_CURRENT_RESOLUTION			100		/* VAL(mV) */
 #define CHARGER_CURRENT_COMPLETE			3		/* (n + 1) x 50mA   */
 
-#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)||defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)\
+	||defined(CONFIG_SECRET_3RD_BOARD)||defined(CONFIG_SECRET_3P1RD_BOARD)
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 21)
 #else
 #define GPIO_OTG_USBID_DET					(PAD_GPIO_D + 16)
@@ -69,7 +70,7 @@
 #define	NXE2000_DEF_DDC4_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.6V DDR		*/
 #define	NXE2000_DEF_DDC5_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.6V SYS		*/
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_3RD_BOARD)||defined(CONFIG_SECRET_3P1RD_BOARD)
 #define	NXE2000_DEF_LDO1_ON					0		/* VAL = 0: Off, 1: On */	/* Touch_3.3V_PW			*/
 #define	NXE2000_DEF_LDO2_ON					1		/* VAL = 0: Off, 1: On */	/* LCD_1.8V_PW		Boot On	*/
 #define	NXE2000_DEF_LDO3_ON					1		/* VAL = 0: Off, 1: On */	/* SYSIO_1.8V_PW,	Boot On	*/
@@ -122,7 +123,7 @@
 #define	NXE2000_DEF_DDC4_SLP_VOL			1500000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 #define	NXE2000_DEF_DDC5_SLP_VOL			1500000	/* VAL(uV) = 0: 0.60 ~ 3.5V, Step 12.5 mV, default(OTP) = 1.6V */
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_3RD_BOARD)||defined(CONFIG_SECRET_3P1RD_BOARD)
 	#define	NXE2000_DEF_LDO1_VOL				3300000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 3.30V */
 	#define	NXE2000_DEF_LDO2_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.80V */
 	#define	NXE2000_DEF_LDO3_VOL				1800000	/* VAL(uV) = 0: 0.90 ~ 3.5V, Step = 25mV, default(OTP) = 1.80V */
@@ -249,7 +250,7 @@
 #define NXE2000_DEF_CHG_VDEAD				0		/* VAL(V) = 0: 2.9 ~ 3.0, 1: 2.8 ~ 2.9, default(OTP) = 2.9 ~ 3.0V */
 #define NXE2000_DEF_CHG_VSHORT				0		/* VAL(V) = 0: 2.7 ~ 2.8, 1: 2.5 ~ 2.6, default(OTP) = 2.7 ~ 2.8V */
 
-#if defined(CONFIG_SECRET_3RD_BOARD)
+#if defined(CONFIG_SECRET_3RD_BOARD)||defined(CONFIG_SECRET_3P1RD_BOARD)
 	#define NXE2000_DEF_CHG_VFCHG				4		/* VAL(V) = 0: 4.05, 1: 4.10, 2: 4.15, 3: 4.20,  4 ~ 7: 4.35, default = 4.10V */
 	#define NXE2000_DEF_CHG_VRCHG				3		/* VAL(V) = 0: 3.85, 1: 3.90, 2: 3.95, 3: 4.00,  4 ~ 7: 4.10  default = 3.90V */
 #else
