@@ -113,7 +113,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 1:1 0x48000000 uImage;ext4load mmc 1:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -239,9 +239,9 @@
  * EEPROM
  */
 
-#define CONFIG_CMD_EEPROM
-#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
-#define CONFIG_ENV_IS_IN_EEPROM
+//#define CONFIG_CMD_EEPROM
+//#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+//#define CONFIG_ENV_IS_IN_EEPROM
 
 #if defined(CONFIG_CMD_EEPROM)
 
@@ -359,6 +359,7 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
+#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
 #define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 #define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
@@ -451,7 +452,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
@@ -460,15 +461,19 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
-	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC1 */
-	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
-	#define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
-	#define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
+	#define	CONFIG_MMC1_ATTACH			TRUE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			FALSE	/* 2 = MMC2 */
+
+	#define CONFIG_MMC0_CLOCK					25000000 
+	#define CONFIG_MMC1_CLOCK					35000000 
+	
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
@@ -536,12 +541,12 @@
 #define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
 
 #define	FASTBOOT_PARTS_DEFAULT		\
-			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
-			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
-			"flash=mmc,1:boot:ext4:0x000100000,0x004000000;"	\
-			"flash=mmc,1:system:ext4:0x004100000,0x028E00000;"	\
-			"flash=mmc,1:cache:ext4:0x02CF00000,0x21000000;"	\
-			"flash=mmc,1:userdata:ext4:0x4df00000,0x0;"
+			"flash=mmc,0:2ndboot:2nd:0x200,0x4000;"	\
+			"flash=mmc,0:bootloader:boot:0x8000,0x70000;"	\
+			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
 #endif
 
 /*-----------------------------------------------------------------------
@@ -567,17 +572,25 @@
 	/* Logo command: board.c */
 	#if defined(CONFIG_LOGO_DEVICE_NAND)
 	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 1:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#else
 	/* From MMC */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 1:1 0x47000000 update.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_UPDATE "ext4load mmc 0:1 0x47000000 update.bmp; drawbmp 0x47000000"
 	#endif
 #endif
 
+
+/*-----------------------------------------------------------------------
+ * Recover boot
+ */
+#define	CONFIG_RECOVERY_BOOT
+#if defined (CONFIG_RECOVERY_BOOT)
+	#define CONFIG_CMD_RECOVERY_BOOT "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 ramdisk-recovery.img;bootm 0x48000000"
+#endif
 
 /*-----------------------------------------------------------------------
  * Debug message

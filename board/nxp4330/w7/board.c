@@ -30,6 +30,7 @@
 #include <platform.h>
 #include <mach-api.h>
 #include <nxp_rtc.h>
+#include <pm.h>
 
 #include <draw_lcd.h>
 
@@ -379,6 +380,30 @@ static void auto_update(int io, int wait)
 		run_command (cmd, 0);
 }
 
+static void bd_display_run(char *cmd, int bl_duty, int bl_on)
+{
+	static int display_init = 0;
+
+	if (cmd) {
+		run_command(cmd, 0);
+		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	}
+
+	if (!display_init) {
+		bd_display();
+		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+		display_init = 1;
+	}
+
+	pwm_config(CFG_LCD_PRI_PWM_CH,
+		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+
+	if (bl_on)
+		pwm_enable(CFG_LCD_PRI_PWM_CH);
+}
+
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
@@ -497,6 +522,17 @@ int board_late_init(void)
         }
     }
 
+#if defined CONFIG_RECOVERY_BOOT
+	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+
+		printf("RECOVERY BOOT\n");
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+	}
+	writel((-1UL), SCR_RESET_SIG_RESET);
+#endif
+
 /*===========================================================*/
 
 #ifdef CONFIG_FAST_BOOTUP
@@ -523,27 +559,13 @@ int board_late_init(void)
 
 	if (power_key_depth > 1)
 	{
-		run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 	else if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-		run_command(CONFIG_CMD_LOGO_BATTERY, 0);
+		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
 	}
-
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-	/* display */
-	bd_display();
-
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
     if (power_key_depth > 1)
     {
@@ -636,14 +658,11 @@ int board_late_init(void)
                 power_depth--;
                 if (power_depth > 1)
                 {
-                    pwm_config(CFG_LCD_PRI_PWM_CH,
-                        TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-                        TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+                	bd_display_run(NULL, bl_duty, 1);
                 }
                 else
                 {
-                    pwm_disable(CFG_LCD_PRI_PWM_CH);
-
+                	bd_display_run(NULL, 0, 0);
                     memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
                 }
             }
@@ -684,18 +703,7 @@ int board_late_init(void)
             }
         }
 
-        run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
-
-        lcd_draw_boot_logo(CONFIG_FB_ADDR,
-                CFG_DISP_PRI_RESOL_WIDTH,
-                CFG_DISP_PRI_RESOL_HEIGHT,
-                CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-        pwm_config(CFG_LCD_PRI_PWM_CH,
-            TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-            TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-
-        pwm_enable(CFG_LCD_PRI_PWM_CH);
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 
 skip_bat_animation:
@@ -724,20 +732,7 @@ int board_late_init(void)
 #endif
 
 #if defined(CONFIG_DISPLAY_OUT)
-	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
-
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-	bd_display();
-
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 
 	/* Temp check gpio to update */
