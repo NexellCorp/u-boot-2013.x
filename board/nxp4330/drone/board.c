@@ -384,8 +384,6 @@ static void auto_update(int io, int wait)
 static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 {
 	static int display_init = 0;
-	
-	bl_duty = 100 - bl_duty;
 
 	if (cmd) {
 		run_command(cmd, 0);
@@ -403,12 +401,8 @@ static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
 		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
-	if (bl_on){
+	if (bl_on)
 		pwm_enable(CFG_LCD_PRI_PWM_CH);
-		gpio_set_value(CFG_BACKLIGHT_EN, 1);
-	} else {
-		gpio_set_value(CFG_BACKLIGHT_EN, 0);
-	}
 }
 
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
@@ -499,17 +493,6 @@ int board_late_init(void)
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
 
-    /* Check to Power-Key status */
-#ifndef CONFIG_FAST_BOOTUP
-    if ( power_key_depth)
-    {
-        show_bat_state = 1;
-    }
-#endif
-
-//  show_bat_state = 0;
-//  show_bat_state = 1;
-
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
 //shutdown_ilim_uA    = 3000000;
@@ -567,15 +550,15 @@ int board_late_init(void)
 		show_bat_state = 1;
 	}
 
-	if (power_key_depth > 1)
-	{
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
-	}
-	else if (show_bat_state)
+//	printf("********* show_bat_state %d 0x%x 0x%x\n",show_bat_state, NXE2000_REG_CHGSTATE, chg_state);
+
+	if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
 		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
-	} else {
+	}
+	else
+	{
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 
