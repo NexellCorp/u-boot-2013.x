@@ -143,7 +143,7 @@ static int muic_chrg_get_type(struct pmic *p)
 #endif
 	{
 		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
-		val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP)
+//		val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
 		val |=  (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
 
