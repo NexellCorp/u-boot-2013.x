@@ -61,7 +61,8 @@
 #define DWMCI_IDINTEN		0x090
 #define DWMCI_DSCADDR		0x094
 #define DWMCI_BUFADDR		0x098
-#define DWMCI_DATA		0x200
+#define DWMCI_CLKCTRL		0x114
+
 
 /* Interrupt Mask register */
 #define DWMCI_INTMSK_ALL	0xffffffff
@@ -133,6 +134,12 @@
 #define DWMCI_BMOD_IDMAC_RESET	(1 << 0)
 #define DWMCI_BMOD_IDMAC_FB	(1 << 1)
 #define DWMCI_BMOD_IDMAC_EN	(1 << 7)
+
+/* CLK DELAY SHIFT Register*/
+#define DW_MMC_DRIVE_DELAY(n)       ((n & 0xFF) << 0)   // write
+#define DW_MMC_DRIVE_PHASE(n)       ((n & 0x03) <<16)   // write
+#define DW_MMC_SAMPLE_DELAY(n)      ((n & 0xFF) << 8)   // read
+#define DW_MMC_SAMPLE_PHASE(n)      ((n & 0x03) <<24)   // read
 
 struct dwmci_host {
 	char *name;

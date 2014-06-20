@@ -72,6 +72,11 @@ static void nxp_dwmci_clksel(struct dwmci_host *host)
 	dwmci_writel(host, DWMCI_CLKSEL, val);
 }
 
+static void nxp_dwmci_clk_delay(int val ,int regbase )
+{
+	writel(val, regbase + DWMCI_CLKCTRL);
+}
+
 int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 {
 	struct dwmci_host *host = NULL;
@@ -94,7 +99,6 @@ int nxp_dwmci_init(u32 regbase, int bus_width, int index, int max_clock)
 	add_dwmci(host, max_clock, 400000);
 	return 0;
 }
-
 int board_mmc_init(bd_t *bis)
 {
 	int err = 0;
@@ -106,6 +110,10 @@ int board_mmc_init(bd_t *bis)
 #else 
 	err = nxp_dwmci_init(0xC0062000, 4, 0, 52000000);
 #endif
+#ifdef CONFIG_MMC0_CLK_DELAY
+	nxp_dwmci_clk_delay( CONFIG_MMC0_CLK_DELAY, 0xC0062000);
+#endif
+
 #if(CONFIG_MMC1_ATTACH == TRUE)
 	writel(readl(0xC0012004) | (1<<8), 0xC0012004);
 #endif
@@ -115,6 +123,9 @@ int board_mmc_init(bd_t *bis)
 	err = nxp_dwmci_init(0xC0068000, 4, 1, 52000000);
 #endif
 
+#ifdef CONFIG_MMC1_CLK_DELAY
+	nxp_dwmci_clk_delay( CONFIG_MMC1_CLK_DELAY, 0xC0068000);
+#endif
 #if(CONFIG_MMC2_ATTACH == TRUE)	
 	writel(readl(0xC0012004) | (1<<9), 0xC0012004);
 #endif
@@ -123,5 +134,9 @@ int board_mmc_init(bd_t *bis)
 #else
 	err = nxp_dwmci_init(0xC0069000, 4,2, 52000000);
 #endif
+#ifdef CONFIG_MMC2_CLK_DELAY
+	nxp_dwmci_clk_delay( CONFIG_MMC2_CLK_DELAY, 0xC0069000);
+#endif
 	return err;
 }
+

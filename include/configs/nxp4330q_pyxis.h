@@ -113,7 +113,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 1:1 0x48000000 uImage;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 1:1 0x48000000 uImage;ext4load mmc 1:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -461,6 +461,9 @@
     #define CONFIG_MMC0_ATTACH          TRUE	/* 0 = MMC0 */
     #define CONFIG_MMC1_ATTACH          TRUE	/* 1 = MMC1 */
     #define CONFIG_MMC2_ATTACH          FALSE	/* 2 = MMC2 */
+	#define	CONFIG_MMC0_CLK_DELAY		DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(0) | DW_MMC_SAMPLE_PHASE(0)
+	#define	CONFIG_MMC1_CLK_DELAY		DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(0) | DW_MMC_SAMPLE_PHASE(0)
+
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
