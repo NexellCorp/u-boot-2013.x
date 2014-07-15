@@ -60,6 +60,15 @@
 
 #define	TCLK_TICK_HZ				(1000000)
 
+extern int mmc_get_part_table(block_dev_desc_t *desc, uint64_t (*parts)[2], int *count);
+extern void fboot_lcd_start(void);
+extern void fboot_lcd_stop(void);
+extern void fboot_lcd_part(char *part, char *stat);
+extern void fboot_lcd_down(int percent);
+extern void fboot_lcd_flash(char *part, char *stat);
+extern void fboot_lcd_status(char *stat);
+
+
 struct update_sdcard_fs_type {
 	char *name;
 	unsigned int fs_type;
@@ -89,7 +98,7 @@ struct update_sdcard_part {
 	struct list_head link;
 };
 
-static struct update_sdcard_part f_sdcard_part[UPDATE_SDCARD_DEV_PART_MAX] = { NULL };
+static struct update_sdcard_part f_sdcard_part[UPDATE_SDCARD_DEV_PART_MAX];
 
 
 static int update_sdcard_mmc_check_part_table(block_dev_desc_t *desc, struct update_sdcard_part *fpart)
@@ -368,7 +377,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		goto ret_error;
 	}
 
-	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part));
+	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part)*UPDATE_SDCARD_DEV_PART_MAX);
 
 	len_read = update_sd_do_load(cmdtp, flag, argc, argv, FS_TYPE_FAT, 16);
 
@@ -448,9 +457,8 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 					int dev = fp->dev_no;
 					unsigned int fs_type = fp->fs_type;
 					int part_num = fp->part_num;
-					lbaint_t blk, cnt;
-					int blk_size = 512;
-					int ret = 0;
+					//lbaint_t blk, cnt;
+					//int blk_size = 512;
 
 					length=len_read;
 
@@ -530,12 +538,12 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 						{
 							if (update_sdcard_mmc_check_part_table(desc, fp) > 0) {
 								struct update_sdcard_part *fp_1 = fp;
-								int num, j, cnt=0;
+								int j, cnt=0;
 								uint64_t part_start[UPDATE_SDCARD_DEV_PART_MAX];
 								uint64_t part_length[UPDATE_SDCARD_DEV_PART_MAX];
 								char args[128];
 
-								printf("Warn  : [%s] make new partitions ....\n", fp->partition_name);
+								printf("Warn  : [%s] make new partitions ....\n", partition_name);
 
 								for (j=i; j<UPDATE_SDCARD_DEV_PART_MAX; j++, fp_1++) {
 									if(!strcmp(fp_1->device, ""))	break;
@@ -562,11 +570,11 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 							}
 
-							blk = fp->start/blk_size ;
-							cnt = (length/blk_size) + ((length & (blk_size-1)) ? 1 : 0);
-
+							//blk = fp->start/blk_size ;
+							//cnt = (length/blk_size) + ((length & (blk_size-1)) ? 1 : 0);
 							//p = sprintf(cmd, "mmc write %x %x %x", addr, blk, cnt);
-							p = sprintf(cmd, "update_mmc %d part %x %x %x", dev, addr, part_num, cnt);
+
+							p = sprintf(cmd, "update_mmc %d part %x %d %x", dev, (unsigned int)addr, part_num, (unsigned int)length);
 						}
 
 						printf("%s\n", cmd);
