@@ -519,6 +519,15 @@ int board_late_init(void)
 	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
+	// check adp charge
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+
+	if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)) {
+		show_bat_state = 1;
+	}
+
+//	printf("********* show_bat_state %d 0x%x 0x%x\n",show_bat_state, NXE2000_REG_CHGSTATE, chg_state);
+
 /*===========================================================*/
 
 #ifdef CONFIG_FAST_BOOTUP
@@ -543,16 +552,12 @@ int board_late_init(void)
     }
 #endif
 
-	// check adp charge
-	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
 
-	if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)){
-		show_bat_state = 1;
+	if (power_key_depth > 1)
+	{
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
-
-//	printf("********* show_bat_state %d 0x%x 0x%x\n",show_bat_state, NXE2000_REG_CHGSTATE, chg_state);
-
-	if (show_bat_state)
+	else if (show_bat_state)
 	{
 		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
 		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
@@ -562,10 +567,10 @@ int board_late_init(void)
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 
-    if (power_key_depth > 1)
-    {
-        goto skip_bat_animation;
-    }
+	if (power_key_depth > 1)
+	{
+		goto skip_bat_animation;
+	}
 
 #ifdef CONFIG_FAST_BOOTUP
     power_key_depth = 1;
