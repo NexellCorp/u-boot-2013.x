@@ -544,6 +544,18 @@ int board_late_init(void)
         goto skip_bat_animation;
     }
 
+#if 0
+	if(run_command("update_sdcard mmc 0:1 0x48000000 partmap.txt", 0) == 0)
+	{
+		printf("update_sdcard done. \n");
+		return 0;
+	}
+	else
+	{
+		printf("skip... update_sdcard. \n");
+	}
+#endif
+
 #ifdef CONFIG_FAST_BOOTUP
     power_key_depth = 1;
 #endif

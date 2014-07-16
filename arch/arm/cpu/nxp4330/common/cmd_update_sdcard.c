@@ -373,8 +373,8 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 	if (argc != 5)
 	{
-		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
-		goto ret_error;
+		debug("## [%s():%d] ret_error \n", __func__,__LINE__);
+		return -1;
 	}
 
 	memset(f_sdcard_part, 0x0, sizeof(f_sdcard_part)*UPDATE_SDCARD_DEV_PART_MAX);
@@ -413,7 +413,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 
 				if (fs_set_blk_dev(argv[1], (argc >= 3) ? argv[2] : NULL, FS_TYPE_FAT))
 				{
-					printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+					debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 					goto ret_error;
 				}
 
@@ -495,26 +495,26 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 						if (0 > get_device("mmc", simple_itoa(dev), &desc)) {
 					    	if (0 > run_command(cmd, 0))
 							{
-								printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+								debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 								goto ret_error;
 							}
 
 					    	if (0 > run_command("mmc rescan", 0))
 							{
-								printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+								debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 								goto ret_error;
 							}
 						}
 
 						if (0 > run_command(cmd, 0))	/* mmc device */
 						{
-							printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+							debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 							goto ret_error;
 						}
 
 						if (0 > get_device("mmc", simple_itoa(dev), &desc))
 						{
-							printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+							debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 							goto ret_error;
 						}
 
@@ -593,22 +593,23 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 		}
 		else
 		{
-			printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+			debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 			goto ret_error;
 		}
 	}
 	else
 	{
-		printf("## [%s():%d] ret_error \n", __func__,__LINE__);
+		debug("## [%s():%d] ret_error \n", __func__,__LINE__);
 		goto ret_error;
 	}
 
 	fboot_lcd_status("exit");
 
+	printf("update_sdcard end\n\n");
+
 	while (1) {
 		if (ctrlc()) 
 		{
-			printf("update_sdcard end\n\n");
 			break;
 		}
 	}
@@ -621,7 +622,7 @@ static int do_update_sdcard(cmd_tbl_t *cmdtp, int flag, int argc, char * const a
 ret_error:
 
 	fboot_lcd_stop();
-	return -1;
+	return 1;
 
 }
 
