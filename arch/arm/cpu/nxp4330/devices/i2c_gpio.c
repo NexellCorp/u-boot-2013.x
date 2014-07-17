@@ -453,7 +453,7 @@ int i2c_probe(u8 chip)
 	ret = pio_putbyte(i2c, data);
 	pio_stop(i2c);
 
-	if (0 == ret)
-		printf(" 0x%02x -> 0x", chip);
+//	if (0 == ret)
+//		printf(" 0x%02x -> 0x", chip);
 	return ret;
 }
