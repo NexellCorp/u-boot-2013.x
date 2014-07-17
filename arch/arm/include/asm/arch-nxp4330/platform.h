@@ -55,7 +55,7 @@ typedef unsigned int bool;
 
 #define NS_IN_HZ (1000000000UL)
 #define TO_PERIOD_NS(freq)				(NS_IN_HZ/(freq))
-#define TO_DUTY_NS(duty, freq)       	(TO_PERIOD_NS(freq)/(100/duty))
+#define TO_DUTY_NS(duty, freq)       	(duty ? TO_PERIOD_NS(freq)/(100/duty) : 0)
 
 #endif	/* __ASSEMBLY__ */
 #endif	/* __PLATFORM_H__ */
