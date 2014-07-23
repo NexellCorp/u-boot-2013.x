@@ -46,6 +46,9 @@ COBJS-$(CONFIG_DISPLAY_OUT_MIPI)	+= display_mipi.o
 COBJS-$(CONFIG_DISPLAY_OUT_RGB)		+= display_rgb.o
 COBJS-$(CONFIG_NXP4330_GPIO)		+= nxp_gpio.o
 COBJS-$(CONFIG_NXP_RTC_USE)			+= nxp_rtc.o
+COBJS-$(CONFIG_NXP4330_VIP)			+= vip.o
+COBJS-$(CONFIG_NXP4330_MLC_VIDEO)	+= mlc.o
+
 
 COBJS   := $(COBJS-y)
 SOBJS   := $(SOBJS-y)

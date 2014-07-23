@@ -1,4 +1,3 @@
-
 #
 # (C) Copyright 2009
 # jung hyun kim, Nexell Co, <jhkim@nexell.co.kr>
@@ -23,31 +22,25 @@
 #
 
 include $(TOPDIR)/config.mk
-LIB	 	 = $(obj)lib$(CPU)-common.o
 
-COBJS-y	+= cmd.o
-COBJS-$(CONFIG_LOGO_NEXELL)		+= cmd_draw_logo.o cmd_load_logo.o draw_lcd.o
-COBJS-$(CONFIG_CMD_SPI_EEPROM_UPDATE)   += cmd_spi_eeprom.o
-COBJS-$(CONFIG_CMD_UPDATE_NAND)   += cmd_update_nand.o
-COBJS-$(CONFIG_OTG_PHY_NEXELL)		+= otg_phy.o
-COBJS-$(CONFIG_NXP_USBD)		+= cmd_usbdown.o
-COBJS-$(CONFIG_MMC_PARTITIONS)		+= cmd_mmcparts.o
-COBJS-$(CONFIG_FASTBOOT)		+= cmd_fastboot.o otg_bind_chk.o
-COBJS-$(CONFIG_CMD_MMC_UPDATE)	+= cmd_mmc_update.o
-COBJS-$(CONFIG_CMD_UPDATE_SDCARD)	+= cmd_update_sdcard.o
-COBJS-$(CONFIG_NXP4330_VIP)		+= camera.o
+LIB	= $(obj)lib$(BOARD).o
 
-COBJS   := $(COBJS-y)
-SOBJS   := $(SOBJS-y)
+COBJS-y	:= board.o
+COBJS-$(CONFIG_DISPLAY_OUT)	+= display.o
+COBJS-$(CONFIG_NXP4330_VIP) += camera.o
+SOBJS-y	:=
 
-SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
-OBJS	:= $(addprefix $(obj),$(SOBJS) $(COBJS))
+SRCS    := $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
+OBJS	:= $(addprefix $(obj),$(COBJS-y) $(SOBJS-y))
 
-all:	$(obj).depend $(LIB)
+$(LIB):	$(obj).depend $(OBJS)
+	$(call cmd_link_o_target, $(SOBJS) $(OBJS))
 
-$(LIB):	$(OBJS)
-	$(call cmd_link_o_target, $(OBJS))
+clean:
+	rm -f $(SOBJS) $(OBJS)
 
+distclean:	clean
+	rm -f $(LIB) core *.bak $(obj).depend
 
 #########################################################################
 
