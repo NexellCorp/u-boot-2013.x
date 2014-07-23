@@ -34,6 +34,7 @@ COBJS-$(CONFIG_NXP_USBD)		+= cmd_usbdown.o
 COBJS-$(CONFIG_MMC_PARTITIONS)		+= cmd_mmcparts.o
 COBJS-$(CONFIG_FASTBOOT)		+= cmd_fastboot.o otg_bind_chk.o
 COBJS-$(CONFIG_CMD_MMC_UPDATE)	+= cmd_mmc_update.o
+COBJS-$(CONFIG_NXP4330_VIP)		+= camera.o
 
 COBJS   := $(COBJS-y)
 SOBJS   := $(SOBJS-y)

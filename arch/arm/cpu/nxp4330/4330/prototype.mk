@@ -57,3 +57,4 @@ COBJS-$(CONFIG_DISPLAY_OUT_HDMI)	+= ../$(PROTOTYPE)/$(MODULES)/nx_i2s.o
 # 								   		../$(PROTOTYPE)/$(MODULES)/nx_mlc.o				\
 # 								   		../$(PROTOTYPE)/$(MODULES)/nx_dpc.o
 COBJS-y	+= ../$(PROTOTYPE)/$(MODULES)/nx_rtc.o
+COBJS-$(CONFIG_NXP4330_VIP)		    += ../$(PROTOTYPE)/$(MODULES)/nx_vip.o
