@@ -60,7 +60,6 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
 #endif
 
-#define CFG_BACKLIGHT_EN	(PAD_GPIO_B + 27)
 
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
@@ -493,6 +492,25 @@ int board_late_init(void)
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
 
+	// check adp charge
+	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+//	printf("********* show_bat_state %d 0x%x 0x%x\n",show_bat_state, NXE2000_REG_CHGSTATE, chg_state);
+
+    /* Check to Power-Key status */
+#ifndef CONFIG_FAST_BOOTUP
+    if (gpio_get_value(GPIO_PMIC_VUSB_DET) || (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)) || power_key_depth)
+    {
+        show_bat_state = 1;
+    }
+    else
+    {
+        goto enter_shutdown;
+    }
+#endif
+
+//  show_bat_state = 0;
+//  show_bat_state = 1;
+
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
 //shutdown_ilim_uA    = 3000000;
@@ -519,19 +537,14 @@ int board_late_init(void)
 	writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
-	// check adp charge
-	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-
-	if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)) {
-		show_bat_state = 1;
-	}
-
-//	printf("********* show_bat_state %d 0x%x 0x%x\n",show_bat_state, NXE2000_REG_CHGSTATE, chg_state);
-
 /*===========================================================*/
 
 #ifdef CONFIG_FAST_BOOTUP
-    if (gpio_get_value(GPIO_PMIC_VUSB_DET))
+    if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
+    {
+        power_key_depth++;
+    }
+    else if (gpio_get_value(GPIO_PMIC_VUSB_DET) || (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP)))
     {
         show_bat_state = 1;
     }
@@ -552,7 +565,6 @@ int board_late_init(void)
     }
 #endif
 
-
 	if (power_key_depth > 1)
 	{
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
@@ -567,10 +579,10 @@ int board_late_init(void)
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
 	}
 
-	if (power_key_depth > 1)
-	{
-		goto skip_bat_animation;
-	}
+    if (power_key_depth > 1)
+    {
+        goto skip_bat_animation;
+    }
 
 #ifdef CONFIG_FAST_BOOTUP
     power_key_depth = 1;
@@ -692,9 +704,11 @@ int board_late_init(void)
                 if (0 == ++i%4) {
                     dy = sy + (bh+4)*3, i = 0;
                     lcd_fill_rectangle(sx, sy, bw, (bh+4)*4, 0x0, 0);
-                    lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-                    mdelay(1000);
-                    lcd_draw_text(str_clear, (lcdw - strlen(str_clear)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+					if (pb->bat->voltage_uV < shutdown_ilim_uA) {
+		                lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		                mdelay(1000);
+					}
+		            lcd_draw_text(str_clear, (lcdw - strlen(str_clear)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
                 }
             }
             else
@@ -710,7 +724,7 @@ skip_bat_animation:
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	/* Temp check gpio to update */
-//	if (chrg == CHARGER_USB)
+    if (chrg == CHARGER_USB)
     	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 	return 0;
