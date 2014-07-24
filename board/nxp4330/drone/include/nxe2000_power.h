@@ -51,7 +51,7 @@
 #define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
 #define NXE2000_DEF_LIMIT_USB_AMP			500000	/* VAL(mA), MAX = 1500mA */
 
-#define NXE2000_DEF_CHG_ADP_AMP				800000	/* VAL(mA), MAX = 1800mA */
+#define NXE2000_DEF_CHG_ADP_AMP				1500000	/* VAL(mA), MAX = 1800mA */
 #define NXE2000_DEF_CHG_USB_AMP				500000	/* VAL(mA), MAX = 1800mA */
 
 #define	NXE2000_DEF_LOWBAT1_VOL				3220000	/* VAL(uV), No Charger */	/* Refer form ADC	*/

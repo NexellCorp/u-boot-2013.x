@@ -359,14 +359,14 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
-#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
+//#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
 #define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 #define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
 
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP_UBC
 
 #define CONFIG_NXP_RTC_USE
 #endif
@@ -377,7 +377,7 @@
 #if defined(CONFIG_HAVE_BATTERY)
 
 #define CONFIG_BAT_CHECK
-//#define CONFIG_FAST_BOOTUP
+#define CONFIG_FAST_BOOTUP
 
 #if defined(CONFIG_BAT_CHECK)
 
