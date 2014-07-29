@@ -115,14 +115,13 @@ static struct nxp_mlc_video_param _mlc_param = {
     .height         = CAM_HEIGHT,
     .left           = 0,
     .top            = 0,
-#if 1 // apply screen width, height
     .right          = 0,
     .bottom         = 0,
+#if defined(CONFIG_NXP4330_MLC_RGB_OVERLAY)
+    .priority       = 1,
 #else
-    .right          = CAM_WIDTH,
-    .bottom         = CAM_HEIGHT,
-#endif
     .priority       = 0,
+#endif
 };
 
 void camera_run(void)
@@ -145,13 +144,13 @@ void camera_run(void)
 void camera_preview(void)
 {
     /*int io = (PAD_GPIO_A + 18);*/
-    int io = (PAD_GPIO_E + 12); // GMAC_TXER
-    nxp_gpio_direction_input(io);
-    nxp_gpio_set_alt(io, 0);
-    if (nxp_gpio_get_value(io)) {
+    /*int io = (PAD_GPIO_E + 12); // GMAC_TXER*/
+    /*nxp_gpio_direction_input(io);*/
+    /*nxp_gpio_set_alt(io, 0);*/
+    /*if (nxp_gpio_get_value(io)) {*/
         printf("run vip & mlc\n");
         nxp_vip_run(1);
         nxp_mlc_video_run(0);
-    }
+    /*}*/
     printf("%s exit\n", __func__);
 }

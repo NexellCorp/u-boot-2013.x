@@ -28,6 +28,7 @@ LIB	= $(obj)lib$(BOARD).o
 COBJS-y	:= board.o
 COBJS-$(CONFIG_DISPLAY_OUT)	+= display.o
 COBJS-$(CONFIG_NXP4330_VIP) += camera.o
+COBJS-$(CONFIG_NXP4330_MLC_RGB_OVERLAY) += overlay.o
 SOBJS-y	:=
 
 SRCS    := $(SOBJS-y:.o=.S) $(COBJS-y:.o=.c)
