@@ -28,7 +28,7 @@
 /*
  *	Config Value
  */
-    
+
 #define NXE2000_I2C_ADDR					(0x64 >> 1)
 
 #define CHARGER_MIN_CURRENT					100		/* VAL(mV) */
@@ -51,8 +51,8 @@
 #define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
 #define NXE2000_DEF_LIMIT_USB_AMP			500000	/* VAL(mA), MAX = 1500mA */
 
-#define NXE2000_DEF_CHG_ADP_AMP				800000	/* VAL(mA), MAX = 1800mA */
-#define NXE2000_DEF_CHG_USB_AMP				500000	/* VAL(mA), MAX = 1800mA */
+#define NXE2000_DEF_CHG_ADP_AMP				1500000	/* VAL(mA), MAX = 1800mA */
+#define NXE2000_DEF_CHG_USB_AMP				1500000	/* VAL(mA), MAX = 1800mA */
 
 #define	NXE2000_DEF_LOWBAT1_VOL				3440000	/* VAL(uV), No Charger */	/* Refer form ADC	*/
 #define	NXE2000_DEF_LOWBAT2_VOL				3680000	/* VAL(uV), Charger */		/* Refer form ADC	*/

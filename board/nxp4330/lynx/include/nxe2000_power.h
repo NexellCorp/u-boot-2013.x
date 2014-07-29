@@ -28,7 +28,7 @@
 /*
  *	Config Value
  */
-    
+
 #define NXE2000_I2C_ADDR					(0x64 >> 1)
 
 #define CHARGER_MIN_CURRENT					100		/* VAL(mV) */
