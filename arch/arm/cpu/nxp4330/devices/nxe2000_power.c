@@ -569,9 +569,12 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 
 	/* Set fuel gauge enable */
 #if defined(CONFIG_HAVE_BATTERY)
+#if defined(CONFIG_PMIC_SET_BOOTUP_VOLTAGE)
 	nxe2000_i2c_write(NXE2000_REG_CHGISET	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET1	, 0, power);
 	nxe2000_i2c_write(NXE2000_REG_REGISET2	, 0, power);
+#endif
+
 #if 1   //!defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
 #endif

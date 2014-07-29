@@ -382,14 +382,17 @@ static void auto_update(int io, int wait)
 #if defined(CONFIG_BAT_CHECK)
 int board_late_init(void)
 {
-	int chrg;
+    int chrg;
     int shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
     u32 chg_state;
-	struct power_battery *pb;
-	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
-	int show_bat_state = 0;
-	int power_key_depth = 0;
+    struct power_battery *pb;
+    struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
+    int show_bat_state = 0;
+    int power_key_depth = 0;
     u32 time_key_pev = 0;
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    u32 reg_val_old;
+#endif
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
@@ -456,6 +459,11 @@ int board_late_init(void)
 
 //  show_bat_state = 0;
 //  show_bat_state = 1;
+
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val_old);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val_old | 0x08));
+#endif
 
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
@@ -583,6 +591,10 @@ int board_late_init(void)
 	}
 
 skip_bat_animation:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, reg_val_old);
+#endif
+
 	/* Temp check gpio to update */
     if (chrg == CHARGER_USB)
     	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);

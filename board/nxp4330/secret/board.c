@@ -492,17 +492,20 @@ int board_late_init(void)
 		.alphablend		= 0,
 	};
 
-	int chrg;
+    int chrg;
     int shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
     int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
     u32 chg_state;
-	struct power_battery *pb;
-	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
-	int show_bat_state = 0;
-	int power_key_depth = 0;
+    struct power_battery *pb;
+    struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
+    int show_bat_state = 0;
+    int power_key_depth = 0;
     u32 time_key_pev = 0;
-	unsigned int sum_voltage=0, avg_voltage=0;
-	int i=0;
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    u32 reg_val_old;
+#endif
+    unsigned int sum_voltage=0, avg_voltage=0;
+    int i=0;
 
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
@@ -511,8 +514,8 @@ int board_late_init(void)
 	run_command(boot, 0);
 #endif
 
-	nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_HIGHLEVEL);
-	nxp_gpio_set_int_en(CFG_KEY_POWER, CTRUE);
+    nxp_gpio_set_int_mode(CFG_KEY_POWER, NX_GPIO_INTMODE_HIGHLEVEL);
+    nxp_gpio_set_int_en(CFG_KEY_POWER, CTRUE);
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
@@ -565,6 +568,11 @@ int board_late_init(void)
 
     if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
         puts("CHARGE Battery !\n");
+
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val_old);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val_old | 0x08));
+#endif
 
 	for(i=0; i<5; i++)
 	{
@@ -880,6 +888,9 @@ int board_late_init(void)
 	}
 
 skip_bat_animation:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, reg_val_old);
+#endif
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	/* Temp check gpio to update */

@@ -406,15 +406,18 @@ int board_late_init(void)
 		.alphablend		= 0,
 	};
 
-	int chrg;
-	int shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
-	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
-	u32 chg_state;
-	struct power_battery *pb;
-	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
-	int show_bat_state = 0;
-	int power_key_depth = 0;
-	u32 time_key_pev = 0;
+    int chrg;
+    int shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
+    int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
+    u32 chg_state;
+    struct power_battery *pb;
+    struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
+    int show_bat_state = 0;
+    int power_key_depth = 0;
+    u32 time_key_pev = 0;
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    u32 reg_val_old;
+#endif
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
@@ -427,77 +430,82 @@ int board_late_init(void)
     if (power_key_depth)
         time_key_pev = nxp_rtc_get();
 
-	p_fg = pmic_get("FG_NXE2000");
-	if (!p_fg) {
-		puts("FG_NXE2000: Not found\n");
-		return -ENODEV;
-	}
+    p_fg = pmic_get("FG_NXE2000");
+    if (!p_fg) {
+        puts("FG_NXE2000: Not found\n");
+        return -ENODEV;
+    }
 
-	p_chrg = pmic_get("PMIC_NXE2000");
-	if (!p_chrg) {
-		puts("PMIC_NXE2000: Not found\n");
-		return -ENODEV;
-	}
+    p_chrg = pmic_get("PMIC_NXE2000");
+    if (!p_chrg) {
+        puts("PMIC_NXE2000: Not found\n");
+        return -ENODEV;
+    }
 
-	p_muic = pmic_get("MUIC_NXE2000");
-	if (!p_muic) {
-		puts("MUIC_NXE2000: Not found\n");
-	}
+    p_muic = pmic_get("MUIC_NXE2000");
+    if (!p_muic) {
+        puts("MUIC_NXE2000: Not found\n");
+    }
 
-	p_bat = pmic_get("BAT_NXE2000");
-	if (!p_bat) {
-		puts("BAT_NXE2000: Not found\n");
-		return -ENODEV;
-	}
+    p_bat = pmic_get("BAT_NXE2000");
+    if (!p_bat) {
+        puts("BAT_NXE2000: Not found\n");
+        return -ENODEV;
+    }
 
-	p_fg->parent    = p_bat;
-	p_chrg->parent  = p_bat;
-	if(p_muic)
-		p_muic->parent  = p_bat;
+    p_fg->parent    = p_bat;
+    p_chrg->parent  = p_bat;
+    if(p_muic)
+        p_muic->parent  = p_bat;
 
-	p_bat->low_power_mode = NULL;
-	p_bat->pbat->battery_init(p_bat, p_fg, p_chrg, p_muic);
+    p_bat->low_power_mode = NULL;
+    p_bat->pbat->battery_init(p_bat, p_fg, p_chrg, p_muic);
 
-	pb = p_bat->pbat;
-	if(p_muic)
-		chrg = p_muic->chrg->chrg_type(p_muic);
-	else
-		chrg = p_chrg->chrg->chrg_type(p_chrg);
+    pb = p_bat->pbat;
+    if(p_muic)
+        chrg = p_muic->chrg->chrg_type(p_muic);
+    else
+        chrg = p_chrg->chrg->chrg_type(p_chrg);
 
-	if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
-		puts("No battery detected\n");
+    if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
+        puts("No battery detected\n");
         return -1;
-	}
+    }
 
-	if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
-	puts("CHARGE Battery !\n");
+    if (pb->bat->state == CHARGE && chrg == CHARGER_USB)
+        puts("CHARGE Battery !\n");
 
     /* Check to Power-Key status */
 #ifndef CONFIG_FAST_BOOTUP
-	if (gpio_get_value(GPIO_PMIC_VUSB_DET) || power_key_depth)
-	{
-		show_bat_state = 1;
-	}
-	else
-	{
-		goto enter_shutdown;
-	}
+    if (gpio_get_value(GPIO_PMIC_VUSB_DET) || power_key_depth)
+    {
+        show_bat_state = 1;
+    }
+    else
+    {
+        goto enter_shutdown;
+    }
 #endif
 
-	/* Access for image file. */
-	p_fg->fg->fg_battery_check(p_fg, p_bat);
-	//shutdown_ilim_uA    = 3000000;
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val_old);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val_old | 0x08));
+#endif
 
-	if (pb->bat->voltage_uV < shutdown_ilim_uA)
-	{
-		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
+    /* Access for image file. */
+    p_fg->fg->fg_battery_check(p_fg, p_bat);
+//shutdown_ilim_uA    = 3000000;
 
-		pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-		if ( !(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK) )
-		{
-			goto enter_shutdown;
-		}
-	}
+    if (pb->bat->voltage_uV < shutdown_ilim_uA)
+    {
+        bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
+
+        pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+        if ( !(chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK) )
+        {
+            goto enter_shutdown;
+        }
+    }
 
 /*===========================================================*/
 
@@ -702,6 +710,9 @@ int board_late_init(void)
 	}
 
 skip_bat_animation:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, reg_val_old);
+#endif
 	return 0;
 
 enter_shutdown:
