@@ -710,7 +710,21 @@ int board_late_init(void)
 	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #if defined(CONFIG_NXP4330_VIP)
     camera_run();
-    camera_preview();
+#if defined(CONFIG_NXP4330_MLC_RGB_OVERLAY)
+    overlay_set();
+    overlay_draw();
+#endif
+    {
+        int io = (PAD_GPIO_E + 12); // GMAC_TXER
+        nxp_gpio_direction_input(io);
+        nxp_gpio_set_alt(io, 0);
+        if (nxp_gpio_get_value(io)) {
+            camera_preview();
+#if defined(CONFIG_NXP4330_MLC_RGB_OVERLAY)
+            overlay_on();
+#endif
+        }
+    }
 #endif
 #endif
 

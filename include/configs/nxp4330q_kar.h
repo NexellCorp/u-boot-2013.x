@@ -585,13 +585,22 @@
 
 #define CONFIG_NXP4330_VIP
 #define CONFIG_NXP4330_MLC_VIDEO
+#define CONFIG_NXP4330_MLC_RGB_OVERLAY
 
 #if defined(CONFIG_NXP4330_VIP)
 // start address must be checked by kernel booting
 // each address must be aligned 4K
+#if defined(CONFIG_NXP4330_MLC_RGB_OVERLAY)
+#define CONFIG_VIP_LU_ADDR          0x7FD28000
+#define CONFIG_VIP_CB_ADDR          0x7FD7A800
+#define CONFIG_VIP_CR_ADDR          0x7FD91000
+#define CONFIG_RGB_OVERLAY_ADDR     0x7FDA8000
+#else
 #define CONFIG_VIP_LU_ADDR          0x7FEF2000
 #define CONFIG_VIP_CB_ADDR          0x7FF62800
 #define CONFIG_VIP_CR_ADDR          0x7FF79000
+#endif
+
 #endif
 
 #endif /* __CONFIG_H__ */
