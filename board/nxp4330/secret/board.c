@@ -502,7 +502,7 @@ int board_late_init(void)
     int power_key_depth = 0;
     u32 time_key_pev = 0;
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    u32 reg_val_old;
+    u32 reg_val;
 #endif
     unsigned int sum_voltage=0, avg_voltage=0;
     int i=0;
@@ -570,8 +570,8 @@ int board_late_init(void)
         puts("CHARGE Battery !\n");
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val_old);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val_old | 0x08));
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val | 0x08));
 #endif
 
 	for(i=0; i<5; i++)
@@ -889,7 +889,8 @@ int board_late_init(void)
 
 skip_bat_animation:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, reg_val_old);
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val & ~0x08));
 #endif
 #endif  /* CONFIG_DISPLAY_OUT */
 

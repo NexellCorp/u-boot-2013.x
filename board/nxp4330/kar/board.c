@@ -407,7 +407,7 @@ int board_late_init(void)
     int power_key_depth = 0;
     u32 time_key_pev = 0;
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    u32 reg_val_old;
+    u32 reg_val;
 #endif
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
@@ -483,8 +483,8 @@ int board_late_init(void)
 //  show_bat_state = 1;
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val_old);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val_old | 0x08));
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val | 0x08));
 #endif
 
     /* Access for image file. */
@@ -695,7 +695,8 @@ int board_late_init(void)
 
 skip_bat_animation:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, reg_val_old);
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val & ~0x08));
 #endif
 #endif  /* CONFIG_DISPLAY_OUT */
 
