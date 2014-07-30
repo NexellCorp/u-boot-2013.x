@@ -137,7 +137,7 @@ static int muic_chrg_get_type(struct pmic *p)
 	if ((chg_state & 0xC0) == 0x00)
 		return CHARGER_UNKNOWN;
 
-#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 	if (chg_state & 0x40)
@@ -158,7 +158,7 @@ static int muic_chrg_get_type(struct pmic *p)
 		s_otg_bind_flag     = 1;
 //	}
 
-#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
 		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
@@ -208,7 +208,7 @@ static int muic_chrg_get_type(struct pmic *p)
 		val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1);
 		pmic_reg_write(p, NXE2000_REG_CHGISET, val);
 
-#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 		val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
@@ -218,7 +218,7 @@ static int muic_chrg_get_type(struct pmic *p)
 	}
 #endif
 
-#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
 		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
