@@ -294,12 +294,12 @@ int board_init(void)
 #if defined(CONFIG_BAT_CHECK)
 static int pmic_init_nxe2000(void)
 {
-	struct pmic *p = pmic_get("PMIC_NXE2000");
+    struct pmic *p = pmic_get("PMIC_NXE2000");
     u32 val;
-	int ret = 0;
+    int ret = 0;
 
-	if (pmic_probe(p))
-		return -1;
+    if (pmic_probe(p))
+        return -1;
 
     if (GPIO_OTG_USBID_DET > -1)
     {
@@ -327,11 +327,11 @@ static int pmic_init_nxe2000(void)
     val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
     pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
 
-	if (ret) {
-		puts("NXE2000 PMIC setting error!\n");
-		return -1;
-	}
-	return 0;
+    if (ret) {
+        puts("NXE2000 PMIC setting error!\n");
+        return -1;
+    }
+    return 0;
 }
 
 int power_init_board(void)
@@ -380,6 +380,10 @@ static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #if defined(CONFIG_BAT_CHECK)
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+u32 chgctl_reg_val;
+#endif
+
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)
@@ -406,14 +410,11 @@ int board_late_init(void)
     int show_bat_state = 0;
     int power_key_depth = 0;
     u32 time_key_pev = 0;
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    u32 reg_val;
-#endif
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
-	char boot[16];
-	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
-	run_command(boot, 0);
+    char boot[16];
+    sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+    run_command(boot, 0);
 #endif
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
@@ -483,8 +484,8 @@ int board_late_init(void)
 //  show_bat_state = 1;
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val | 0x08));
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
 #endif
 
     /* Access for image file. */
@@ -503,14 +504,14 @@ int board_late_init(void)
     }
 
 #if defined CONFIG_RECOVERY_BOOT
-	if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
-		writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
+    if (RECOVERY_SIGNATURE == readl(SCR_RESET_SIG_READ)) {
+        writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
-		printf("RECOVERY BOOT\n");
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-		run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
-	}
-	writel((-1UL), SCR_RESET_SIG_RESET);
+        printf("RECOVERY BOOT\n");
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
+    }
+    writel((-1UL), SCR_RESET_SIG_RESET);
 #endif
 
 /*===========================================================*/
@@ -537,15 +538,15 @@ int board_late_init(void)
     }
 #endif
 
-	if (power_key_depth > 1)
-	{
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
-	}
-	else if (show_bat_state)
-	{
-		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-		bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
-	}
+    if (power_key_depth > 1)
+    {
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+    }
+    else if (show_bat_state)
+    {
+        memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
+        bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
+    }
 
     if (power_key_depth > 1)
     {
@@ -553,15 +554,15 @@ int board_late_init(void)
     }
 
 #if 0
-	if(run_command("update_sdcard mmc 0:1 0x48000000 partmap.txt", 0) == 0)
-	{
-		printf("update_sdcard done. \n");
-		return 0;
-	}
-	else
-	{
-		printf("skip... update_sdcard. \n");
-	}
+    if(run_command("update_sdcard mmc 0:1 0x48000000 partmap.txt", 0) == 0)
+    {
+        printf("update_sdcard done. \n");
+        return 0;
+    }
+    else
+    {
+        printf("skip... update_sdcard. \n");
+    }
 #endif
 
 #ifdef CONFIG_FAST_BOOTUP
@@ -570,36 +571,36 @@ int board_late_init(void)
 
 /*===========================================================*/
 
-	// draw charing image
-	if (show_bat_state) {
-		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
-		int bmpw = 240, bmph = 320;
-		int bw = 82, bh = 55;
-		int bx = 79, by = 60+4;
-		int sx, sy, dy, str_dy, clr_str_size;
-		unsigned int color = (54<<16) + (221 << 8) + (19);
+    // draw charing image
+    if (show_bat_state) {
+        int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
+        int bmpw = 240, bmph = 320;
+        int bw = 82, bh = 55;
+        int bx = 79, by = 60+4;
+        int sx, sy, dy, str_dy, clr_str_size;
+        unsigned int color = (54<<16) + (221 << 8) + (19);
         int i = 0;
         u32 time_pwr_prev;
         u8  is_pwr_in, power_state = 0;
         u8  power_src = CHARGER_NO;
         u8  power_depth = 3;
-		char *str_charging = "CHARGING...";
+        char *str_charging = "CHARGING...";
         char *str_lowbatt  = "Low battery...";
         char *str_clear    = "              ";
 
         clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 
-		sx = (lcdw - bmpw)/2 + bx;
-		sy = (lcdh - bmph)/2 + by;
-		dy = sy + (bh+4)*3;
+        sx = (lcdw - bmpw)/2 + bx;
+        sy = (lcdh - bmph)/2 + by;
+        dy = sy + (bh+4)*3;
 
-		lcd_debug_init(&lcd);
-		lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, dy+100, 3, 3, 0);
+        lcd_debug_init(&lcd);
+        lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, dy+100, 3, 3, 0);
         str_dy = dy;
 
         time_pwr_prev = nxp_rtc_get();
 
-		while(show_bat_state && !ctrlc())
+        while(show_bat_state && !ctrlc())
         {
             if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
             {
@@ -650,11 +651,11 @@ int board_late_init(void)
                 power_depth--;
                 if (power_depth > 1)
                 {
-                	bd_display_run(NULL, bl_duty, 1);
+                    bd_display_run(NULL, bl_duty, 1);
                 }
                 else
                 {
-                	bd_display_run(NULL, 0, 0);
+                    bd_display_run(NULL, 0, 0);
                     memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
                 }
             }
@@ -697,18 +698,20 @@ int board_late_init(void)
         }
 
         bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
-	}
+    }
 
 skip_bat_animation:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val & ~0x08));
-#endif
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 #endif  /* CONFIG_DISPLAY_OUT */
 
 	return 0;
 
 enter_shutdown:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 	while(1);
 

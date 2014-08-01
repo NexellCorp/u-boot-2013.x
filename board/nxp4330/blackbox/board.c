@@ -330,49 +330,50 @@ int board_init(void)
 #if defined(CONFIG_BAT_CHECK)
 static int pmic_init_nxe2000(void)
 {
-	struct pmic *p = pmic_get("PMIC_NXE2000");
-	u32 val;
-	int ret = 0;
+    struct pmic *p = pmic_get("PMIC_NXE2000");
+    u32 val;
+    int ret = 0;
 
-	if (pmic_probe(p))
-		return -1;
+    if (pmic_probe(p))
+        return -1;
 
-	if (GPIO_OTG_USBID_DET > -1)
-	{
-		gpio_direction_input(GPIO_OTG_USBID_DET);
-	}
+    if (GPIO_OTG_USBID_DET > -1)
+    {
+        gpio_direction_input(GPIO_OTG_USBID_DET);
+    }
 
-	if (GPIO_OTG_VBUS_DET > -1)
-	{
-		gpio_direction_output(GPIO_OTG_VBUS_DET, 0);
-	}
+    if (GPIO_OTG_VBUS_DET > -1)
+    {
+        gpio_direction_output(GPIO_OTG_VBUS_DET, 0);
+    }
 
-	if (GPIO_PMIC_VUSB_DET > -1)
-	{
-		gpio_direction_input(GPIO_PMIC_VUSB_DET);
-	}
+    if (GPIO_PMIC_VUSB_DET > -1)
+    {
+        gpio_direction_input(GPIO_PMIC_VUSB_DET);
+    }
 
-	if (GPIO_PMIC_LOWBAT_DET > -1)
-	{
-		gpio_direction_input(GPIO_PMIC_LOWBAT_DET);
-	}
+    if (GPIO_PMIC_LOWBAT_DET > -1)
+    {
+        gpio_direction_input(GPIO_PMIC_LOWBAT_DET);
+    }
 
-	val = (NXE2000_POS_ADCCNT3_ADRQ_SINGLE | NXE2000_POS_ADCCNT3_ADSEL_VBAT);
-	pmic_reg_write(p, NXE2000_REG_ADCCNT3, val);
+    val = (NXE2000_POS_ADCCNT3_ADRQ_SINGLE | NXE2000_POS_ADCCNT3_ADSEL_VBAT);
+    pmic_reg_write(p, NXE2000_REG_ADCCNT3, val);
 
-	val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
-	pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
+    val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
+    pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
 
-	if (ret) {
-		puts("NXE2000 PMIC setting error!\n");
-		return -1;
-	}
-	return 0;
+    if (ret) {
+        puts("NXE2000 PMIC setting error!\n");
+        return -1;
+    }
+    return 0;
 }
 
 int power_init_board(void)
 {
 	int ret;
+
 	ret = pmic_init(I2C_0);
 	ret |= pmic_init_nxe2000();
 	ret |= power_fg_init(I2C_0);
@@ -389,6 +390,10 @@ int power_init_board(void)
 extern void	bd_display(void);
 
 #if defined(CONFIG_BAT_CHECK)
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+u32 chgctl_reg_val;
+#endif
+
 int board_late_init(void)
 {
 #if defined(CONFIG_DISPLAY_OUT)
@@ -415,14 +420,11 @@ int board_late_init(void)
     int show_bat_state = 0;
     int power_key_depth = 0;
     u32 time_key_pev = 0;
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    u32 reg_val;
-#endif
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
-	char boot[16];
-	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
-	run_command(boot, 0);
+    char boot[16];
+    sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+    run_command(boot, 0);
 #endif
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
@@ -488,8 +490,8 @@ int board_late_init(void)
 #endif
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val | 0x08));
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
 #endif
 
     /* Access for image file. */
@@ -531,29 +533,29 @@ int board_late_init(void)
     }
 #endif
 
-	if (power_key_depth > 1)
-	{
-		run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
-	}
-	else if (show_bat_state)
-	{
-		memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-		run_command(CONFIG_CMD_LOGO_BATTERY, 0);
-	}
+    if (power_key_depth > 1)
+    {
+        run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+    }
+    else if (show_bat_state)
+    {
+        memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
+        run_command(CONFIG_CMD_LOGO_BATTERY, 0);
+    }
 
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+    lcd_draw_boot_logo(CONFIG_FB_ADDR,
+            CFG_DISP_PRI_RESOL_WIDTH,
+            CFG_DISP_PRI_RESOL_HEIGHT,
+            CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-	/* display */
-	bd_display();
+    /* display */
+    bd_display();
 
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+    /* backlight */
+    pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+    pwm_config(CFG_LCD_PRI_PWM_CH,
+        TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+        TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
     if (power_key_depth > 1)
     {
@@ -566,157 +568,159 @@ int board_late_init(void)
 
 /*===========================================================*/
 
-	// draw charing image
-	if (show_bat_state) {
-		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
-		int bmpw = 240, bmph = 320;
-		int bw = 82, bh = 55;
-		int bx = 79, by = 60+4;
-		int sx, sy, dy, str_dy, clr_str_size;
-		unsigned int color = (54<<16) + (221 << 8) + (19);
-		int i = 0;
-		u32 time_pwr_prev;
-		u8  is_pwr_in, power_state = 0;
-		u8  power_src = CHARGER_NO;
-		u8  power_depth = 3;
-		char *str_charging = "CHARGING...";
-		char *str_lowbatt  = "Low battery...";
-		char *str_clear    = "              ";
+    // draw charing image
+    if (show_bat_state) {
+        int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
+        int bmpw = 240, bmph = 320;
+        int bw = 82, bh = 55;
+        int bx = 79, by = 60+4;
+        int sx, sy, dy, str_dy, clr_str_size;
+        unsigned int color = (54<<16) + (221 << 8) + (19);
+        int i = 0;
+        u32 time_pwr_prev;
+        u8  is_pwr_in, power_state = 0;
+        u8  power_src = CHARGER_NO;
+        u8  power_depth = 3;
+        char *str_charging = "CHARGING...";
+        char *str_lowbatt  = "Low battery...";
+        char *str_clear    = "              ";
 
-		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
+        clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 
-		sx = (lcdw - bmpw)/2 + bx;
-		sy = (lcdh - bmph)/2 + by;
-		dy = sy + (bh+4)*3;
+        sx = (lcdw - bmpw)/2 + bx;
+        sy = (lcdh - bmph)/2 + by;
+        dy = sy + (bh+4)*3;
 
-		lcd_debug_init(&lcd);
-		lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, dy+100, 3, 3, 0);
-		str_dy = dy;
+        lcd_debug_init(&lcd);
+        lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, dy+100, 3, 3, 0);
+        str_dy = dy;
 
-		time_pwr_prev = nxp_rtc_get();
+        time_pwr_prev = nxp_rtc_get();
 
-		while(show_bat_state && !ctrlc())
-		{
-			if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
-			{
-				power_key_depth++;
-			}
-			else
-			{
-				power_key_depth = 0;
-			}
-			nxp_gpio_set_int_clear(CFG_KEY_POWER);
+        while(show_bat_state && !ctrlc())
+        {
+            if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
+            {
+                power_key_depth++;
+            }
+            else
+            {
+                power_key_depth = 0;
+            }
+            nxp_gpio_set_int_clear(CFG_KEY_POWER);
 
-			pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-			if (chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK)
-			{
-				is_pwr_in = 1;
-				shutdown_ilim_uA = NXE2000_DEF_LOWBAT2_VOL;
-			}
-			else
-			{
-				is_pwr_in = 0;
-				shutdown_ilim_uA = NXE2000_DEF_LOWBAT1_VOL;
-			}
-			//shutdown_ilim_uA    = 3000000;
+            pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+            if (chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK)
+            {
+                is_pwr_in           = 1;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT2_VOL;
+            }
+            else
+            {
+                is_pwr_in           = 0;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
+            }
+//shutdown_ilim_uA    = 3000000;
 
-			if (!power_state && is_pwr_in)
-			{
-				if (p_muic)
-					chrg = p_muic->chrg->chrg_type(p_muic);
-				else
-					chrg = p_chrg->chrg->chrg_type(p_chrg);
+            if (!power_state && is_pwr_in)
+            {
+                if (p_muic)
+                    chrg = p_muic->chrg->chrg_type(p_muic);
+                else
+                    chrg = p_chrg->chrg->chrg_type(p_chrg);
 
-				if (power_src != chrg)
-				{
-					power_src = chrg;
-				}
-			}
+                if (power_src != chrg)
+                {
+                    power_src = chrg;
+                }
+            }
 
-			power_state = is_pwr_in;
+            power_state = is_pwr_in;
 
-			p_fg->fg->fg_battery_check(p_fg, p_bat);
+            p_fg->fg->fg_battery_check(p_fg, p_bat);
 
-			if (nxp_rtc_get() > (time_pwr_prev + 5))
-			{
-				time_pwr_prev = nxp_rtc_get();
+            if (nxp_rtc_get() > (time_pwr_prev + 5))
+            {
+                time_pwr_prev = nxp_rtc_get();
 
-				bl_duty = (bl_duty >> 1);
+                bl_duty = (bl_duty >> 1);
 
-				power_depth--;
-				if (power_depth > 1)
-				{
-					pwm_config(CFG_LCD_PRI_PWM_CH,
-					TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-					TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-				}
-				else
-				{
-					pwm_disable(CFG_LCD_PRI_PWM_CH);
+                power_depth--;
+                if (power_depth > 1)
+                {
+                    pwm_config(CFG_LCD_PRI_PWM_CH,
+                        TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+                        TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+                }
+                else
+                {
+                    pwm_disable(CFG_LCD_PRI_PWM_CH);
 
-					memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-				}
-			}
+                    memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
+                }
+            }
 
-			if ((!power_state) || (!power_depth))
-			{
-				if ((pb->bat->voltage_uV < shutdown_ilim_uA) || (!power_depth))
-				{
-					goto enter_shutdown;
-				}
-			}
-			if (power_key_depth > 1)
-			{
+            if ((!power_state) || (!power_depth))
+            {
+                if ((pb->bat->voltage_uV < shutdown_ilim_uA) || (!power_depth))
+                {
+                    goto enter_shutdown;
+                }
+            }
+            if (power_key_depth > 1)
+            {
             // mod by jhkim: boot up when power key press
             //  if (pb->bat->voltage_uV > shutdown_ilim_uA)
-				{
-					break;
-				}
-			}
+                {
+                    break;
+                }
+            }
 
-			/* Draw battery status */
-			if (power_depth > 1)
-			{
-				lcd_fill_rectangle(sx, dy, bw, bh, color, 0);
-				lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				dy -= (bh+4);
-				mdelay(1000);
-				if (0 == ++i%4) {
-					dy = sy + (bh+4)*3, i = 0;
-					lcd_fill_rectangle(sx, sy, bw, (bh+4)*4, 0x0, 0);
-					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-					mdelay(1000);
-					lcd_draw_text(str_clear, (lcdw - strlen(str_clear)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				}
-			}
-			else
-			{
-				mdelay(1000);
-			}
-		}
+            /* Draw battery status */
+            if (power_depth > 1)
+            {
+                lcd_fill_rectangle(sx, dy, bw, bh, color, 0);
+                lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+                dy -= (bh+4);
+                mdelay(1000);
+                if (0 == ++i%4) {
+                    dy = sy + (bh+4)*3, i = 0;
+                    lcd_fill_rectangle(sx, sy, bw, (bh+4)*4, 0x0, 0);
+                    lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+                    mdelay(1000);
+                    lcd_draw_text(str_clear, (lcdw - strlen(str_clear)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+                }
+            }
+            else
+            {
+                mdelay(1000);
+            }
+        }
 
         run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
-		lcd_draw_boot_logo(CONFIG_FB_ADDR,
+        lcd_draw_boot_logo(CONFIG_FB_ADDR,
 							CFG_DISP_PRI_RESOL_WIDTH,
 							CFG_DISP_PRI_RESOL_HEIGHT,
 							CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
-		pwm_config(CFG_LCD_PRI_PWM_CH,
+        pwm_config(CFG_LCD_PRI_PWM_CH,
 					TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
 					TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
-		pwm_enable(CFG_LCD_PRI_PWM_CH);
-	}
+        pwm_enable(CFG_LCD_PRI_PWM_CH);
+    }
 
 skip_bat_animation:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val & ~0x08));
-#endif
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 	return 0;
 
 enter_shutdown:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 	while(1);
 

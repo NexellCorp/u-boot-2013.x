@@ -380,6 +380,10 @@ static void auto_update(int io, int wait)
 #define	UPDATE_CHECK_TIME	(3000)	/* ms */
 
 #if defined(CONFIG_BAT_CHECK)
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+u32 chgctl_reg_val;
+#endif
+
 int board_late_init(void)
 {
     int chrg;
@@ -390,9 +394,6 @@ int board_late_init(void)
     int show_bat_state = 0;
     int power_key_depth = 0;
     u32 time_key_pev = 0;
-#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    u32 reg_val;
-#endif
 
     power_key_depth = nxp_gpio_get_int_pend(CFG_KEY_POWER);
     nxp_gpio_set_int_clear(CFG_KEY_POWER);
@@ -461,8 +462,8 @@ int board_late_init(void)
 //  show_bat_state = 1;
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val | 0x08));
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
 #endif
 
     /* Access for image file. */
@@ -513,8 +514,8 @@ int board_late_init(void)
 
 /*===========================================================*/
 
-	// draw charing image
-	if (show_bat_state) {
+    // draw charing image
+    if (show_bat_state) {
         u32 time_pwr_prev;
         u8  is_pwr_in, power_state = 0;
         u8  power_src = CHARGER_NO;
@@ -522,7 +523,7 @@ int board_late_init(void)
 
         time_pwr_prev = nxp_rtc_get();
 
-		while(show_bat_state)
+        while(show_bat_state)
         {
             if (nxp_gpio_get_int_pend(CFG_KEY_POWER))
             {
@@ -588,21 +589,23 @@ int board_late_init(void)
 
             mdelay(1000);
         }
-	}
+    }
 
 skip_bat_animation:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-    pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &reg_val);
-    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (reg_val & ~0x08));
-#endif
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
-	/* Temp check gpio to update */
+    /* Temp check gpio to update */
     if (chrg == CHARGER_USB)
-    	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
+        auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
 	return 0;
 
 enter_shutdown:
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
 	while(1);
 

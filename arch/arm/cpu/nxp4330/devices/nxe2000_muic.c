@@ -121,7 +121,9 @@ extern int otg_bind_check(int miliSec_Timeout);
 
 static int s_otg_bind_status;
 static int s_otg_bind_flag;
-
+#if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+extern u32 chgctl_reg_val;
+#endif
 static int muic_chrg_get_type(struct pmic *p)
 {
 	int chg_ilim_uA;
@@ -137,32 +139,37 @@ static int muic_chrg_get_type(struct pmic *p)
 	if ((chg_state & 0xC0) == 0x00)
 		return CHARGER_UNKNOWN;
 
-#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP) || (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
 	if (chg_state & 0x40)
 #endif
 	{
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 //		val &= ~(0x1 << NXE2000_POS_CHGCTL1_CHGP);
 		val |=  (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+#else
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 		return CHARGER_TA;
 	}
 #endif
-#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 //	if (!s_otg_bind_flag) {
 		s_otg_bind_status   = otg_bind_check(500);
 		s_otg_bind_flag     = 1;
 //	}
 
-#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
 		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 	pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+#else
+	chgctl_reg_val  |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+					|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 	pmic_reg_read(p, NXE2000_REG_CHGSTATE, &chg_state);
@@ -208,21 +215,26 @@ static int muic_chrg_get_type(struct pmic *p)
 		val = (CHARGER_CURRENT_COMPLETE << NXE2000_POS_CHGISET_ICCHG) + ((NXE2000_DEF_CHG_ADP_AMP / 100000) - 1);
 		pmic_reg_write(p, NXE2000_REG_CHGISET, val);
 
-#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 		pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 		val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 		pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+#else
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 		return CHARGER_TA;
 	}
 #endif
 
-#if 1	//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 	pmic_reg_read(p, NXE2000_REG_CHGCTL1, &val);
 	val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
 		|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 	pmic_reg_write(p, NXE2000_REG_CHGCTL1, val);
+#else
+	chgctl_reg_val  |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+					|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 	/* PMIC GPIO4 : Set output mode */
