@@ -410,6 +410,7 @@ int board_late_init(void)
     int show_bat_state = 0;
     int power_key_depth = 0;
     u32 time_key_pev = 0;
+    u8  is_pwr_in;
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
     char boot[16];
@@ -456,9 +457,9 @@ int board_late_init(void)
 
     pb = p_bat->pbat;
     if(p_muic)
-        chrg = p_muic->chrg->chrg_type(p_muic);
+        chrg = p_muic->chrg->chrg_type(p_muic, 1);
     else
-        chrg = p_chrg->chrg->chrg_type(p_chrg);
+        chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
     if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
         puts("No battery detected\n");
@@ -484,9 +485,27 @@ int board_late_init(void)
 //  show_bat_state = 1;
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+
+    if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP))
+    {
+        is_pwr_in           = 1;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_ADP_VOL;
+    }
+    else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
+    {
+        is_pwr_in           = 1;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
+    }
+    else
+    {
+        is_pwr_in           = 0;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
+    }
+
     pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
     pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
-#endif
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
@@ -581,7 +600,7 @@ int board_late_init(void)
         unsigned int color = (54<<16) + (221 << 8) + (19);
         int i = 0;
         u32 time_pwr_prev;
-        u8  is_pwr_in, power_state = 0;
+        u8  power_state = 0;
         u8  power_src = CHARGER_NO;
         u8  power_depth = 3;
         char *str_charging = "CHARGING...";
@@ -612,25 +631,32 @@ int board_late_init(void)
             }
             nxp_gpio_set_int_clear(CFG_KEY_POWER);
 
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
             pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-            if (chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK)
+            if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP))
             {
                 is_pwr_in           = 1;
-                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT2_VOL;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_ADP_VOL;
+            }
+            else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
+            {
+                is_pwr_in           = 1;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
             }
             else
             {
                 is_pwr_in           = 0;
                 shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
             }
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 //shutdown_ilim_uA    = 3000000;
 
             if (!power_state && is_pwr_in)
             {
                 if (p_muic)
-                    chrg = p_muic->chrg->chrg_type(p_muic);
+                    chrg = p_muic->chrg->chrg_type(p_muic, 0);
                 else
-                    chrg = p_chrg->chrg->chrg_type(p_chrg);
+                    chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
                 if (power_src != chrg)
                 {
@@ -712,10 +738,10 @@ enter_shutdown:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
     pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
-	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
-	while(1);
+    pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
+    while(1);
 
-	return -1;
+    return -1;
 }
 #else	/* CONFIG_BAT_CHECK */
 

@@ -28,7 +28,7 @@
 /*
  *	Config Value
  */
-    
+
 #define NXE2000_I2C_ADDR					(0x64 >> 1)
 
 #define CHARGER_MIN_CURRENT					100		/* VAL(mV) */
@@ -56,6 +56,9 @@
 
 #define	NXE2000_DEF_LOWBAT1_VOL				3220000	/* VAL(uV), No Charger */	/* Refer form ADC	*/
 #define	NXE2000_DEF_LOWBAT2_VOL				3680000	/* VAL(uV), Charger */		/* Refer form ADC	*/
+
+#define	NXE2000_DEF_LOWBAT_ADP_VOL			3680000	/* VAL(uV) */				/* Refer form ADC	*/
+#define	NXE2000_DEF_LOWBAT_USB_VOL			3220000	/* VAL(uV) */				/* Refer form ADC	*/
 
 #define	NXE2000_DEF_DDC1_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.3V ARM		*/
 #define	NXE2000_DEF_DDC2_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.2V CORE	*/

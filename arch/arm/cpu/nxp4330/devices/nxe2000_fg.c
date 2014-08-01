@@ -72,6 +72,7 @@ static int power_update_battery(struct pmic *p, struct pmic *bat)
 static int power_check_battery(struct pmic *p, struct pmic *bat)
 {
 	struct power_battery *pb = bat->pbat;
+	unsigned int voltage_uV = 0, count;
 	unsigned int val;
 	int ret = 0;
 
@@ -99,7 +100,17 @@ static int power_check_battery(struct pmic *p, struct pmic *bat)
 	ret |= pmic_reg_read(p, NXE2000_REG_LSIVER, &val);
 	pb->bat->version = val;
 
-	power_update_battery(p, bat);
+	for (count = 0; count < 2; count++) {
+		power_update_battery(p, bat);
+		mdelay(50);
+	}
+	for (count = 0; count < 3; count++) {
+		power_update_battery(p, bat);
+		voltage_uV += pb->bat->voltage_uV;
+		mdelay(10);
+	}
+	pb->bat->voltage_uV = (voltage_uV / 3);
+
 	debug("fg ver: 0x%x\n", pb->bat->version);
 	printf("BAT: state_of_charge(SOC):%d%%\n",
 	       pb->bat->state_of_chrg);

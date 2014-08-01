@@ -38,9 +38,6 @@
 #include <power/pmic.h>
 #include <power/battery.h>
 #include <asm/arch/nxe2000-private.h>
-#if defined(CONFIG_PMIC_NXE1100)
-#include <nxe1100_power.h>
-#endif
 #if defined(CONFIG_PMIC_NXE2000)
 #include <nxe2000_power.h>
 #endif
@@ -59,16 +56,13 @@ DECLARE_GLOBAL_DATA_PTR;
 #endif
 
 #if defined(CONFIG_BAT_CHECK)
-#define CFG_KEY_POWER		(PAD_GPIO_ALV + 0)
+#define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
 #endif
 
 
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
  */
-#if defined(CONFIG_PMIC_NXE1100)
-struct nxe1100_power	nxe_power_config;
-#endif
 #if defined(CONFIG_PMIC_NXE2000)
 struct nxe2000_power	nxe_power_config;
 #endif
@@ -230,37 +224,6 @@ static void bd_alive_init(void)
 
 int bd_pmic_init(void)
 {
-#if defined(CONFIG_PMIC_NXE1100)
-	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= 0;
-
-	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE1100_DEF_LDO1_VOL;
-	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE1100_DEF_LDO2_VOL;
-	nxe_power_config.policy.ldo.ldo_3_out_vol = NXE1100_DEF_LDO3_VOL;
-	nxe_power_config.policy.ldo.ldo_4_out_vol = NXE1100_DEF_LDO4_VOL;
-	nxe_power_config.policy.ldo.ldo_5_out_vol = NXE1100_DEF_LDO5_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_vol = NXE1100_DEF_LDORTC1_VOL;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_vol = NXE1100_DEF_LDORTC2_VOL;
-
-	nxe_power_config.policy.ldo.ldo_1_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_2_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_3_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_4_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_5_out_enb = 1;
-	nxe_power_config.policy.ldo.ldo_rtc1_out_enb = 0;
-	nxe_power_config.policy.ldo.ldo_rtc2_out_enb = 0;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_vol = NXE1100_DEF_DDC1_VOL;
-	nxe_power_config.policy.dcdc.ddc_2_out_vol = NXE1100_DEF_DDC2_VOL;
-	nxe_power_config.policy.dcdc.ddc_3_out_vol = NXE1100_DEF_DDC3_VOL;
-
-	nxe_power_config.policy.dcdc.ddc_1_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_2_out_enb = 1;
-	nxe_power_config.policy.dcdc.ddc_3_out_enb = 1;
-
-	nxe1100_device_setup(&nxe_power_config);
-#endif  // #if defined(CONFIG_PMIC_NXE1100)
-
 #if defined(CONFIG_PMIC_NXE2000)
 	nxe_power_config.i2c_addr	= (0x64>>1);
 	nxe_power_config.i2c_bus	= 0;
@@ -420,6 +383,7 @@ int board_late_init(void)
     int show_bat_state = 0;
     int power_key_depth = 0;
     u32 time_key_pev = 0;
+    u8  is_pwr_in;
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
     char boot[16];
@@ -465,9 +429,9 @@ int board_late_init(void)
 
     pb = p_bat->pbat;
     if(p_muic)
-        chrg = p_muic->chrg->chrg_type(p_muic);
+        chrg = p_muic->chrg->chrg_type(p_muic, 1);
     else
-        chrg = p_chrg->chrg->chrg_type(p_chrg);
+        chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
     if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
         puts("No battery detected\n");
@@ -490,9 +454,27 @@ int board_late_init(void)
 #endif
 
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
+    pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
+
+    if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP))
+    {
+        is_pwr_in           = 1;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_ADP_VOL;
+    }
+    else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
+    {
+        is_pwr_in           = 1;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
+    }
+    else
+    {
+        is_pwr_in           = 0;
+        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
+    }
+
     pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
     pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
-#endif
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
     /* Access for image file. */
     p_fg->fg->fg_battery_check(p_fg, p_bat);
@@ -578,7 +560,7 @@ int board_late_init(void)
         unsigned int color = (54<<16) + (221 << 8) + (19);
         int i = 0;
         u32 time_pwr_prev;
-        u8  is_pwr_in, power_state = 0;
+        u8  power_state = 0;
         u8  power_src = CHARGER_NO;
         u8  power_depth = 3;
         char *str_charging = "CHARGING...";
@@ -609,25 +591,32 @@ int board_late_init(void)
             }
             nxp_gpio_set_int_clear(CFG_KEY_POWER);
 
+#if defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
             pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
-            if (chg_state & NXE2000_POS_CHGSTATE_PWRSRC_MASK)
+            if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEADP))
             {
                 is_pwr_in           = 1;
-                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT2_VOL;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_ADP_VOL;
+            }
+            else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
+            {
+                is_pwr_in           = 1;
+                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
             }
             else
             {
                 is_pwr_in           = 0;
                 shutdown_ilim_uA    = NXE2000_DEF_LOWBAT1_VOL;
             }
+#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 //shutdown_ilim_uA    = 3000000;
 
             if (!power_state && is_pwr_in)
             {
                 if (p_muic)
-                    chrg = p_muic->chrg->chrg_type(p_muic);
+                    chrg = p_muic->chrg->chrg_type(p_muic, 0);
                 else
-                    chrg = p_chrg->chrg->chrg_type(p_chrg);
+                    chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
                 if (power_src != chrg)
                 {
@@ -700,13 +689,13 @@ int board_late_init(void)
         run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
 
         lcd_draw_boot_logo(CONFIG_FB_ADDR,
-							CFG_DISP_PRI_RESOL_WIDTH,
-							CFG_DISP_PRI_RESOL_HEIGHT,
-							CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+                            CFG_DISP_PRI_RESOL_WIDTH,
+                            CFG_DISP_PRI_RESOL_HEIGHT,
+                            CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 
         pwm_config(CFG_LCD_PRI_PWM_CH,
-					TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-					TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+                    TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
+                    TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
 
         pwm_enable(CFG_LCD_PRI_PWM_CH);
     }
@@ -721,12 +710,12 @@ enter_shutdown:
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
     pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, chgctl_reg_val);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
-	pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
-	while(1);
+    pmic_reg_write(p_chrg, NXE2000_REG_SLPCNT, 0x01);
+    while(1);
 
-	return -1;
+    return -1;
 #else
-	return 0;
+    return 0;
 #endif  /* CONFIG_DISPLAY_OUT */
 
 }

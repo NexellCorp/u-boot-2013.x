@@ -40,7 +40,7 @@ static int power_battery_charge(struct pmic *bat)
 		return -1;
 
 	for (k = 0; bat->chrg->chrg_bat_present(p_bat->chrg) &&
-		     bat->chrg->chrg_type(p_bat->muic) &&
+		     bat->chrg->chrg_type(p_bat->muic, 1) &&
 		     battery->state_of_chrg < 100; k++) {
 		udelay(10000000);
 		puts(".");

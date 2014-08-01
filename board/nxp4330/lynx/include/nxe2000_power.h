@@ -57,6 +57,9 @@
 #define	NXE2000_DEF_LOWBAT1_VOL				3440000	/* VAL(uV), No Charger */	/* Refer form ADC	*/
 #define	NXE2000_DEF_LOWBAT2_VOL				3680000	/* VAL(uV), Charger */		/* Refer form ADC	*/
 
+#define	NXE2000_DEF_LOWBAT_ADP_VOL			3680000	/* VAL(uV) */				/* Refer form ADC	*/
+#define	NXE2000_DEF_LOWBAT_USB_VOL			3440000	/* VAL(uV) */				/* Refer form ADC	*/
+
 #define	NXE2000_DEF_DDC1_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.1V ARM		*/
 #define	NXE2000_DEF_DDC2_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.0V CORE	*/
 #define	NXE2000_DEF_DDC3_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 3.3V SYS		*/

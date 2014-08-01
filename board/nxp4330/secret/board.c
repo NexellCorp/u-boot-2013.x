@@ -340,12 +340,12 @@ int board_init(void)
 #if defined(CONFIG_BAT_CHECK)
 static int pmic_init_nxe2000(void)
 {
-	struct pmic *p = pmic_get("PMIC_NXE2000");
+    struct pmic *p = pmic_get("PMIC_NXE2000");
     u32 val;
-	int ret = 0;
+    int ret = 0;
 
-	if (pmic_probe(p))
-		return -1;
+    if (pmic_probe(p))
+        return -1;
 
     if (GPIO_OTG_USBID_DET > -1)
     {
@@ -373,11 +373,11 @@ static int pmic_init_nxe2000(void)
     val = (1 << NXE2000_POS_ADCCNT1_VBATSEL);
     pmic_reg_write(p, NXE2000_REG_ADCCNT1, val);
 
-	if (ret) {
-		puts("NXE2000 PMIC setting error!\n");
-		return -1;
-	}
-	return 0;
+    if (ret) {
+        puts("NXE2000 PMIC setting error!\n");
+        return -1;
+    }
+    return 0;
 }
 
 int power_init_board(void)
@@ -557,9 +557,9 @@ int board_late_init(void)
 
     pb = p_bat->pbat;
     if(p_muic)
-        chrg = p_muic->chrg->chrg_type(p_muic);
+        chrg = p_muic->chrg->chrg_type(p_muic, 1);
     else
-        chrg = p_chrg->chrg->chrg_type(p_chrg);
+        chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
     if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
         puts("No battery detected\n");
@@ -801,9 +801,9 @@ int board_late_init(void)
             if (!power_state && is_pwr_in)
             {
                 if (p_muic)
-                    chrg = p_muic->chrg->chrg_type(p_muic);
+                    chrg = p_muic->chrg->chrg_type(p_muic, 0);
                 else
-                    chrg = p_chrg->chrg->chrg_type(p_chrg);
+                    chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
                 if (power_src != chrg)
                 {
@@ -840,7 +840,7 @@ int board_late_init(void)
             {
                 if ((pb->bat->voltage_uV <= shutdown_ilim_uA) || (!power_depth))
                 {
-					printf("enter_shutdown,%d\n", __LINE__);
+                    printf("enter_shutdown,%d\n", __LINE__);
                     goto enter_shutdown;
                 }
             }
