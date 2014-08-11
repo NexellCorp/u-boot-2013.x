@@ -241,7 +241,7 @@ static int pmic_charger_bat_present(struct pmic *p)
     return ret;
 }
 
-static int pmic_chrg_get_type(struct pmic *p)
+static int pmic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 {
 	return CHARGER_NO;
 }
