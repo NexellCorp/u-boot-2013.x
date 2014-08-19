@@ -523,7 +523,11 @@ int board_late_init(void)
     else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
     {
         is_pwr_in           = 1;
-        shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
+
+        if (chrg == CHARGER_USB)
+            shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_PC_VOL;
+        else
+            shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_ADP_VOL;
     }
     else
     {
@@ -657,7 +661,11 @@ int board_late_init(void)
             else if (chg_state & (1 << NXE2000_POS_CHGSTATE_USEUSB))
             {
                 is_pwr_in           = 1;
-                shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_VOL;
+
+                if (chrg == CHARGER_USB)
+                    shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_PC_VOL;
+                else
+                    shutdown_ilim_uA    = NXE2000_DEF_LOWBAT_USB_ADP_VOL;
             }
             else
             {
