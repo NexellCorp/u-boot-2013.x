@@ -252,7 +252,7 @@
 
 #define NXE2000_DEF_CHG_POWER_ON_VOL		5		/* VAL(V) = 0: 2.7 ~ 2.8, 1: 2.8 ~ 2.9, 2: 2.9 ~ 3.0, 3: 3.0 ~ 3.1, 4: 3.1 ~ 3.2, 5: 3.2 ~ 3.3, 6: 3.3 ~ 3.4, 7: 3.4 ~ 3.5 */
 													/* default(OTP) = 3.4 ~ 3.5V */
-#define NXE2000_DEF_CHG_VBATOV_SET			0		/* VAL(V) = 0: 3.95 ~ 4.38, 1: 4.10 ~ 4.53, default = 3.95 ~ 4.38V */
+#define NXE2000_DEF_CHG_VBATOV_SET			1		/* VAL(V) = 0: 3.95 ~ 4.38, 1: 4.10 ~ 4.53, default = 3.95 ~ 4.38V */
 #define NXE2000_DEF_CHG_VWEAK				2		/* VAL(V) = 0: 3.0 ~ 3.1, 1: 3.1 ~ 3.2, 2: 3.2 ~ 3.3, 3: 3.3 ~ 3.4, default(OTP) = 3.3 ~ 3.4V */
 #define NXE2000_DEF_CHG_VDEAD				0		/* VAL(V) = 0: 2.9 ~ 3.0, 1: 2.8 ~ 2.9, default(OTP) = 2.9 ~ 3.0V */
 #define NXE2000_DEF_CHG_VSHORT				1		/* VAL(V) = 0: 2.7 ~ 2.8, 1: 2.5 ~ 2.6, default(OTP) = 2.7 ~ 2.8V */
