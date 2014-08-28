@@ -32,7 +32,7 @@
 DECLARE_GLOBAL_DATA_PTR;
 
 int nand_curr_device = -1;
-#ifdef CONFIG_NAND_RANDOMIZER
+#ifdef CONFIG_NAND_RANDOMIZER			/* for update_nand commad */
 int no_nand_randomize = 0;
 #endif
 

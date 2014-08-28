@@ -2855,6 +2855,20 @@ static void nand_decode_ext_id(struct mtd_info *mtd, struct nand_chip *chip,
 					break;
 			}
 		}
+		// add for H27UBG8T2DTR
+		else if (id_data[1] == 0xD7 && id_data[2] == 0x14 &&
+				id_data[3] == 0x9e && id_data[4] == 0x34 && id_data[5] == 0x4a) {
+			mtd->writesize = 8192;
+			mtd->oobsize = 832;
+			extid >>= 2;
+		}
+		// add for H27UCG8T2ETR
+		else if (id_data[1] == 0xDE && id_data[2] == 0x14 &&
+				id_data[3] == 0xA7 && id_data[4] == 0x42 && id_data[5] == 0x4a) {
+			mtd->writesize = 16384;
+			mtd->oobsize = 1664;
+			extid >>= 2;
+		}
 		else {
 			/* Calc pagesize */
 			mtd->writesize = 2048 << (extid & 0x03);

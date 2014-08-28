@@ -160,7 +160,7 @@ struct nand_oobfree {
  * diagnosis and to allow creation of raw images
  */
 #define MTD_MAX_OOBFREE_ENTRIES_LARGE  32
-#define MTD_MAX_ECCPOS_ENTRIES_LARGE   1024
+#define MTD_MAX_ECCPOS_ENTRIES_LARGE   1664
 struct nand_ecclayout {
 	uint32_t eccbytes;
 	uint32_t eccpos[MTD_MAX_ECCPOS_ENTRIES_LARGE];

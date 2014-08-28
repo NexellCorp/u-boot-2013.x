@@ -207,7 +207,7 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-//#define CONFIG_CMD_NAND
+#define CONFIG_CMD_NAND
 //#define CONFIG_ENV_IS_IN_NAND
 
 #if defined(CONFIG_CMD_NAND)
@@ -362,6 +362,14 @@
 	#define CONFIG_USB_STORAGE
 	#define CONFIG_SYS_USB_EHCI_MAX_ROOT_PORTS 2
 	#define CONFIG_PREBOOT						"usb start"
+#endif
+
+/* Gadget */
+#define	CONFIG_USB_GADGET
+#if defined(CONFIG_USB_GADGET)
+	#define CONFIG_NXP_USBD
+	#define CONFIG_USBD_DOWN_ADDR				CONFIG_MEM_LOAD_ADDR
+	#define CONFIG_OTG_PHY_NEXELL
 #endif
 
 /*-----------------------------------------------------------------------
