@@ -78,7 +78,7 @@
 #define CFG_DISP_OUTPUT_MODOLE           		0	// 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER               0
-#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8R8G8B8
+#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8B8G8R8
 #define CFG_DISP_PRI_SCREEN_PIXEL_BYTE	        4
 #define CFG_DISP_PRI_SCREEN_COLOR_KEY	        0x090909
 
@@ -99,8 +99,8 @@
 #define CFG_DISP_PRI_VSYNC_FRONT_PORCH          23
 #define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL1
-#define CFG_DISP_PRI_CLKGEN0_DIV                10
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
+#define CFG_DISP_PRI_CLKGEN0_DIV                12
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
@@ -144,8 +144,8 @@
  * 	TIMER/PWM
  */
 #define CFG_LCD_PRI_PWM_CH                      0
-#define CFG_LCD_PRI_PWM_FREQ                    4000
-#define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
+#define CFG_LCD_PRI_PWM_FREQ                    20000
+#define CFG_LCD_PRI_PWM_DUTYCYCLE               20      /* (%) */
 
 //------------------------------------------------------------------------------
 // Static Bus #0 ~ #9, NAND, IDE configuration

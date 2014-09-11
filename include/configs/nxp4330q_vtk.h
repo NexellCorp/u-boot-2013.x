@@ -114,7 +114,8 @@
 #define CONFIG_BOOTFILE					"uImage"		/* File to load	*/
 
 /* Image - NFS */
-#define CONFIG_BOOTCOMMAND				"fatload mmc 0 0x48000000 /uImage;fatload mmc 0 0x49000000 /ramdisk.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
+// #define CONFIG_BOOTCOMMAND "ext4load mmc 0:1 0x48000000 uImage;ext4load mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -207,7 +208,7 @@
 /*-----------------------------------------------------------------------
  * NAND FLASH
  */
-#define CONFIG_CMD_NAND
+//#define CONFIG_CMD_NAND
 //#define CONFIG_ENV_IS_IN_NAND
 
 #if defined(CONFIG_CMD_NAND)
@@ -443,15 +444,24 @@
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
 	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
-	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
-	#define CONFIG_MMC0_ATTACH      	TRUE    /* 0 = MMC0 */
-    #define CONFIG_MMC1_ATTACH      	TRUE    /* 1 = MMC1 */
-    #define CONFIG_MMC2_ATTACH      	FALSE   /* 2 = MMC2 */
+	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
+	#define	CONFIG_MMC1_ATTACH			TRUE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			TRUE	/* 2 = MMC2 */
+
+	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
+	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(2)
+
+	#define CONFIG_MMC0_CLOCK					20000000 
+	#define CONFIG_MMC1_CLOCK					20000000 
+	#define CONFIG_MMC2_CLOCK					20000000 
+	
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
@@ -510,9 +520,40 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * FASTBOOT
+ */
+#define CONFIG_FASTBOOT
+
+#if defined(CONFIG_FASTBOOT) & defined(CONFIG_USB_GADGET)
+#define CFG_FASTBOOT_TRANSFER_BUFFER        CONFIG_MEM_LOAD_ADDR
+#define CFG_FASTBOOT_TRANSFER_BUFFER_SIZE	(CFG_MEM_PHY_SYSTEM_SIZE - CFG_FASTBOOT_TRANSFER_BUFFER)
+
+#define	FASTBOOT_PARTS_DEFAULT		\
+			"flash=eeprom,0:2ndboot:2nd:0x0,0x4000;"	\
+			"flash=eeprom,0:bootloader:boot:0x10000,0x70000;"	\
+			"flash=mmc,0:boot:ext4:0x000100000,0x004000000;"	\
+			"flash=mmc,0:system:ext4:0x004100000,0x028E00000;"	\
+			"flash=mmc,0:cache:ext4:0x02CF00000,0x21000000;"	\
+			"flash=mmc,0:userdata:ext4:0x4df00000,0x0;"
+#endif
+
+/*-----------------------------------------------------------------------
+ * UPDATE SDCARD
+ */
+#define CONFIG_CMD_UPDATE_SDCARD
+
+
+/*-----------------------------------------------------------------------
  * Logo command
  */
 #define CONFIG_DISPLAY_OUT
+
+#define CONFIG_LOGO_DEVICE_MMC
+
+#if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
+#error "Duplicated config for logo device!!!"
+#endif
+
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
@@ -522,6 +563,18 @@
 	/* display logo */
 	#define CONFIG_LOGO_NEXELL				/* Draw loaded bmp file to FB or fill FB */
   //#define CONFIG_CMD_LOGO_LOAD			"nand read 0x8e800000 600000 100000; bootlogo 0x8e800000"
+
+	/* Logo command: board.c */
+	#if defined(CONFIG_LOGO_DEVICE_NAND)
+	/* From NAND */
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+	#else
+	/* From MMC */
+    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 0:1 0x47000000 logo.bmp; drawbmp 0x47000000"
+    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 0:1 0x47000000 battery.bmp; drawbmp 0x47000000"
+	#endif
+
 #endif
 
 /*-----------------------------------------------------------------------

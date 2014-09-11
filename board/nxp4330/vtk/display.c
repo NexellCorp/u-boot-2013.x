@@ -30,6 +30,12 @@ extern void display_lvds(int module, unsigned int fbbase,
 					struct disp_multily_param *pmly, struct disp_lvds_param *plvds);
 #endif
 
+#if defined(CONFIG_DISPLAY_OUT_RGB)
+extern void display_rgb(int module, unsigned int fbbase,
+					struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
+					struct disp_multily_param *pmly, struct disp_rgb_param *prgb);
+#endif
+
 #if defined(CONFIG_DISPLAY_OUT_HDMI)
 extern void display_hdmi(int module, int preset, unsigned int fbbase,
 					struct disp_vsync_info *pvsync, struct disp_syncgen_param *psgen,
@@ -134,6 +140,10 @@ static int LD070WX3_SL01(int width, int height, void *data)
 		.lcd_format 	= CFG_DISP_LVDS_LCD_FORMAT,         \
 	};
 
+#define	INIT_PARAM_RGB(name)							\
+	struct disp_rgb_param name = {							\
+		.lcd_mpu_type 	= 0,                                \
+	};
 
 #define	INIT_PARAM_MIPI(name)	\
 	struct disp_mipi_param name = {	\
@@ -152,9 +162,15 @@ int bd_display(void)
 
 #if defined(CONFIG_DISPLAY_OUT_LVDS)
 	INIT_PARAM_LVDS(lvds);
-
 	display_lvds(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
 		&vsync, &syncgen, &multily, &lvds);
+#endif
+
+#if defined(CONFIG_DISPLAY_OUT_RGB)
+	INIT_PARAM_RGB(rgb);
+
+	display_rgb(CFG_DISP_OUTPUT_MODOLE, CONFIG_FB_ADDR,
+		&vsync, &syncgen, &multily, &rgb);
 #endif
 
 #if defined(CONFIG_DISPLAY_OUT_MIPI)
