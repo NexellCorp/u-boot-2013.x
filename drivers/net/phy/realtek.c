@@ -123,7 +123,6 @@ static struct phy_driver RTL8211B_driver = {
 	.shutdown = &genphy_shutdown,
 };
 
-#if 0
 /* Support for RTL8211E-VB-CG, RTL8211E-VL-CG and RTL8211EG-VB-CG PHYs */
 static struct phy_driver RTL8211E_driver = {
 	.name = "RealTek RTL8211E",
@@ -145,12 +144,11 @@ static struct phy_driver RTL8211DN_driver = {
 	.startup = &rtl8211x_startup,
 	.shutdown = &genphy_shutdown,
 };
-#endif
 
 int phy_realtek_init(void)
 {
-	phy_register(&RTL8211B_driver);
-//	phy_register(&RTL8211E_driver);
+//	phy_register(&RTL8211B_driver);
+	phy_register(&RTL8211E_driver);
 //	phy_register(&RTL8211DN_driver);
 
 	return 0;

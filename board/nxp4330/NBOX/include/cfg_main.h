@@ -51,6 +51,12 @@
 #define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
+ * 	GMAC PHY
+ */
+#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_E + 23)
+#define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_E + 22)
+
+/*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
 #define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */

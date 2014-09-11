@@ -36,7 +36,8 @@
 #include <net.h>
 
 /* local debug macro */
-#undef MII_DEBUG
+//#undef MII_DEBUG
+#define MII_DEBUG
 
 #undef debug
 #ifdef MII_DEBUG
