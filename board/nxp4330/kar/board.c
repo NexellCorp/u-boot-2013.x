@@ -381,7 +381,7 @@ static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 
 #if defined(CONFIG_BAT_CHECK)
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-u32 chgctl_reg_val;
+extern u32 chgctl_reg_val;
 #endif
 
 int board_late_init(void)

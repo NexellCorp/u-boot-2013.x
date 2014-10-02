@@ -366,30 +366,35 @@
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
-#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
-#define CONFIG_PMIC_CHARGING_PATH_ADP				(0) // Support only VADP. Do not supported USB ADP.
-#define CONFIG_PMIC_CHARGING_PATH_UBC				(1) // Support only VUSB. (USB connector - USB ADP & PC)
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC			(2) // Using VADP, VUSB power path. Separated power path.
-#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED	(3) // Using VADP, VUSB power path. Linked power path.
-
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH			CONFIG_PMIC_CHARGING_PATH_UBC
+#define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
+#define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
+#define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_UBC
 
 #define CONFIG_NXP_RTC_USE
+
+#define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
+
+// #define CONFIG_NXE2000_REG_DUMP
 #endif
 
-/*-----------------------------------------------------------------------
- * BATTERY CHECK (FUEL GAUGE)
- */
 #if defined(CONFIG_HAVE_BATTERY)
 
 //#define CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE
 //#define CONFIG_PMIC_SET_BOOTUP_VOLTAGE
 
+//#define CONFIG_POWER_BATTERY_SMALL
+
+#ifndef CONFIG_POWER_BATTERY_SMALL
 #define CONFIG_BAT_CHECK
 #define CONFIG_FAST_BOOTUP
+#endif
 
-#if defined(CONFIG_BAT_CHECK)
+#define CONFIG_POWER_BATTERY
+#define CONFIG_POWER_BATTERY_NXE2000
+#endif	// #if defined(CONFIG_HAVE_BATTERY)
 
 #if defined(CONFIG_PMIC) && defined(CONFIG_PMIC_NXE2000)
 #define CONFIG_POWER
@@ -399,19 +404,13 @@
 #define CONFIG_POWER_FG_NXE2000
 #define CONFIG_POWER_MUIC
 #define CONFIG_POWER_MUIC_NXE2000
-#define CONFIG_POWER_BATTERY
-#define CONFIG_POWER_BATTERY_NXE2000
 
 #if defined(CONFIG_SECRET_2ND_BOARD)||defined(CONFIG_SECRET_2P1ND_BOARD)\
 	||defined(CONFIG_SECRET_3RD_BOARD)||defined(CONFIG_SECRET_3P1RD_BOARD)
 #define	CFG_IO_I2C0_SCL	((PAD_GPIO_A + 25) | PAD_FUNC_ALT0)
 #define	CFG_IO_I2C0_SDA	((PAD_GPIO_A + 26) | PAD_FUNC_ALT0)
 #endif
-
 #endif
-
-#endif
-#endif	// #if defined(CONFIG_HAVE_BATTERY)
 
 /*-----------------------------------------------------------------------
  * I2C

@@ -92,8 +92,11 @@ int power_bat_init(unsigned char bus)
 
 	debug("Board BAT init\n");
 
-	p->interface = PMIC_NONE;
 	p->name = name;
+	p->interface = PMIC_I2C;
+	p->number_of_regs = NXE2000_NUM_OF_REGS;
+	p->hw.i2c.addr = NXE2000_I2C_ADDR;
+	p->hw.i2c.tx_num = 1;
 	p->bus = bus;
 
 	p->pbat = &power_bat_nxe2000;

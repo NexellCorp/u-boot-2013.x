@@ -27,9 +27,8 @@
 /*
  * Debug
  */
-#if (0)
+#ifdef CONFIG_NXE2000_REG_DUMP
 #define DBGOUT(msg...)		do { printf("pmic: " msg); } while (0)
-#define	NXE2000_REG_DUMP
 #else
 #define DBGOUT(msg...)		do {} while (0)
 #endif
@@ -138,113 +137,39 @@ u8 nxe2000_get_dcdc_step(u8 dcdc_num, int want_vol)
 	return	(u8)(vol_step & 0xFF);
 }
 
-#if defined(NXE2000_REG_DUMP)
-static void nxe2000_register_dump(struct nxe2000_power *power)
+#if defined(CONFIG_NXE2000_REG_DUMP)
+void nxe2000_register_dump(struct nxe2000_power *power)
 {
 	u_char *cache = nxe2000_cache_reg;
+	s32 ret=0;
+	u16 i=0;
+	u8 value[NXE2000_NUM_OF_REGS]={0};
 
+	printf("##########################################################\n");
+	printf("##\e[31m %s()\e[0m \n", __func__);
+	printf("----------------------------------------------------------\n");
+	printf("       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F\n");
 
-	printf("+++++++++++++++++++++++++\n");
+	for(i=0; i<=NXE2000_NUM_OF_REGS; i++)
+	{
+		if(i%16 == 0)
+			printf("  %02X:", i);
 
-#if 1
-#if 0
-	nxe2000_i2c_read(NXE2000_REG_PSWR		, &cache[NXE2000_REG_PSWR]		, power);
-	nxe2000_i2c_read(NXE2000_REG_DC1VOL 	, &cache[NXE2000_REG_DC1VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC2VOL 	, &cache[NXE2000_REG_DC2VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC3VOL 	, &cache[NXE2000_REG_DC3VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC1VOL_SLP , &cache[NXE2000_REG_DC1VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_DC2VOL_SLP , &cache[NXE2000_REG_DC2VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_DC3VOL_SLP , &cache[NXE2000_REG_DC3VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_LDO1VOL	, &cache[NXE2000_REG_LDO1VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDO2VOL	, &cache[NXE2000_REG_LDO2VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDO3VOL	, &cache[NXE2000_REG_LDO3VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDO4VOL	, &cache[NXE2000_REG_LDO4VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDO5VOL	, &cache[NXE2000_REG_LDO5VOL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDO1VOL_SLP, &cache[NXE2000_REG_LDO1VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_LDO2VOL_SLP, &cache[NXE2000_REG_LDO2VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_LDO3VOL_SLP, &cache[NXE2000_REG_LDO3VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_LDO4VOL_SLP, &cache[NXE2000_REG_LDO4VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_LDO5VOL_SLP, &cache[NXE2000_REG_LDO5VOL_SLP], power);
-	nxe2000_i2c_read(NXE2000_REG_DC1CTL2	, &cache[NXE2000_REG_DC1CTL2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC2CTL2	, &cache[NXE2000_REG_DC2CTL2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC3CTL2	, &cache[NXE2000_REG_DC3CTL2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC1CTL 	, &cache[NXE2000_REG_DC1CTL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC2CTL 	, &cache[NXE2000_REG_DC2CTL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_DC3CTL 	, &cache[NXE2000_REG_DC3CTL]	, power);
-	nxe2000_i2c_read(NXE2000_REG_LDOEN1 	, &cache[NXE2000_REG_LDOEN1]	, power);
-	nxe2000_i2c_read(NXE2000_REG_CHGCTL1	, &cache[NXE2000_REG_CHGCTL1]	, power);
-	nxe2000_i2c_read(NXE2000_REG_CHGCTL2	, &cache[NXE2000_REG_CHGCTL2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_VSYSSET	, &cache[NXE2000_REG_VSYSSET]	, power);
-	nxe2000_i2c_read(NXE2000_REG_REGISET1	, &cache[NXE2000_REG_REGISET1]	, power);
-	nxe2000_i2c_read(NXE2000_REG_REGISET2	, &cache[NXE2000_REG_REGISET2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_CHGISET	, &cache[NXE2000_REG_CHGISET]	, power);
-	nxe2000_i2c_read(NXE2000_REG_TIMSET 	, &cache[NXE2000_REG_TIMSET]	, power);
-	nxe2000_i2c_read(NXE2000_REG_BATSET1	, &cache[NXE2000_REG_BATSET1]	, power);
-	nxe2000_i2c_read(NXE2000_REG_BATSET2	, &cache[NXE2000_REG_BATSET2]	, power);
-	nxe2000_i2c_read(NXE2000_REG_FG_CTRL	, &cache[NXE2000_REG_FG_CTRL]	, power);
-#endif
+		if(i%4 == 0)
+			printf(" ");
 
-	printf("[0x%02x]PSWR        = 0x%02x\n", NXE2000_REG_PSWR           , cache[NXE2000_REG_PSWR]       );
-	printf("[0x%02x]DC1VOL      = 0x%02x\n", NXE2000_REG_DC1VOL         , cache[NXE2000_REG_DC1VOL]     );
-	printf("[0x%02x]DC2VOL      = 0x%02x\n", NXE2000_REG_DC2VOL         , cache[NXE2000_REG_DC2VOL]     );
-	printf("[0x%02x]DC3VOL      = 0x%02x\n", NXE2000_REG_DC3VOL         , cache[NXE2000_REG_DC3VOL]     );
-	printf("[0x%02x]DC4VOL      = 0x%02x\n", NXE2000_REG_DC4VOL         , cache[NXE2000_REG_DC4VOL]     );
-	printf("[0x%02x]DC5VOL      = 0x%02x\n", NXE2000_REG_DC5VOL         , cache[NXE2000_REG_DC5VOL]     );
-	printf("[0x%02x]DC1VOL_SLP  = 0x%02x\n", NXE2000_REG_DC1VOL_SLP     , cache[NXE2000_REG_DC1VOL_SLP] );
-	printf("[0x%02x]DC2VOL_SLP  = 0x%02x\n", NXE2000_REG_DC2VOL_SLP     , cache[NXE2000_REG_DC2VOL_SLP] );
-	printf("[0x%02x]DC3VOL_SLP  = 0x%02x\n", NXE2000_REG_DC3VOL_SLP     , cache[NXE2000_REG_DC3VOL_SLP] );
-	printf("[0x%02x]DC4VOL_SLP  = 0x%02x\n", NXE2000_REG_DC4VOL_SLP     , cache[NXE2000_REG_DC4VOL_SLP] );
-	printf("[0x%02x]DC5VOL_SLP  = 0x%02x\n", NXE2000_REG_DC5VOL_SLP     , cache[NXE2000_REG_DC5VOL_SLP] );
-	printf("[0x%02x]LDO1VOL     = 0x%02x\n", NXE2000_REG_LDO1VOL        , cache[NXE2000_REG_LDO1VOL]    );
-	printf("[0x%02x]LDO2VOL     = 0x%02x\n", NXE2000_REG_LDO2VOL        , cache[NXE2000_REG_LDO2VOL]    );
-	printf("[0x%02x]LDO3VOL     = 0x%02x\n", NXE2000_REG_LDO3VOL        , cache[NXE2000_REG_LDO3VOL]    );
-	printf("[0x%02x]LDO4VOL     = 0x%02x\n", NXE2000_REG_LDO4VOL        , cache[NXE2000_REG_LDO4VOL]    );
-	printf("[0x%02x]LDO5VOL     = 0x%02x\n", NXE2000_REG_LDO5VOL        , cache[NXE2000_REG_LDO5VOL]    );
-	printf("[0x%02x]LDO6VOL     = 0x%02x\n", NXE2000_REG_LDO6VOL        , cache[NXE2000_REG_LDO6VOL]    );
-	printf("[0x%02x]LDO7VOL     = 0x%02x\n", NXE2000_REG_LDO7VOL        , cache[NXE2000_REG_LDO7VOL]    );
-	printf("[0x%02x]LDO8VOL     = 0x%02x\n", NXE2000_REG_LDO8VOL        , cache[NXE2000_REG_LDO8VOL]    );
-	printf("[0x%02x]LDO9VOL     = 0x%02x\n", NXE2000_REG_LDO9VOL        , cache[NXE2000_REG_LDO9VOL]    );
-	printf("[0x%02x]LDO10VOL    = 0x%02x\n", NXE2000_REG_LDO10VOL       , cache[NXE2000_REG_LDO10VOL]   );
-	printf("[0x%02x]LDORTC1VOL  = 0x%02x\n", NXE2000_REG_LDORTC1VOL     , cache[NXE2000_REG_LDORTC1VOL] );
-	printf("[0x%02x]LDORTC2VOL  = 0x%02x\n", NXE2000_REG_LDORTC2VOL     , cache[NXE2000_REG_LDORTC2VOL] );
-	printf("[0x%02x]LDO1VOL_SLP = 0x%02x\n", NXE2000_REG_LDO1VOL_SLP    , cache[NXE2000_REG_LDO1VOL_SLP]);
-	printf("[0x%02x]LDO2VOL_SLP = 0x%02x\n", NXE2000_REG_LDO2VOL_SLP    , cache[NXE2000_REG_LDO2VOL_SLP]);
-	printf("[0x%02x]LDO3VOL_SLP = 0x%02x\n", NXE2000_REG_LDO3VOL_SLP    , cache[NXE2000_REG_LDO3VOL_SLP]);
-	printf("[0x%02x]LDO4VOL_SLP = 0x%02x\n", NXE2000_REG_LDO4VOL_SLP    , cache[NXE2000_REG_LDO4VOL_SLP]);
-	printf("[0x%02x]LDO5VOL_SLP = 0x%02x\n", NXE2000_REG_LDO5VOL_SLP    , cache[NXE2000_REG_LDO5VOL_SLP]);
-	printf("[0x%02x]LDO6VOL_SLP = 0x%02x\n", NXE2000_REG_LDO6VOL_SLP    , cache[NXE2000_REG_LDO6VOL_SLP]);
-	printf("[0x%02x]LDO7VOL_SLP = 0x%02x\n", NXE2000_REG_LDO7VOL_SLP    , cache[NXE2000_REG_LDO7VOL_SLP]);
-	printf("[0x%02x]LDO8VOL_SLP = 0x%02x\n", NXE2000_REG_LDO8VOL_SLP    , cache[NXE2000_REG_LDO8VOL_SLP]);
-	printf("[0x%02x]LDO9VOL_SLP = 0x%02x\n", NXE2000_REG_LDO9VOL_SLP    , cache[NXE2000_REG_LDO9VOL_SLP]);
-	printf("[0x%02x]LDO10VOL_SLP = 0x%02x\n", NXE2000_REG_LDO10VOL_SLP  , cache[NXE2000_REG_LDO10VOL_SLP]);
-	printf("[0x%02x]DC1CTL2     = 0x%02x\n", NXE2000_REG_DC1CTL2        , cache[NXE2000_REG_DC1CTL2]    );
-	printf("[0x%02x]DC2CTL2     = 0x%02x\n", NXE2000_REG_DC2CTL2        , cache[NXE2000_REG_DC2CTL2]    );
-	printf("[0x%02x]DC3CTL2     = 0x%02x\n", NXE2000_REG_DC3CTL2        , cache[NXE2000_REG_DC3CTL2]    );
-	printf("[0x%02x]DC4CTL2     = 0x%02x\n", NXE2000_REG_DC4CTL2        , cache[NXE2000_REG_DC4CTL2]    );
-	printf("[0x%02x]DC5CTL2     = 0x%02x\n", NXE2000_REG_DC5CTL2        , cache[NXE2000_REG_DC5CTL2]    );
-	printf("[0x%02x]DC1CTL      = 0x%02x\n", NXE2000_REG_DC1CTL         , cache[NXE2000_REG_DC1CTL]     );
-	printf("[0x%02x]DC2CTL      = 0x%02x\n", NXE2000_REG_DC2CTL         , cache[NXE2000_REG_DC2CTL]     );
-	printf("[0x%02x]DC3CTL      = 0x%02x\n", NXE2000_REG_DC3CTL         , cache[NXE2000_REG_DC3CTL]     );
-	printf("[0x%02x]DC4CTL      = 0x%02x\n", NXE2000_REG_DC4CTL         , cache[NXE2000_REG_DC4CTL]     );
-	printf("[0x%02x]DC5CTL      = 0x%02x\n", NXE2000_REG_DC5CTL         , cache[NXE2000_REG_DC5CTL]     );
-	printf("[0x%02x]LDOEN1      = 0x%02x\n", NXE2000_REG_LDOEN1         , cache[NXE2000_REG_LDOEN1]     );
-	printf("[0x%02x]LDOEN2      = 0x%02x\n", NXE2000_REG_LDOEN2         , cache[NXE2000_REG_LDOEN2]     );
-	printf("[0x%02x]CHGCTL1     = 0x%02x\n", NXE2000_REG_CHGCTL1        , cache[NXE2000_REG_CHGCTL1]    );
-	printf("[0x%02x]CHGCTL2     = 0x%02x\n", NXE2000_REG_CHGCTL2        , cache[NXE2000_REG_CHGCTL2]    );
-	printf("[0x%02x]VSYSSET     = 0x%02x\n", NXE2000_REG_VSYSSET        , cache[NXE2000_REG_VSYSSET]    );
-	printf("[0x%02x]REGISET1    = 0x%02x\n", NXE2000_REG_REGISET1       , cache[NXE2000_REG_REGISET1]   );
-	printf("[0x%02x]REGISET2    = 0x%02x\n", NXE2000_REG_REGISET2       , cache[NXE2000_REG_REGISET2]   );
-	printf("[0x%02x]CHGISET     = 0x%02x\n", NXE2000_REG_CHGISET        , cache[NXE2000_REG_CHGISET]    );
-	printf("[0x%02x]TIMSET      = 0x%02x\n", NXE2000_REG_TIMSET         , cache[NXE2000_REG_TIMSET]     );
-	printf("[0x%02x]BATSET1     = 0x%02x\n", NXE2000_REG_BATSET1        , cache[NXE2000_REG_BATSET1]    );
-	printf("[0x%02x]BATSET2     = 0x%02x\n", NXE2000_REG_BATSET2        , cache[NXE2000_REG_BATSET2]    );
-	printf("[0x%02x]FG_CTRL     = 0x%02x\n", NXE2000_REG_FG_CTRL        , cache[NXE2000_REG_FG_CTRL]    );
-#endif
+		ret = nxe2000_i2c_read(i, &value[i], power);
+		if(!ret)
+			printf("%02x ", value[i]);
+		else
+			printf("\e[31mxx\e[0m ");
 
-	printf("-------------------------\n");
+		if((i+1)%16 == 0)
+			printf("\n");
+	}
+	printf("##########################################################\n");
+
 }
-#else
-#define	nxe2000_register_dump(d)	do { } while(0);
 #endif
 
 int nxe2000_param_setup(struct nxe2000_power *power)
@@ -273,7 +198,6 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 	temp |= 0x10;	// output
 	nxe2000_i2c_write(NXE2000_REG_IOSEL, temp, power);
 #endif
-
 	nxe2000_i2c_read(NXE2000_REG_CHGSTATE	, &cache[NXE2000_REG_CHGSTATE]	, power);
 	nxe2000_i2c_read(NXE2000_REG_PWRONTIMSET, &cache[NXE2000_REG_PWRONTIMSET], power);
     cache[NXE2000_REG_PWRONTIMSET] &= ~(0x7 << NXE2000_POS_PWRONTIMSET_OFF_PRESS_PWRON);
@@ -482,18 +406,23 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 										(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN) |
 										(1 << NXE2000_POS_CHGCTL1_VADPCHGEN) );
 
-#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
-		cache[NXE2000_REG_CHGCTL1] &= ~((1 << NXE2000_POS_CHGCTL1_CHGP) |
-										(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN) );
+#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP_UBC)
+		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
 #endif
-#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
+
+	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_CHGP);
+		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+	#endif
+
+	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
 		cache[NXE2000_REG_CHGCTL1] &= ~(1 << NXE2000_POS_CHGCTL1_VADPCHGEN);
-#endif
+	#endif
 #else
 
-#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
-		cache[NXE2000_REG_CHGCTL1]	= (0x1 << NXE2000_POS_CHGCTL1_SUSPEND);
-#endif
+	#if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_ADP)
+		cache[NXE2000_REG_CHGCTL1]	= (1 << NXE2000_POS_CHGCTL1_SUSPEND);
+	#endif
 #endif	/* CONFIG_HAVE_BATTERY */
 
 		cache[NXE2000_REG_CHGCTL2]	= ( (NXE2000_DEF_CHG_USB_VCONTMASK	<< NXE2000_POS_CHGCTL2_USB_VCONTMASK) |
@@ -506,7 +435,7 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 
 		/* Charge current setting register. */
 		cache[NXE2000_REG_REGISET1]	= (NXE2000_DEF_LIMIT_ADP_AMP / 100000) - 1;
-		cache[NXE2000_REG_REGISET2]	= (NXE2000_DEF_LIMIT_USB_AMP / 100000) - 1;
+		cache[NXE2000_REG_REGISET2]	= (NXE2000_DEF_LIMIT_USBDATA_AMP / 100000) - 1;
 
 #if 0
 		if ( cache[NXE2000_REG_CHGSTATE] & (1 << NXE2000_POS_CHGSTATE_USEADP) )
@@ -552,7 +481,9 @@ int nxe2000_param_setup(struct nxe2000_power *power)
 										(1 << NXE2000_POS_FG_CTRL_FG_EN)    );
 #endif
 
-//	nxe2000_register_dump(power);
+	cache[NXE2000_REG_DIESET] = ((NXE2000_DEF_DIE_RETURN_TEMP << NXE2000_POS_DIESET_DIERTNTEMP)
+								| (NXE2000_DEF_DIE_ERROR_TEMP << NXE2000_POS_DIESET_DIEERRTEMP)
+								| (NXE2000_DEF_DIE_SHUTDOWN_TEMP << NXE2000_POS_DIESET_DIESHUTTEMP));
 
 	return 0;
 }
@@ -561,25 +492,44 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 {
 	u_char	*cache = nxe2000_cache_reg;
 	int		bus = power->i2c_bus;
+#if defined(CONFIG_NXE2000_REG_DUMP)
+	int i;
+	s32 ret=0;
+#endif
 
 	DBGOUT("%s\n", __func__);
 
 	i2c_init(CONFIG_SYS_I2C_SPEED, CONFIG_SYS_I2C_SLAVE);
 	i2c_set_bus_num(bus);
 
+#if defined(CONFIG_NXE2000_REG_DUMP)
+	printf("##########################################################\n");
+	printf("##\e[31m PMIC OTP Value \e[0m \n");
+	printf("       0  1  2  3   4  5  6  7   8  9  A  B   C  D  E  F\n");
+	for(i=0; i<=NXE2000_NUM_OF_REGS; i++)
+	{
+		if(i%16 == 0)
+			printf("  %02X:", i);
+		if(i%4 == 0)
+			printf(" ");
+
+		ret = nxe2000_i2c_read(i, &cache[i]	, power);
+		if(!ret)
+			printf("%02x ", cache[i]);
+		else
+			printf("\e[31mxx\e[0m ");
+
+		if((i+1)%16 == 0)
+			printf("\n");
+	}
+	printf("##########################################################\n");
+#endif
+
 	nxe2000_param_setup(power);
 
 	/* Set fuel gauge enable */
 #if defined(CONFIG_HAVE_BATTERY)
-#if defined(CONFIG_PMIC_SET_BOOTUP_VOLTAGE)
-	nxe2000_i2c_write(NXE2000_REG_CHGISET	, 0, power);
-	nxe2000_i2c_write(NXE2000_REG_REGISET1	, 0, power);
-	nxe2000_i2c_write(NXE2000_REG_REGISET2	, 0, power);
-#endif
-
-#if 1   //!defined(CONFIG_PMIC_NXE2000_ADP_USB_SEPARATED_TYPE)
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
-#endif
 	nxe2000_i2c_write(NXE2000_REG_FG_CTRL	, cache[NXE2000_REG_FG_CTRL]	, power);
 
 	do {
@@ -646,7 +596,7 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 
 #if defined(CONFIG_HAVE_BATTERY)
 	/* Set charge control register. */
-//	nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
+	//nxe2000_i2c_write(NXE2000_REG_CHGCTL1	, cache[NXE2000_REG_CHGCTL1]	, power);
 	nxe2000_i2c_write(NXE2000_REG_CHGCTL2	, cache[NXE2000_REG_CHGCTL2]	, power);
 	nxe2000_i2c_write(NXE2000_REG_VSYSSET	, cache[NXE2000_REG_VSYSSET]	, power);
 
@@ -663,17 +613,12 @@ int nxe2000_device_setup(struct nxe2000_power *power)
 	/* Redetect for UBC */
 	nxe2000_i2c_write(NXE2000_REG_EXTIF_GCHGDET,    0x01,   power);
 
-//	nxe2000_i2c_write(NXE2000_REG_PWRONTIMSET, cache[NXE2000_REG_PWRONTIMSET], power);
 
-    /* Delay for fuel gauge */
-#if 0
-	if (power->warm_reset == CFALSE)
-		mdelay(4800);
-#endif
+	nxe2000_i2c_write(NXE2000_REG_DIESET	, cache[NXE2000_REG_DIESET]   	, power);
 
-//	nxe2000_i2c_write(NXE2000_REG_PSWR		, cache[NXE2000_REG_PSWR]   	, power);
-
+#ifdef CONFIG_NXE2000_REG_DUMP
 	nxe2000_register_dump(power);
+#endif
 
 	return 0;
 }

@@ -54,7 +54,8 @@
 #define	NXE2000_DEF_OFF_PRESS_TIME			5		/* VAL = 0:0, 1:1, 2:2, 3:4, 4:6, 5:8, 6:10, 7:12 sec */
 
 #define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
-#define NXE2000_DEF_LIMIT_USB_AMP			500000	/* VAL(mA), MAX = 1500mA */
+#define NXE2000_DEF_LIMIT_USB_AMP			1500000	/* VAL(mA), MAX = 1500mA */
+#define NXE2000_DEF_LIMIT_USBDATA_AMP		 500000	/* VAL(mA), MAX = 1500mA */
 
 #define NXE2000_DEF_CHG_ADP_AMP				1500000	/* VAL(mA), MAX = 1800mA */
 #define NXE2000_DEF_CHG_USB_AMP				1500000	/* VAL(mA), MAX = 1800mA */
@@ -452,4 +453,9 @@ extern u8	nxe2000_get_dcdc_step(u8 ldo_num, int want_vol);
 extern int	nxe2000_device_setup(struct nxe2000_power *power);
 
 extern int  power_muic_init(unsigned int bus);
+
+#if defined(CONFIG_NXE2000_REG_DUMP)
+extern void nxe2000_register_dump(struct nxe2000_power *power);
+#endif
+
 #endif  //#ifndef __NXE2000_POWER_H_

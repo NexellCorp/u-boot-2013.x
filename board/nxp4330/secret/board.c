@@ -476,7 +476,7 @@ static int auto_update(struct audo_update_key *key0, struct audo_update_key *key
 
 #if defined(CONFIG_BAT_CHECK)
 #if !defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
-u32 chgctl_reg_val;
+extern u32 chgctl_reg_val;
 #endif
 
 int board_late_init(void)
