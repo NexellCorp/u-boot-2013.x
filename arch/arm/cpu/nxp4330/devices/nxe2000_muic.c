@@ -111,8 +111,8 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	}
 #endif
 
-	s_otg_bind_flag = 1;
 	s_otg_bind_status = otg_bind_check(500);
+	s_otg_bind_flag = 1;
 
 #if (CONFIG_PMIC_NXE2000_CHARGING_PATH == CONFIG_PMIC_CHARGING_PATH_UBC)
 	if (ctrl_en)

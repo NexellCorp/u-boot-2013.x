@@ -447,6 +447,9 @@ int board_late_init(void)
 	unsigned int sum_voltage=0, avg_voltage=0;
 	int i=0;
 	u8  is_pwr_in;
+	u8  power_state = 0;
+	u8  power_depth = 3;
+
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
 	char boot[16];
@@ -608,9 +611,7 @@ int board_late_init(void)
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i = 0;
 		u32 time_pwr_prev;
-		u8  power_state = 0;
 		u8  power_src = CHARGER_NO;
-		u8  power_depth = 3;
 		char *str_charging = " Charging...   ";
 		char *str_lowbatt  = " Low Battery...";
 		char *str_clear    = "                ";
@@ -688,17 +689,12 @@ int board_late_init(void)
 			{
 				if (pb->bat->voltage_uV >= shutdown_ilim_uV)
 				{
-					printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
-					printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 					break;
 				}
 			}
 
 			if(!power_depth)
 			{
-				printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
-				printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
-				printf("Power Off\n");
 				goto enter_shutdown;
 			}
 
@@ -740,6 +736,11 @@ skip_bat_animation:
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 #endif  /* CONFIG_DISPLAY_OUT */
 
+	if(p_muic)
+		chrg = p_muic->chrg->chrg_type(p_muic, 1);
+	else
+		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
+
 	/* Temp check gpio to update */
 	if (chrg == CHARGER_USB)
 		auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
@@ -747,6 +748,10 @@ skip_bat_animation:
 #if defined(CONFIG_NXE2000_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
+
+	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
+	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
+
 	return 0;
 
 
@@ -759,9 +764,19 @@ enter_shutdown:
 	//pmic_reg_write(p_chrg, NXE2000_REG_GPLED_FUNC, chg_led_mode);
 #endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
+	if(p_muic)
+		chrg = p_muic->chrg->chrg_type(p_muic, 1);
+	else
+		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
+
 #if defined(CONFIG_NXE2000_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
+
+	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
+	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
+
+	printf("Power Off\n");
 
 	mdelay(500);
 
