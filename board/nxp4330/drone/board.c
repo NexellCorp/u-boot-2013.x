@@ -639,35 +639,23 @@ int board_late_init(void)
 
 			p_fg->fg->fg_battery_check(p_fg, p_bat);
 
-#if 0//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 			if(p_muic)
-				chrg = p_muic->chrg->chrg_type(p_muic, 1);
+				chrg = p_muic->chrg->chrg_type(p_muic, 0);
 			else
-				chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
+				chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
 			if(chrg == CHARGER_USB)
 			{
-				is_pwr_in = 1;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_USB_PC_VOL;
 			}
 			else if(chrg == CHARGER_TA)
 			{
-				is_pwr_in = 1;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_ADP_VOL;
 			}
 			else
 			{
-				is_pwr_in = 0;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 			}
-
-			if (!power_state && is_pwr_in)
-			{
-				if (power_src != chrg)
-					power_src = chrg;
-			}
-			power_state = is_pwr_in;
-#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{

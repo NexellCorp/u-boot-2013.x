@@ -446,9 +446,9 @@ int board_late_init(void)
 	u32 time_key_pev = 0;
 	unsigned int sum_voltage=0, avg_voltage=0;
 	int i=0;
-	u8  is_pwr_in;
-	u8  power_state = 0;
-	u8  power_depth = 3;
+	//u8 is_pwr_in;
+	u8 power_state = 0;
+	u8 power_depth = 3;
 
 
 #if defined(CONFIG_SYS_MMC_BOOT_DEV)
@@ -614,7 +614,7 @@ int board_late_init(void)
 		u8  power_src = CHARGER_NO;
 		char *str_charging = " Charging...   ";
 		char *str_lowbatt  = " Low Battery...";
-		char *str_clear    = "                ";
+		//char *str_clear    = "                ";
 
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 
@@ -639,35 +639,23 @@ int board_late_init(void)
 
 			p_fg->fg->fg_battery_check(p_fg, p_bat);
 
-#if 0//defined (CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE)
 			if(p_muic)
-				chrg = p_muic->chrg->chrg_type(p_muic, 1);
+				chrg = p_muic->chrg->chrg_type(p_muic, 0);
 			else
-				chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
+				chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
 			if(chrg == CHARGER_USB)
 			{
-				is_pwr_in = 1;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_USB_PC_VOL;
 			}
 			else if(chrg == CHARGER_TA)
 			{
-				is_pwr_in = 1;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_ADP_VOL;
 			}
 			else
 			{
-				is_pwr_in = 0;
 				shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 			}
-
-			if (!power_state && is_pwr_in)
-			{
-				if (power_src != chrg)
-					power_src = chrg;
-			}
-			power_state = is_pwr_in;
-#endif	/* CONFIG_PMIC_VOLTAGE_CHECK_WITH_CHARGE */
 
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
