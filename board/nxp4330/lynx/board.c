@@ -611,10 +611,9 @@ int board_late_init(void)
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i = 0;
 		u32 time_pwr_prev;
-		//u8  power_src = CHARGER_NO;
-		char *str_charging = " Charging...   ";
-		char *str_lowbatt  = " Low Battery...";
-		//char *str_clear    = "                ";
+		char *str_charging		= " Charging...   ";
+		char *str_discharging	= " Discharging...";
+		char *str_lowbatt  		= " Low Battery...";
 
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
 
@@ -702,10 +701,17 @@ int board_late_init(void)
 					i = 0;
 				}
 
-				if(pb->bat->voltage_uV >= shutdown_ilim_uV)
-					lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
+				{
+					lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				}
 				else
-					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				{
+					if(pb->bat->voltage_uV >= shutdown_ilim_uV)
+						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+					else
+						lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				}
 			}
 
 			mdelay(1000);
@@ -736,7 +742,6 @@ skip_bat_animation:
 #if defined(CONFIG_NXE2000_REG_DUMP)
 	nxe2000_register_dump(&nxe_power_config);
 #endif
-
 	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
 
@@ -763,7 +768,6 @@ enter_shutdown:
 
 	printf("## chrg:%d, power_state:%d, power_depth:%d, power_key_depth:%d\n", chrg, power_state, power_depth, power_key_depth);
 	printf("## voltage_uV:%d, shutdown_ilim_uV:%d \n", pb->bat->voltage_uV, shutdown_ilim_uV);
-
 	printf("Power Off\n");
 
 	mdelay(500);
