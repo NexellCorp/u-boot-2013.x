@@ -124,8 +124,8 @@ static int muic_chrg_get_type(struct pmic *p, u32 ctrl_en)
 	}
 	else
 	{
-		chgctl_reg_val  |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
-						|  (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_CHGP)
+		chgctl_reg_val |= (0x1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
 	}
 #endif
 

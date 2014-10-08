@@ -434,10 +434,10 @@ int board_late_init(void)
 		.alphablend		= 0,
 	};
 
-	int chrg, poweron_his;
+	int chrg;
 	int shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
-	u32 chg_state=0;
+	u32 chg_state=0, poweron_his;
 	//u32 chg_led_mode = 0;
 	struct power_battery *pb;
 	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
@@ -611,7 +611,7 @@ int board_late_init(void)
 		unsigned int color = (54<<16) + (221 << 8) + (19);
 		int i = 0;
 		u32 time_pwr_prev;
-		u8  power_src = CHARGER_NO;
+		//u8  power_src = CHARGER_NO;
 		char *str_charging = " Charging...   ";
 		char *str_lowbatt  = " Low Battery...";
 		//char *str_clear    = "                ";
