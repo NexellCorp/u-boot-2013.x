@@ -437,7 +437,7 @@ int board_late_init(void)
 	int chrg;
 	int shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
-	u32 chg_state=0, poweron_his;
+	u32 chg_state=0, poweron_his, poweroff_his;
 	//u32 chg_led_mode = 0;
 	struct power_battery *pb;
 	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
@@ -529,6 +529,7 @@ int board_late_init(void)
 
 	pmic_reg_read(p_chrg, NXE2000_REG_CHGSTATE, &chg_state);
 	pmic_reg_read(p_chrg, NXE2000_REG_PONHIS, &poweron_his);
+	pmic_reg_read(p_chrg, NXE2000_REG_POFFHIS, &poweroff_his);
 
 	if(chrg == CHARGER_USB)
 	{
@@ -548,9 +549,10 @@ int board_late_init(void)
 		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
 	}
 
-	printf("poweron_his : 0x%02x \n", poweron_his);
-	printf("chg_state   : 0x%02x, chrg_type : %d\n", chg_state, chrg);
-	printf("avg_voltage : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
+	printf("poweroff_his : 0x%02x \n", poweroff_his);
+	printf("poweron_his  : 0x%02x \n", poweron_his);
+	printf("chg_state    : 0x%02x,    chrg_type : %d\n", chg_state, chrg);
+	printf("avg_voltage  : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
 
 	if(avg_voltage < NXE2000_DEF_CUTOFF_VOL)
 	{
