@@ -546,12 +546,17 @@ int board_late_init(void)
 
 	if (GPIO_PMIC_VUSB_DET > -1)
 	{
-		printf("VUSB_DET:%d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
+		printf("VUSB_DET     : %d\n", gpio_get_value(GPIO_PMIC_VUSB_DET));
+	}
+
+	if (GPIO_PMIC_LOWBAT_DET > -1)
+	{
+		printf("BAT_DET      : %d\n", gpio_get_value(GPIO_PMIC_LOWBAT_DET));
 	}
 
 	printf("poweroff_his : 0x%02x \n", poweroff_his);
 	printf("poweron_his  : 0x%02x \n", poweron_his);
-	printf("chg_state    : 0x%02x,    chrg_type : %d\n", chg_state, chrg);
+	printf("chg_state    : 0x%02x,    chrg_type        : %d\n", chg_state, chrg);
 	printf("avg_voltage  : %d, shutdown_ilim_uV : %d\n", avg_voltage, shutdown_ilim_uV);
 
 	if(avg_voltage < NXE2000_DEF_CUTOFF_VOL)
@@ -703,17 +708,13 @@ int board_late_init(void)
 					i = 0;
 				}
 
-				if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-				{
+				if(pb->bat->voltage_uV < shutdown_ilim_uV)
+					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				else if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
 					lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				}
 				else
-				{
-					if(pb->bat->voltage_uV >= shutdown_ilim_uV)
-						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-					else
-						lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				}
+					lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+
 			}
 
 			mdelay(1000);
