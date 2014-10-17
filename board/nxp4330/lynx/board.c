@@ -521,9 +521,9 @@ int board_late_init(void)
 
 	for(i=0; i<3; i++)
 	{
+		mdelay(10);
 		p_fg->fg->fg_battery_check(p_fg, p_bat);
 		sum_voltage += pb->bat->voltage_uV;
-		mdelay(1);
 	}
 	avg_voltage = sum_voltage/3;
 
@@ -567,7 +567,7 @@ int board_late_init(void)
 	else if(avg_voltage < shutdown_ilim_uV)
 	{
 		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
-		show_bat_state = 1;
+		show_bat_state = 2;
 		power_key_depth = 0;
 	}
 	else if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
@@ -708,12 +708,15 @@ int board_late_init(void)
 					i = 0;
 				}
 
-				if(pb->bat->voltage_uV < shutdown_ilim_uV)
+				if(show_bat_state == 2)
 					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
-					lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else
-					lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				else 
+				{
+					if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
+						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+					else
+						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+				}
 
 			}
 
