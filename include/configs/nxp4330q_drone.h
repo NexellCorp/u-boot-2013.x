@@ -370,7 +370,7 @@
 
 #define CONFIG_SW_UBC_DETECT	/* need with CONFIG_FASTBOOT. */
 
-#define CONFIG_NXE2000_REG_DUMP
+// #define CONFIG_NXE2000_REG_DUMP
 #endif
 
 #if defined(CONFIG_HAVE_BATTERY)
