@@ -233,9 +233,27 @@
 #define	NXE2000_DEF_DDC4_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 #define	NXE2000_DEF_DDC5_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 
-#define NXE2000_DEF_CHG_ADP_EN 				1		/* VAL = 0: Off, 1: On, default = On */
-#define NXE2000_DEF_CHG_USB_EN 				1		/* VAL = 0: Off, 1: On, default = On */
-#define NXE2000_DEF_CHG_NOBAT_OVLIM_EN 		1		/* VAL = 0: Off, 1: On, default = On */
+#define	NXE2000_DEF_ADC_AIN0				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_AIN1				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VTHM				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VSYS				1		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VUSB				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VADP				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VBAT				1		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_ILIM				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+
+#define	NXE2000_DEF_ADCCNT3_ADRQ			2		/* VAL = 0: Stop, 1: Single-mode, 2: Auto-mode, 3: Prohibit, default = Stop*/
+#define	NXE2000_DEF_ADCCNT3_AVE				1		/* VAL = 0: one-time, 1: average of four-time, default = one-time*/
+#define	NXE2000_DEF_ADCCNT3_ADSEL			0		/* Select input of ADC in single-mode A/D conbersion */
+
+#define NXE2000_DEF_CHG_PRIORITY			0		/* VAL = 0: VADP,	1:VUSB, 	default = VUSB */
+#define NXE2000_DEF_CHG_COMPLETE_DIS		0		/* VAL = 0: Enable,	1: Disable,	default = Enable */
+#define NXE2000_DEF_CHG_NOBAT_OVLIM_EN		1		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_OTG_BOOST			0		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_SUSPEND				0		/* VAL = 0: Off, 		1: On, 	default = Off */
+#define NXE2000_DEF_CHG_JEITAEN				0		/* VAL = 0: Off, 		1: On, 	default = Off */
+#define NXE2000_DEF_CHG_USB_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_ADP_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
 
 #define NXE2000_DEF_CHG_USB_VCONTMASK		0		/* VAL = 0: Off, 1: On, default = Off */
 #define NXE2000_DEF_CHG_ADP_VCONTMASK		0		/* VAL = 0: Off, 1: On, default = On */
