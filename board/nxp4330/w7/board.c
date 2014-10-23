@@ -480,9 +480,9 @@ int board_late_init(void)
 
     pb = p_bat->pbat;
     if(p_muic)
-        chrg = p_muic->chrg->chrg_type(p_muic);
+        chrg = p_muic->chrg->chrg_type(p_muic, 1);
     else
-        chrg = p_chrg->chrg->chrg_type(p_chrg);
+        chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
     if (!p_chrg->chrg->chrg_bat_present(p_chrg)) {
         puts("No battery detected\n");
@@ -635,9 +635,9 @@ int board_late_init(void)
             if (!power_state && is_pwr_in)
             {
                 if (p_muic)
-                    chrg = p_muic->chrg->chrg_type(p_muic);
+                    chrg = p_muic->chrg->chrg_type(p_muic, 0);
                 else
-                    chrg = p_chrg->chrg->chrg_type(p_chrg);
+                    chrg = p_chrg->chrg->chrg_type(p_chrg, 0);
 
                 if (power_src != chrg)
                 {

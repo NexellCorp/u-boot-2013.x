@@ -29,6 +29,10 @@
 
 #include <platform.h>
 #include <mach-api.h>
+#include <nxp_rtc.h>
+#include <pm.h>
+
+#include <draw_lcd.h>
 
 #include "fastboot.h"
 
@@ -328,6 +332,29 @@ int bd_eth_init(void)
 #endif	/* CONFIG_CMD_NET */
 
 extern void	bd_display(void);
+static void bd_display_run(char *cmd, int bl_duty, int bl_on)
+{
+	static int display_init = 0;
+
+	if (cmd) {
+		run_command(cmd, 0);
+		lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH,
+			CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+	}
+
+	if (!display_init) {
+		bd_display();
+		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
+		display_init = 1;
+	}
+
+	pwm_config(CFG_LCD_PRI_PWM_CH,
+		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
+		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+
+	if (bl_on)
+		pwm_enable(CFG_LCD_PRI_PWM_CH);
+}
 
 int board_late_init(void)
 {
@@ -335,20 +362,99 @@ int board_late_init(void)
     bd_eth_init();
 #endif
 
+#if defined(CONFIG_SYS_MMC_BOOT_DEV)
+	char boot[16];
+	sprintf(boot, "mmc dev %d", CONFIG_SYS_MMC_BOOT_DEV);
+	run_command(boot, 0);
+#endif
+
 #if defined(CONFIG_DISPLAY_OUT)
-	lcd_draw_boot_logo(CONFIG_FB_ADDR,
-			CFG_DISP_PRI_RESOL_WIDTH,
-			CFG_DISP_PRI_RESOL_HEIGHT,
-			CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
-
-	bd_display();
-
-	/* backlight */
-	pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(CFG_LCD_PRI_PWM_DUTYCYCLE, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 #endif
 	return 0;
 }
 
+
+#ifdef CONFIG_FASTBOOT
+
+#define	LOGO_BGCOLOR	(0xffffff)
+static int _logo_left   = CFG_DISP_PRI_RESOL_WIDTH /2 +  50;
+static int _logo_top    = CFG_DISP_PRI_RESOL_HEIGHT/2 + 180;
+static int _logo_width  = 8*24;
+static int _logo_height = 16;
+
+void fboot_lcd_start(void)
+{
+	lcd_info lcd = {
+		.fb_base		= CONFIG_FB_ADDR,
+		.bit_per_pixel	= CFG_DISP_PRI_SCREEN_PIXEL_BYTE * 8,
+		.lcd_width		= CFG_DISP_PRI_RESOL_WIDTH,
+		.lcd_height		= CFG_DISP_PRI_RESOL_HEIGHT,
+		.back_color		= LOGO_BGCOLOR,
+		.text_color		= 0xFF,
+		.alphablend		= 0,
+	};
+	lcd_debug_init(&lcd);
+
+	// clear FB
+	memset((void*)CONFIG_FB_ADDR, 0xFF,
+		CFG_DISP_PRI_RESOL_WIDTH * CFG_DISP_PRI_RESOL_HEIGHT *
+		CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
+
+#if defined (CONFIG_CMD_LOGO_UPDATE)
+	run_command(CONFIG_CMD_LOGO_UPDATE, 0);
+#endif
+
+	lcd_draw_text("wait for update", _logo_left, _logo_top, 2, 2, 0);
+}
+
+void fboot_lcd_stop(void)
+{
+	run_command(CONFIG_CMD_LOGO_WALLPAPERS, 0);
+}
+
+void fboot_lcd_part(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_down(int percent)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "down %d%%", percent);
+}
+
+void fboot_lcd_flash(char *part, char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s: %s", part, stat);
+}
+
+void fboot_lcd_status(char *stat)
+{
+	int s = 2;
+	int l = _logo_left, t = _logo_top;
+	int w = (_logo_width*s), h = (_logo_height*s);
+	unsigned bg = LOGO_BGCOLOR;
+
+	lcd_fill_rectangle(l, t, w, h, bg, 0);
+	lcd_draw_string(l, t, s, s, 0, "%s", stat);
+}
+
+#endif

@@ -18,6 +18,7 @@
 #ifndef __CFG_MAIN_H__
 #define __CFG_MAIN_H__
 
+
 #include <nx_type.h>
 
 //------------------------------------------------------------------------------
@@ -29,7 +30,7 @@
  * 	System Name
  */
 #define	CFG_SYS_CPU_NAME						"nxp4330q"
-#define	CFG_SYS_BOARD_NAME						"nxp4330-vtk"
+#define	CFG_SYS_BOARD_NAME						"nxp4330-svt"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart
@@ -51,21 +52,10 @@
 #define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
- * 	GMAC PHY
- */
-#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_A + 9)
-#define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_A + 10)
-
-/*------------------------------------------------------------------------------
- * 	USB HSIC PHY
- */
-#define	CFG_USB_HSIC_PHY_RST					(PAD_GPIO_E + 22)
-
-/*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_BYTES 						1024		/* 512 - 4,8,16,24  1024 - 24,40,60  */
-#define CFG_NAND_ECC_BITS						40
+#define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
+#define CFG_NAND_ECC_BITS                       40
 
 /*------------------------------------------------------------------------------
  *	Nand (GPIO)
@@ -128,17 +118,17 @@
  */
 
 /*------------------------------------------------------------------------------
- *  SPI
+ * 	SPI
  */
 
-#define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            10*1000*1000
+#define CFG_SPI0_SRC_CLK							100*1000*1000
+#define CFG_SPI0_OUT_CLK							20*1000*1000
 
-#define CFG_SPI1_SRC_CLK                            100*1000*1000
-#define CFG_SPI1_OUT_CLK                            30*1000*1000
+#define CFG_SPI1_SRC_CLK							100*1000*1000
+#define CFG_SPI1_OUT_CLK							30*1000*1000
 
-#define CFG_SPI2_SRC_CLK                            100*1000*1000
-#define CFG_SPI2_OUT_CLK                            30*1000*1000
+#define CFG_SPI2_SRC_CLK							100*1000*1000
+#define CFG_SPI2_OUT_CLK							30*1000*1000
 
 /*------------------------------------------------------------------------------
  * 	TIMER/PWM
@@ -181,8 +171,7 @@
 //                      ( _name_ , bw, tACS tCOS tACC tSACC tOCH tCAH, wm, rb, wb )
 CFG_SYS_STATICBUS_CONFIG( STATIC0 ,  8,    1,   1,   6,    6,   1,   1,  1,  0,  0 )		// 0x0000_0000
 CFG_SYS_STATICBUS_CONFIG( STATIC1 ,  8,    6,   6,  32,   32,   6,   6,  1,  0,  0 )		// 0x0400_0000
-//CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   15,   15,    1,   15,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
-CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   10,   12,    1,   8,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
-
+CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   6,  10,    1,   4,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0 (BCLK:400MHz)
+//CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   4,   7,    1,   3,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0 (BCLK:250MHz)
 
 #endif /* __CFG_MAIN_H__ */

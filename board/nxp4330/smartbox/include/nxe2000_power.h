@@ -49,7 +49,8 @@
 #define	NXE2000_DEF_OFF_PRESS_TIME			5		/* VAL = 0:0, 1:1, 2:2, 3:4, 4:6, 5:8, 6:10, 7:12 sec */
 
 #define NXE2000_DEF_LIMIT_ADP_AMP			2500000	/* VAL(mA), MAX = 2500mA */
-#define NXE2000_DEF_LIMIT_USB_AMP			500000	/* VAL(mA), MAX = 1500mA */
+#define NXE2000_DEF_LIMIT_USB_AMP			1500000	/* VAL(mA), MAX = 1500mA */
+#define NXE2000_DEF_LIMIT_USBDATA_AMP		 500000	/* VAL(mA), MAX = 1500mA */
 
 #define NXE2000_DEF_CHG_ADP_AMP				1500000	/* VAL(mA), MAX = 1800mA */
 #define NXE2000_DEF_CHG_USB_AMP				1500000	/* VAL(mA), MAX = 1800mA */
@@ -158,8 +159,8 @@
 #define	NXE2000_DEF_DDC4_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 #define	NXE2000_DEF_DDC5_RAMP_SLOP			0		/* VAL(mV/us) = 0: 14, 1: 7, 2: 3.5, 3: prohibit, default = 14mV/us */
 
-#define	NXE2000_DEF_DDC1_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
-#define	NXE2000_DEF_DDC2_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
+#define	NXE2000_DEF_DDC1_CUR_LIMIT			3		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
+#define	NXE2000_DEF_DDC2_CUR_LIMIT			3		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC3_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC4_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
 #define	NXE2000_DEF_DDC5_CUR_LIMIT			1		/* VAL(A) = 0: No limit, 1: 3.2A, 2: 3.7A, 3: 4.0A, default(OTP) = 3.2A */
@@ -170,9 +171,27 @@
 #define	NXE2000_DEF_DDC4_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 #define	NXE2000_DEF_DDC5_LIMSHUT_EN			1		/* VAL = 0: Disable, 1: Enable */
 
-#define NXE2000_DEF_CHG_ADP_EN 				1		/* VAL = 0: Off, 1: On, default = On */
-#define NXE2000_DEF_CHG_USB_EN 				1		/* VAL = 0: Off, 1: On, default = On */
-#define NXE2000_DEF_CHG_NOBAT_OVLIM_EN 		1		/* VAL = 0: Off, 1: On, default = On */
+#define	NXE2000_DEF_ADC_AIN0				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_AIN1				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VTHM				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VSYS				1		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VUSB				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VADP				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_VBAT				1		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+#define	NXE2000_DEF_ADC_ILIM				0		/* VAL = 0: Disable, 1: Enable, default = Disable*/
+
+#define	NXE2000_DEF_ADCCNT3_ADRQ			2		/* VAL = 0: Stop, 1: Single-mode, 2: Auto-mode, 3: Prohibit, default = Stop*/
+#define	NXE2000_DEF_ADCCNT3_AVE				1		/* VAL = 0: one-time, 1: average of four-time, default = one-time*/
+#define	NXE2000_DEF_ADCCNT3_ADSEL			0		/* Select input of ADC in single-mode A/D conbersion */
+
+#define NXE2000_DEF_CHG_PRIORITY			0		/* VAL = 0: VADP,	1:VUSB, 	default = VUSB */
+#define NXE2000_DEF_CHG_COMPLETE_DIS		0		/* VAL = 0: Enable,	1: Disable,	default = Enable */
+#define NXE2000_DEF_CHG_NOBAT_OVLIM_EN		1		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_OTG_BOOST			0		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_SUSPEND				0		/* VAL = 0: Off, 		1: On, 	default = Off */
+#define NXE2000_DEF_CHG_JEITAEN				0		/* VAL = 0: Off, 		1: On, 	default = Off */
+#define NXE2000_DEF_CHG_USB_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
+#define NXE2000_DEF_CHG_ADP_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
 
 #define NXE2000_DEF_CHG_USB_VCONTMASK		0		/* VAL = 0: Off, 1: On, default = Off */
 #define NXE2000_DEF_CHG_ADP_VCONTMASK		0		/* VAL = 0: Off, 1: On, default = On */
@@ -385,4 +404,9 @@ extern u8	nxe2000_get_dcdc_step(u8 ldo_num, int want_vol);
 extern int	nxe2000_device_setup(struct nxe2000_power *power);
 
 extern int  power_muic_init(unsigned int bus);
+
+#if defined(CONFIG_NXE2000_REG_DUMP)
+extern void nxe2000_register_dump(struct nxe2000_power *power);
+#endif
+
 #endif  //#ifndef __NXE2000_POWER_H_

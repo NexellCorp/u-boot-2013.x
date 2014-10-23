@@ -29,7 +29,7 @@
  * 	System Name
  */
 #define	CFG_SYS_CPU_NAME						"nxp4330q"
-#define	CFG_SYS_BOARD_NAME						"nxp4330-vtk"
+#define	CFG_SYS_BOARD_NAME						"nxp4330-drone"
 
 /*------------------------------------------------------------------------------
  * 	Debug Uart
@@ -51,21 +51,10 @@
 #define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
- * 	GMAC PHY
- */
-#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_A + 9)
-#define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_A + 10)
-
-/*------------------------------------------------------------------------------
- * 	USB HSIC PHY
- */
-#define	CFG_USB_HSIC_PHY_RST					(PAD_GPIO_E + 22)
-
-/*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
-#define CFG_NAND_ECC_BYTES 						1024		/* 512 - 4,8,16,24  1024 - 24,40,60  */
-#define CFG_NAND_ECC_BITS						40
+#define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
+#define CFG_NAND_ECC_BITS                       40
 
 /*------------------------------------------------------------------------------
  *	Nand (GPIO)
@@ -75,44 +64,44 @@
 /*------------------------------------------------------------------------------
  * 	Display (DPC and MLC)
  */
-#define CFG_DISP_OUTPUT_MODOLE           		0	// 0 : Primary, 1 : Secondary
+#define CFG_DISP_OUTPUT_MODOLE           	0	// 0 : Primary, 1 : Secondary
 
 #define CFG_DISP_PRI_SCREEN_LAYER               0
-#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8B8G8R8
+#define CFG_DISP_PRI_SCREEN_RGB_FORMAT          MLC_RGBFMT_A8R8G8B8
 #define CFG_DISP_PRI_SCREEN_PIXEL_BYTE	        4
 #define CFG_DISP_PRI_SCREEN_COLOR_KEY	        0x090909
 
-#define CFG_DISP_PRI_VIDEO_PRIORITY				2	// 0, 1, 2, 3
-#define CFG_DISP_PRI_BACK_GROUND_COLOR	     	0x0
+#define CFG_DISP_PRI_VIDEO_PRIORITY		2	// 0, 1, 2, 3
+#define CFG_DISP_PRI_BACK_GROUND_COLOR	     	0x000000
 
 #define CFG_DISP_PRI_MLC_INTERLACE              CFALSE
 
-#define CFG_DISP_PRI_RESOL_WIDTH          		1280	// X Resolution
-#define CFG_DISP_PRI_RESOL_HEIGHT				 800	// Y Resolution
+#define CFG_DISP_PRI_RESOL_WIDTH          	1024	// X Resolution
+#define CFG_DISP_PRI_RESOL_HEIGHT		600	// Y Resolution
 
-#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           1
-#define CFG_DISP_PRI_HSYNC_BACK_PORCH           0
+#define CFG_DISP_PRI_HSYNC_SYNC_WIDTH           20
+#define CFG_DISP_PRI_HSYNC_BACK_PORCH           160
 #define CFG_DISP_PRI_HSYNC_FRONT_PORCH          160
-#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CFALSE
-#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           1
-#define CFG_DISP_PRI_VSYNC_BACK_PORCH           0
-#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          23
-#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CFALSE
+#define CFG_DISP_PRI_HSYNC_ACTIVE_HIGH          CTRUE
+#define CFG_DISP_PRI_VSYNC_SYNC_WIDTH           3
+#define CFG_DISP_PRI_VSYNC_BACK_PORCH           23
+#define CFG_DISP_PRI_VSYNC_FRONT_PORCH          12
+#define CFG_DISP_PRI_VSYNC_ACTIVE_HIGH 	        CTRUE
 
-#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL2
-#define CFG_DISP_PRI_CLKGEN0_DIV                12
+#define CFG_DISP_PRI_CLKGEN0_SOURCE             DPC_VCLK_SRC_PLL0
+#define CFG_DISP_PRI_CLKGEN0_DIV                15//12
 #define CFG_DISP_PRI_CLKGEN0_DELAY              0
 #define CFG_DISP_PRI_CLKGEN0_INVERT				0
 #define CFG_DISP_PRI_CLKGEN1_SOURCE             DPC_VCLK_SRC_VCLK2
 #define CFG_DISP_PRI_CLKGEN1_DIV                1
 #define CFG_DISP_PRI_CLKGEN1_DELAY              0
-#define CFG_DISP_PRI_CLKGEN1_INVERT				0
-#define CFG_DISP_PRI_CLKSEL1_SELECT				0
+#define CFG_DISP_PRI_CLKGEN1_INVERT		0
+#define CFG_DISP_PRI_CLKSEL1_SELECT		0
 #define CFG_DISP_PRI_PADCLKSEL                  DPC_PADCLKSEL_VCLK	/* VCLK=CLKGEN1, VCLK12=CLKGEN0 */
 
-#define	CFG_DISP_PRI_PIXEL_CLOCK				80000000
+#define	CFG_DISP_PRI_PIXEL_CLOCK		800000000/CFG_DISP_PRI_CLKGEN0_DIV
 
-#define	CFG_DISP_PRI_OUT_SWAPRB 				CFALSE
+#define	CFG_DISP_PRI_OUT_SWAPRB 		CFALSE
 #define CFG_DISP_PRI_OUT_FORMAT                 DPC_FORMAT_RGB666
 #define CFG_DISP_PRI_OUT_YCORDER                DPC_YCORDER_CbYCrY
 #define CFG_DISP_PRI_OUT_INTERLACE              CFALSE
@@ -121,18 +110,13 @@
 /*------------------------------------------------------------------------------
  * 	LVDS
  */
-#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_JEIDA
-
-/*------------------------------------------------------------------------------
- * 	I2C
- */
+#define CFG_DISP_LVDS_LCD_FORMAT             	LVDS_LCDFORMAT_VESA
 
 /*------------------------------------------------------------------------------
  *  SPI
  */
-
 #define CFG_SPI0_SRC_CLK                            100*1000*1000
-#define CFG_SPI0_OUT_CLK                            10*1000*1000
+#define CFG_SPI0_OUT_CLK                            20*1000*1000
 
 #define CFG_SPI1_SRC_CLK                            100*1000*1000
 #define CFG_SPI1_OUT_CLK                            30*1000*1000
@@ -140,12 +124,13 @@
 #define CFG_SPI2_SRC_CLK                            100*1000*1000
 #define CFG_SPI2_OUT_CLK                            30*1000*1000
 
+
 /*------------------------------------------------------------------------------
  * 	TIMER/PWM
  */
 #define CFG_LCD_PRI_PWM_CH                      0
-#define CFG_LCD_PRI_PWM_FREQ                    20000
-#define CFG_LCD_PRI_PWM_DUTYCYCLE               20      /* (%) */
+#define CFG_LCD_PRI_PWM_FREQ                    1000
+#define CFG_LCD_PRI_PWM_DUTYCYCLE               50      /* (%) */
 
 //------------------------------------------------------------------------------
 // Static Bus #0 ~ #9, NAND, IDE configuration
@@ -181,8 +166,6 @@
 //                      ( _name_ , bw, tACS tCOS tACC tSACC tOCH tCAH, wm, rb, wb )
 CFG_SYS_STATICBUS_CONFIG( STATIC0 ,  8,    1,   1,   6,    6,   1,   1,  1,  0,  0 )		// 0x0000_0000
 CFG_SYS_STATICBUS_CONFIG( STATIC1 ,  8,    6,   6,  32,   32,   6,   6,  1,  0,  0 )		// 0x0400_0000
-//CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   15,   15,    1,   15,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
-CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   10,   12,    1,   8,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
-
+CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   3,   9,    1,   3,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
 
 #endif /* __CFG_MAIN_H__ */
