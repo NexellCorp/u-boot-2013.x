@@ -376,18 +376,20 @@
 	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
 	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
 	#define	CONFIG_MMC1_ATTACH			TRUE	/* 1 = MMC1 */
-	#define	CONFIG_MMC2_ATTACH			FALSE	/* 2 = MMC2 */
+	#define	CONFIG_MMC2_ATTACH			TRUE	/* 2 = MMC2 */
 
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(0)| DW_MMC_SAMPLE_PHASE(0)
 	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(0)| DW_MMC_SAMPLE_PHASE(0)
-	#define CONFIG_MMC0_CLOCK					25000000
-	#define CONFIG_MMC1_CLOCK					35000000
+	#define CONFIG_MMC2_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(0)| DW_MMC_SAMPLE_PHASE(0)
+	#define CONFIG_MMC0_CLOCK			35000000
+	#define CONFIG_MMC1_CLOCK			35000000
+	#define CONFIG_MMC2_CLOCK			35000000
 
 	#define CONFIG_DWMMC
 	#define CONFIG_NXP_DWMMC
 	#define CONFIG_MMC_PARTITIONS
 	#define CONFIG_CMD_MMC_UPDATE
-	#define CONFIG_SYS_MMC_BOOT_DEV  	(1)
+	#define CONFIG_SYS_MMC_BOOT_DEV  	(0)
 
 	#if defined(CONFIG_ENV_IS_IN_MMC)
 	#define	CONFIG_ENV_OFFSET			512*1024				/* 0x00080000 */
@@ -475,10 +477,6 @@
 
 #define CONFIG_LOGO_DEVICE_MMC
 
-#if defined(CONFIG_LOGO_DEVICE_MMC) && defined(CONFIG_LOGO_DEVICE_NAND)
-#error "Duplicated config for logo device!!!"
-#endif
-
 #if	defined(CONFIG_DISPLAY_OUT)
 	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
@@ -490,15 +488,9 @@
 //	#define CONFIG_CMD_LOGO_LOAD
 
 	/* Logo command: board.c */
-	#if defined(CONFIG_LOGO_DEVICE_NAND)
-	/* From NAND */
-    #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
-    #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-	#else
 	/* From MMC */
     #define CONFIG_CMD_LOGO_WALLPAPERS "ext4load mmc 1:1 0x47000000 logo.bmp; drawbmp 0x47000000"
     #define CONFIG_CMD_LOGO_BATTERY "ext4load mmc 1:1 0x47000000 battery.bmp; drawbmp 0x47000000"
-	#endif
 
 #endif
 
