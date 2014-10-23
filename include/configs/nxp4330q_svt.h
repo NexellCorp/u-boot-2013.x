@@ -113,7 +113,7 @@
 #define CONFIG_GATEWAYIP				192.168.1.254
 #define CONFIG_BOOTFILE					"uImage"  		/* File to load	*/
 
-#define CONFIG_BOOTCOMMAND "ext4load mmc 1:1 0x48000000 uImage;ext4load mmc 1:1 0x49000000 root.img.gz;bootm 0x48000000"
+#define CONFIG_BOOTCOMMAND "fatload mmc 0:1 0x48000000 uImage;fatload mmc 0:1 0x49000000 root.img.gz;bootm 0x48000000"
 
 /*-----------------------------------------------------------------------
  * Miscellaneous configurable options
@@ -271,13 +271,13 @@
 #define CONFIG_CMD_I2C
 #define CONFIG_PMIC_I2C
 #define CONFIG_PMIC_NXE2000
-#define CONFIG_HAVE_BATTERY
+//#define CONFIG_HAVE_BATTERY
 
 #define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 #define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC_LINKED    (3) // Using VADP, VUSB power path. Linked power path.
-#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_UBC
+#define CONFIG_PMIC_NXE2000_CHARGING_PATH           CONFIG_PMIC_CHARGING_PATH_ADP
 
 #define CONFIG_NXP_RTC_USE
 
@@ -342,13 +342,13 @@
 	#define	CONFIG_SYS_I2C_SPEED		100000				/* default speed, 100 khz */
 
 	#define	CONFIG_I2C0_NEXELL								/* 0 = i2c 0 */
-	#define	CONFIG_I2C0_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C0_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C1_NEXELL								/* 1 = i2c 1 */
 	#define	CONFIG_I2C1_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 	#define	CONFIG_I2C2_NEXELL								/* 1 = i2c 1 */
-	#define	CONFIG_I2C2_NO_STOP				0				/* when tx end, 0= generate stop signal , 1: skip stop signal */
+	#define	CONFIG_I2C2_NO_STOP				1				/* when tx end, 0= generate stop signal , 1: skip stop signal */
 
 #endif
 

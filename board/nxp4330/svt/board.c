@@ -227,7 +227,7 @@ int bd_pmic_init(void)
 {
 #if defined(CONFIG_PMIC_NXE2000)
 	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= 0;
+	nxe_power_config.i2c_bus	= 2;
 
 	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE2000_DEF_LDO1_VOL;
 	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE2000_DEF_LDO2_VOL;
@@ -501,7 +501,7 @@ int board_late_init(void)
 	else
 		chrg = p_chrg->chrg->chrg_type(p_chrg, 1);
 
-	if (!p_chrg->chrg->chrg_bat_present(p_chrg)) 
+	if (!p_chrg->chrg->chrg_bat_present(p_chrg))
 	{
 		puts("No battery detected\n");
 		return -1;
@@ -608,7 +608,7 @@ int board_late_init(void)
 
 	/*===========================================================*/
 	// draw charing image
-	if (show_bat_state) 
+	if (show_bat_state)
 	{
 		int lcdw = lcd.lcd_width, lcdh = lcd.lcd_height;
 		int bmpw = 240, bmph = 320;
@@ -710,7 +710,7 @@ int board_late_init(void)
 
 				if(show_bat_state == 2)
 					lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
-				else 
+				else
 				{
 					if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
 						lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
