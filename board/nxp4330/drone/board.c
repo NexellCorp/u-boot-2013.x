@@ -444,9 +444,8 @@ int board_late_init(void)
 	int show_bat_state = 0;
 	int power_key_depth = 0;
 	u32 time_key_pev = 0;
-	unsigned int sum_voltage=0, avg_voltage=0;
+	unsigned int sum_voltage = 0, avg_voltage = 0;
 	int i=0;
-	//u8 is_pwr_in;
 	u8 power_state = 0;
 	u8 power_depth = 3;
 
@@ -516,6 +515,7 @@ int board_late_init(void)
 	//	pmic_reg_write(p_chrg, NXE2000_REG_GPLED_FUNC, chg_led_mode);
 	//}
 	pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &chgctl_reg_val);
+	chgctl_reg_val &= ~(NXE2000_DEF_CHG_SUSPEND << NXE2000_POS_CHGCTL1_SUSPEND);
 	pmic_reg_write(p_chrg, NXE2000_REG_CHGCTL1, (chgctl_reg_val & ~0x0B));
 #endif
 
@@ -623,14 +623,22 @@ int board_late_init(void)
 		char *str_lowbatt  		= " Low Battery...";
 
 		clr_str_size = max(strlen(str_charging), strlen(str_lowbatt));
-
 		sx = (lcdw - bmpw)/2 + bx;
 		sy = (lcdh - bmph)/2 + by;
 		dy = sy + (bh+4)*3;
+		str_dy = dy;
 
 		lcd_debug_init(&lcd);
-		lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, dy+100, 3, 3, 0);
-		str_dy = dy;
+
+		if(show_bat_state == 2)
+			lcd_draw_text(str_lowbatt, (lcdw - strlen(str_lowbatt)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		else 
+		{
+			if(chrg == CHARGER_NO || chrg == CHARGER_UNKNOWN)
+				lcd_draw_text(str_discharging, (lcdw - strlen(str_discharging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+			else
+				lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
+		}
 
 		time_pwr_prev = nxp_rtc_get();
 
@@ -717,12 +725,9 @@ int board_late_init(void)
 					else
 						lcd_draw_text(str_charging, (lcdw - strlen(str_charging)*8*3)/2 + 30, str_dy+100, 3, 3, 0);
 				}
-
 			}
-
 			mdelay(1000);
 		}
-
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 
