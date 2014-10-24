@@ -188,7 +188,7 @@
 #define NXE2000_DEF_CHG_COMPLETE_DIS		0		/* VAL = 0: Enable,	1: Disable,	default = Enable */
 #define NXE2000_DEF_CHG_NOBAT_OVLIM_EN		0		/* VAL = 0: Off, 		1: On, 	default = On */
 #define NXE2000_DEF_CHG_OTG_BOOST			0		/* VAL = 0: Off, 		1: On, 	default = On */
-#define NXE2000_DEF_CHG_SUSPEND				0		/* VAL = 0: Off, 		1: On, 	default = Off */
+#define NXE2000_DEF_CHG_SUSPEND				1		/* VAL = 0: Off, 		1: On, 	default = Off */
 #define NXE2000_DEF_CHG_JEITAEN				0		/* VAL = 0: Off, 		1: On, 	default = Off */
 #define NXE2000_DEF_CHG_USB_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
 #define NXE2000_DEF_CHG_ADP_EN				1		/* VAL = 0: Off, 		1: On, 	default = On */
