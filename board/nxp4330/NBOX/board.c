@@ -289,6 +289,10 @@ int board_late_init(void)
 
 #endif
 
+#ifdef CONFIG_CMD_NET
+	bd_eth_init();
+#endif
+
 	/* Temp check gpio to update */
 	auto_update(UPDATE_KEY, UPDATE_CHECK_TIME);
 
@@ -373,6 +377,100 @@ void fboot_lcd_status(char *stat)
 
 	lcd_fill_rectangle(l, t, w, h, bg, 0);
 	lcd_draw_string(l, t, s, s, 0, "%s", stat);
+}
+
+int bd_eth_init(void)
+{
+#if defined(CONFIG_DESIGNWARE_ETH)
+	u32 addr;
+
+#if 0	// 20140515
+	// 100 & 10Base-T
+	nxp_gpio_set_drv( (PAD_GPIO_E +  7), GPIO_DRV_1X );     // PAD_GPIOE7,     GMAC0_PHY_TXD[0]
+	nxp_gpio_set_drv( (PAD_GPIO_E +  8), GPIO_DRV_1X );     // PAD_GPIOE8,     GMAC0_PHY_TXD[1]
+	nxp_gpio_set_drv( (PAD_GPIO_E +  9), GPIO_DRV_1X );     // PAD_GPIOE9,     GMAC0_PHY_TXD[2]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 10), GPIO_DRV_1X );     // PAD_GPIOE10,    GMAC0_PHY_TXD[3]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 11), GPIO_DRV_1X );     // PAD_GPIOE11,    GMAC0_PHY_TXEN
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 12), GPIO_DRV_1X );     // PAD_GPIOE12,    GMAC0_PHY_TXER
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 13), GPIO_DRV_1X );     // PAD_GPIOE13,    GMAC0_PHY_COL
+	nxp_gpio_set_drv( (PAD_GPIO_E + 14), GPIO_DRV_3X );     // PAD_GPIOE14,    GMAC0_PHY_RXD[0]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 15), GPIO_DRV_3X );     // PAD_GPIOE15,    GMAC0_PHY_RXD[1]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 16), GPIO_DRV_3X );     // PAD_GPIOE16,    GMAC0_PHY_RXD[2]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 17), GPIO_DRV_3X );     // PAD_GPIOE17,    GMAC0_PHY_RXD[3]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 18), GPIO_DRV_4X );     // PAD_GPIOE18,    GMAC0_RX_CLK
+	nxp_gpio_set_drv( (PAD_GPIO_E + 19), GPIO_DRV_4X );     // PAD_GPIOE19,    GMAC0_PHY_RX_DV
+	nxp_gpio_set_drv( (PAD_GPIO_E + 20), GPIO_DRV_4X );     // PAD_GPIOE20,    GMAC0_GMII_MDC
+	nxp_gpio_set_drv( (PAD_GPIO_E + 21), GPIO_DRV_4X );     // PAD_GPIOE21,    GMAC0_GMII_MDI
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 22), GPIO_DRV_1X );     // PAD_GPIOE22,    GMAC0_PHY_RXER
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 23), GPIO_DRV_1X );     // PAD_GPIOE23,    GMAC0_PHY_CRS
+	nxp_gpio_set_drv( (PAD_GPIO_E + 24), GPIO_DRV_1X );     // PAD_GPIOE24,    GMAC0_GTX_CLK
+
+	NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);    // TX Clk invert off : 100 & 10Base-T
+#endif
+
+#if 1
+	// 1000Base-T
+	nxp_gpio_set_drv( (PAD_GPIO_E +  7), GPIO_DRV_4X );     // PAD_GPIOE7,     GMAC0_PHY_TXD[0]
+	nxp_gpio_set_drv( (PAD_GPIO_E +  8), GPIO_DRV_4X );     // PAD_GPIOE8,     GMAC0_PHY_TXD[1]
+	nxp_gpio_set_drv( (PAD_GPIO_E +  9), GPIO_DRV_4X );     // PAD_GPIOE9,     GMAC0_PHY_TXD[2]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 10), GPIO_DRV_4X );     // PAD_GPIOE10,    GMAC0_PHY_TXD[3]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 11), GPIO_DRV_4X );     // PAD_GPIOE11,    GMAC0_PHY_TXEN
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 12), GPIO_DRV_1X );     // PAD_GPIOE12,    GMAC0_PHY_TXER
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 13), GPIO_DRV_1X );     // PAD_GPIOE13,    GMAC0_PHY_COL
+	nxp_gpio_set_drv( (PAD_GPIO_E + 14), GPIO_DRV_4X );     // PAD_GPIOE14,    GMAC0_PHY_RXD[0]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 15), GPIO_DRV_4X );     // PAD_GPIOE15,    GMAC0_PHY_RXD[1]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 16), GPIO_DRV_4X );     // PAD_GPIOE16,    GMAC0_PHY_RXD[2]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 17), GPIO_DRV_4X );     // PAD_GPIOE17,    GMAC0_PHY_RXD[3]
+	nxp_gpio_set_drv( (PAD_GPIO_E + 18), GPIO_DRV_4X );     // PAD_GPIOE18,    GMAC0_RX_CLK
+	nxp_gpio_set_drv( (PAD_GPIO_E + 19), GPIO_DRV_4X );     // PAD_GPIOE19,    GMAC0_PHY_RX_DV
+	nxp_gpio_set_drv( (PAD_GPIO_E + 20), GPIO_DRV_4X );     // PAD_GPIOE20,    GMAC0_GMII_MDC
+	nxp_gpio_set_drv( (PAD_GPIO_E + 21), GPIO_DRV_4X );     // PAD_GPIOE21,    GMAC0_GMII_MDI
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 22), GPIO_DRV_1X );     // PAD_GPIOE22,    GMAC0_PHY_RXER
+//	nxp_gpio_set_drv( (PAD_GPIO_E + 23), GPIO_DRV_1X );     // PAD_GPIOE23,    GMAC0_PHY_CRS
+	nxp_gpio_set_drv( (PAD_GPIO_E + 24), GPIO_DRV_4X );     // PAD_GPIOE24,    GMAC0_GTX_CLK
+
+	//NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);    // TX Clk invert off
+#endif
+
+	// Clock control
+	NX_CLKGEN_Initialize();
+	addr = NX_CLKGEN_GetPhysicalAddress(CLOCKINDEX_OF_DWC_GMAC_MODULE);
+	NX_CLKGEN_SetBaseAddress( CLOCKINDEX_OF_DWC_GMAC_MODULE, (u32)IO_ADDRESS(addr) );
+
+	NX_CLKGEN_SetClockSource( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 4);     // Sync mode for 100 & 10Base-T : External RX_clk
+	NX_CLKGEN_SetClockDivisor( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, 1);    // Sync mode for 100 & 10Base-T
+
+	NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CFALSE);    // TX Clk invert off : 100 & 10Base-T
+//	NX_CLKGEN_SetClockOutInv( CLOCKINDEX_OF_DWC_GMAC_MODULE, 0, CTRUE);     // TX clk invert on : 100 & 10Base-T
+
+	NX_CLKGEN_SetClockDivisorEnable( CLOCKINDEX_OF_DWC_GMAC_MODULE, CTRUE);
+
+	// Reset control
+	NX_RSTCON_Initialize();
+	addr = NX_RSTCON_GetPhysicalAddress();
+	NX_RSTCON_SetBaseAddress( (u32)IO_ADDRESS(addr) );
+	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+	udelay(100);
+	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_DISABLE);
+	udelay(100);
+	NX_RSTCON_SetnRST(RESETINDEX_OF_DWC_GMAC_MODULE_aresetn_i, RSTCON_ENABLE);
+	udelay(100);
+
+	// Set interrupt config.
+	nxp_gpio_set_pull_sel(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_IRQ_NUM, CTRUE);
+	gpio_direction_input(CFG_ETHER_GMAC_PHY_IRQ_NUM);
+
+	// Set GPIO nReset
+	nxp_gpio_set_pull_enb(CFG_ETHER_GMAC_PHY_RST_NUM, CFALSE);
+	gpio_direction_output(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
+	udelay( 100 );
+	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 0 );
+	udelay( 100 );
+	gpio_set_value(CFG_ETHER_GMAC_PHY_RST_NUM, 1 );
+#endif	// #if defined(CONFIG_DESIGNWARE_ETH)
+
+	return 0;
 }
 
 #endif

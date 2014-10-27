@@ -689,6 +689,7 @@ ENTER_FUNC();
 
 #if defined(CONFIG_DW_SEARCH_PHY)
 	phy_addr = find_phy(dev);
+	printk ("phy addr: %d\n", phy_addr);
 	if (phy_addr >= 0)
 		priv->address = phy_addr;
 	else

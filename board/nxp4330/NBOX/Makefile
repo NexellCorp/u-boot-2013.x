@@ -27,6 +27,7 @@ LIB	= $(obj)lib$(BOARD).o
 
 COBJS-y	:= board.o
 COBJS-$(CONFIG_DISPLAY_OUT)	+= display.o
+COBJS-$(CONFIG_CMD_NET) += eth.o
 
 SOBJS-y	:=
 

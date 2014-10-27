@@ -52,6 +52,12 @@
 #define	CFG_ETHER_EXT_IRQ_NUM					(IRQ_GPIO_C_START + 26)
 
 /*------------------------------------------------------------------------------
+ * 	GMAC PHY
+ */
+#define	CFG_ETHER_GMAC_PHY_IRQ_NUM				(PAD_GPIO_A + 9)
+#define	CFG_ETHER_GMAC_PHY_RST_NUM				(PAD_GPIO_A + 10)
+
+/*------------------------------------------------------------------------------
  * 	Nand (HWECC)
  */
 #define CFG_NAND_ECC_BYTES                      1024            /* 512 - 4,8,16,24  1024 - 24,40,60  */
@@ -171,7 +177,7 @@
 //                      ( _name_ , bw, tACS tCOS tACC tSACC tOCH tCAH, wm, rb, wb )
 CFG_SYS_STATICBUS_CONFIG( STATIC0 ,  8,    1,   1,   6,    6,   1,   1,  1,  0,  0 )		// 0x0000_0000
 CFG_SYS_STATICBUS_CONFIG( STATIC1 ,  8,    6,   6,  32,   32,   6,   6,  1,  0,  0 )		// 0x0400_0000
-CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   6,  10,    1,   4,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0 (BCLK:400MHz)
-//CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   4,   7,    1,   3,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0 (BCLK:250MHz)
+CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   0xf,0x3f,  1, 0xf,   0,  1,  0,  0 )		// 0x2C00_0000, tOCH, tCAH must be greter than 0
+
 
 #endif /* __CFG_MAIN_H__ */
