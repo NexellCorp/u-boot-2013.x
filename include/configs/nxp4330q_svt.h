@@ -260,6 +260,91 @@
  * NOR FLASH
  */
 #define	CONFIG_SYS_NO_FLASH
+/*-----------------------------------------------------------------------
+ * EEPROM
+ */
+
+#define CONFIG_CMD_EEPROM
+#define CONFIG_SPI								/* SPI EEPROM, not I2C EEPROM */
+#define CONFIG_ENV_IS_IN_EEPROM
+
+#if defined(CONFIG_CMD_EEPROM)
+
+	#if defined(CONFIG_SPI)
+ 		#define CONFIG_SPI_MODULE_0
+ 		#define CONFIG_SPI0_TYPE				1 /* 1: EEPROM, 0: SPI device */
+
+		#define CONFIG_EEPROM_ERASE_SIZE		32*1024
+		#define CONFIG_EEPROM_WRITE_PAGE_SIZE	256
+		#define CONFIG_EEPROM_ADDRESS_STEP		3
+
+		#define CMD_SPI_WREN			0x06		// Set Write Enable Latch
+		#define CMD_SPI_WRDI			0x04		// Reset Write Enable Latch
+		#define CMD_SPI_RDSR			0x05		// Read Status Register
+		#define CMD_SPI_WRSR			0x01		// Write Status Register
+		#define CMD_SPI_READ			0x03		// Read Data from Memory Array
+		#define CMD_SPI_WRITE			0x02		// Write Data to Memory Array
+
+		#define CMD_SPI_SE				0x52		// Sector Erase
+		#define CMD_SPI_BE				0xC7		// Bulk Erase
+		#define CMD_SPI_DP				0xB9		// Deep Power-down
+		#define CMD_SPI_RES				0xAB		// Release from Deep Power-down
+
+		#define CONFIG_SPI_EEPROM_WRITE_PROTECT
+		#if defined(CONFIG_SPI_EEPROM_WRITE_PROTECT)
+			#define	CONFIG_SPI_EEPROM_WP_PAD 			CFG_IO_SPI_EEPROM_WP
+			#define	CONFIG_SPI_EEPROM_WP_ALT			CFG_IO_SPI_EEPROM_WP_ALT
+		#endif
+
+ 	 	#define CONFIG_CMD_SPI_EEPROM_UPDATE
+ 	 	#if defined (CONFIG_CMD_SPI_EEPROM_UPDATE)
+ 		/*
+ 	  	 *	EEPROM Environment Organization
+ 	 	 *	[Note R/W unit 64K]
+ 	 	 *
+		 *    0 ~   16K Second Boot [NSIH + Sencond boot]
+		 *   16 ~   32K Reserved
+		 *   32 ~   64K Enviroment
+		 *   64 ~  512K U-Boot
+		 */
+			#define	CONFIG_2STBOOT_OFFSET				0
+			#define	CONFIG_2STBOOT_SIZE					16*1024
+			#define	CONFIG_UBOOT_OFFSET					64*1024
+			#define	CONFIG_UBOOT_SIZE					(512-64)*1024
+		#endif
+		#if defined(CONFIG_ENV_IS_IN_EEPROM)
+			#define	CONFIG_ENV_OFFSET					32*1024	/* 16 ~ 20K Environment */
+			#define CONFIG_ENV_SIZE						32*1024
+			#define CONFIG_ENV_RANGE					CONFIG_ENV_SIZE
+			#define CONFIG_SYS_DEF_EEPROM_ADDR			0					/* Need 0, when SPI */
+			#define CONFIG_SYS_I2C_FRAM									/* To avoid max length limit when spi write */
+			//#define DEBUG_ENV
+		#endif
+	#endif
+#endif
+
+/*-----------------------------------------------------------------------
+ * SPI
+ */
+
+#if defined  (CONFIG_SPI)
+	#if defined (CONFIG_SPI_MODULE_0)
+		#define CONFIG_SPI_MODULE_0_SOURCE_CLOCK	CFG_SPI0_SRC_CLK
+		#define CONFIG_SPI_MODULE_0_CLOCK			CFG_SPI0_OUT_CLK
+		#define CONFIG_SPI_MODULE_0_EEPROM			CONFIG_SPI0_TYPE	/* 1: EEPROM, 0: SPI device */
+	#endif
+	#if defined (CONFIG_SPI_MODULE_1)
+		#define CONFIG_SPI_MODULE_1_SOURCE_CLOCK	CFG_SPI1_SRC_CLK
+		#define CONFIG_SPI_MODULE_1_CLOCK			CFG_SPI0_OUT_CLK
+		#define CONFIG_SPI_MODULE_1_EEPROM			CONFIG_SPI1_TYPE	/* 1: EEPROM, 0: SPI device */
+	#endif
+	#if defined (CONFIG_SPI_MODULE_2)
+		#define CONFIG_SPI_MODULE_2_SOURCE_CLOCK	CFG_SPI2_SRC_CLK
+		#define CONFIG_SPI_MODULE_2_CLOCK			CFG_SPI0_OUT_CLK
+		#define CONFIG_SPI_MODULE_2_EEPROM			CONFIG_SPI2_TYPE	/* 1: EEPROM, 0: SPI device */
+	#endif
+#endif
+
 
 /*-----------------------------------------------------------------------
  * USB Host / Gadget
@@ -391,7 +476,7 @@
  *
  */
 #define	CONFIG_CMD_MMC
-#define CONFIG_ENV_IS_IN_MMC
+//#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
