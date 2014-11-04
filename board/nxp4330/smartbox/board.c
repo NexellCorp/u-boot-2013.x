@@ -212,7 +212,7 @@ int bd_pmic_init(void)
 {
 #if defined(CONFIG_PMIC_NXE2000)
 	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= 0;
+	nxe_power_config.i2c_bus	= CONFIG_NXE2000_I2C_BUS;
 
 	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE2000_DEF_LDO1_VOL;
 	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE2000_DEF_LDO2_VOL;

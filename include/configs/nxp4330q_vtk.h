@@ -383,6 +383,8 @@
 #define CONFIG_PMIC_NXE2000
 #define CONFIG_HAVE_BATTERY
 
+#define CONFIG_NXE2000_I2C_BUS						I2C_0
+
 #define CONFIG_PMIC_CHARGING_PATH_ADP               (0) // Support only VADP. Do not supported USB ADP.
 #define CONFIG_PMIC_CHARGING_PATH_UBC               (1) // Support only VUSB. (USB connector - USB ADP & PC)
 #define CONFIG_PMIC_CHARGING_PATH_ADP_UBC           (2) // Using VADP, VUSB power path. Separated power path.

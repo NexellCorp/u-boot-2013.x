@@ -227,7 +227,7 @@ int bd_pmic_init(void)
 {
 #if defined(CONFIG_PMIC_NXE2000)
 	nxe_power_config.i2c_addr	= (0x64>>1);
-	nxe_power_config.i2c_bus	= 0;
+	nxe_power_config.i2c_bus	= CONFIG_NXE2000_I2C_BUS;
 
 	nxe_power_config.policy.ldo.ldo_1_out_vol = NXE2000_DEF_LDO1_VOL;
 	nxe_power_config.policy.ldo.ldo_2_out_vol = NXE2000_DEF_LDO2_VOL;
@@ -335,26 +335,29 @@ static int pmic_init_nxe2000(void)
     }
     return 0;
 }
+#endif  /* CONFIG_BAT_CHECK */
 
 int power_init_board(void)
 {
 	int ret;
+
 #ifdef CONFIG_NXE2000_REG_DUMP
 	bd_pmic_init();
 #endif
 
-	ret = pmic_init(I2C_0);
+	ret = pmic_init(CONFIG_NXE2000_I2C_BUS);
+#if defined(CONFIG_BAT_CHECK)
 	ret |= pmic_init_nxe2000();
-	ret |= power_fg_init(I2C_0);
-	ret |= power_bat_init(I2C_0);
+	ret |= power_bat_init(CONFIG_NXE2000_I2C_BUS);
+#endif
+	ret |= power_fg_init(CONFIG_NXE2000_I2C_BUS);
 	if (ret)
 		return ret;
 
-	ret = power_muic_init(I2C_0);
+	ret = power_muic_init(CONFIG_NXE2000_I2C_BUS);
 
 	return 0;
 }
-#endif  /* CONFIG_BAT_CHECK */
 
 extern void	bd_display(void);
 
