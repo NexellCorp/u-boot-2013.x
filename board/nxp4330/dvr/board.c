@@ -60,6 +60,7 @@ DECLARE_GLOBAL_DATA_PTR;
 #define CFG_KEY_POWER       (PAD_GPIO_ALV + 0)
 #endif
 
+extern void init_lcd(void);
 
 /*------------------------------------------------------------------------------
  * intialize nexell soc and board status.
@@ -339,6 +340,7 @@ static int pmic_init_nxe2000(void)
 
 int power_init_board(void)
 {
+#if defined(CONFIG_PMIC)
 	int ret;
 
 #ifdef CONFIG_NXE2000_REG_DUMP
@@ -356,6 +358,7 @@ int power_init_board(void)
 
 	ret = power_muic_init(CONFIG_NXE2000_I2C_BUS);
 
+#endif//CONFIG_PMIC
 	return 0;
 }
 
@@ -388,7 +391,7 @@ static void auto_update(int io, int wait)
 		run_command (cmd, 0);
 }
 
-static void bd_display_run(char *cmd, int bl_duty, int bl_on)
+static void bd_display_run(char *cmd, int bl_on)
 {
 	static int display_init = 0;
 
@@ -399,17 +402,15 @@ static void bd_display_run(char *cmd, int bl_duty, int bl_on)
 	}
 
 	if (!display_init) {
+		init_lcd();
 		bd_display();
-		pwm_init(CFG_LCD_PRI_PWM_CH, 0, 0);
 		display_init = 1;
 	}
 
-	pwm_config(CFG_LCD_PRI_PWM_CH,
-		TO_DUTY_NS(bl_duty, CFG_LCD_PRI_PWM_FREQ),
-		TO_PERIOD_NS(CFG_LCD_PRI_PWM_FREQ));
-
 	if (bl_on)
-		pwm_enable(CFG_LCD_PRI_PWM_CH);
+		NX_GPIO_SetOutputValue 	(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CTRUE );
+	else
+		NX_GPIO_SetOutputValue 	(PAD_GET_GROUP(CFG_IO_LCD_PWR_ENB), PAD_GET_BITNO(CFG_IO_LCD_PWR_ENB), CFALSE );
 }
 
 #define	UPDATE_KEY			(PAD_GPIO_ALV + 0)
@@ -439,9 +440,7 @@ int board_late_init(void)
 
 	int chrg, poweron_his;
 	int shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
-	int bl_duty = CFG_LCD_PRI_PWM_DUTYCYCLE;
 	u32 chg_state=0;
-	//u32 chg_led_mode = 0;
 	struct power_battery *pb;
 	struct pmic *p_fg, *p_chrg, *p_muic, *p_bat;
 	int show_bat_state = 0;
@@ -449,7 +448,6 @@ int board_late_init(void)
 	u32 time_key_pev = 0;
 	unsigned int sum_voltage=0, avg_voltage=0;
 	int i=0;
-	//u8 is_pwr_in;
 	u8 power_state = 0;
 	u8 power_depth = 3;
 
@@ -562,7 +560,6 @@ int board_late_init(void)
 	}
 	else if(avg_voltage < shutdown_ilim_uV)
 	{
-		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
 		show_bat_state = 1;
 		power_key_depth = 0;
 	}
@@ -573,7 +570,6 @@ int board_late_init(void)
 	}
 	else
 	{
-		bl_duty = (CFG_LCD_PRI_PWM_DUTYCYCLE / 2);
 		show_bat_state = 1;
 		power_key_depth = 0;
 	}
@@ -584,7 +580,7 @@ int board_late_init(void)
         writel((-1UL), SCR_RESET_SIG_RESET); /* clear */
 
         printf("RECOVERY BOOT\n");
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, 1);
         run_command(CONFIG_CMD_RECOVERY_BOOT, 0);	/* recovery boot */
     }
     writel((-1UL), SCR_RESET_SIG_RESET);
@@ -593,13 +589,13 @@ int board_late_init(void)
 	/*===========================================================*/
     if (power_key_depth > 1)
     {
-        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, bl_duty, 1);
+        bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, 1);
         goto skip_bat_animation;
     }
     else if (show_bat_state)
     {
         memset((void*)lcd.fb_base, 0, lcd.lcd_width * lcd.lcd_height * (lcd.bit_per_pixel/8));
-        bd_display_run(CONFIG_CMD_LOGO_BATTERY, bl_duty, 1);
+        bd_display_run(CONFIG_CMD_LOGO_BATTERY, 1);
     }
 
 	/*===========================================================*/
@@ -663,10 +659,9 @@ int board_late_init(void)
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
 				time_pwr_prev = nxp_rtc_get();
-				bl_duty = (bl_duty >> 1);
 				if(power_depth > 0)
 				{
-					bd_display_run(NULL, bl_duty, 1);
+					bd_display_run(NULL, 1);
 					power_depth--;
 				}
 				else
@@ -714,7 +709,7 @@ int board_late_init(void)
 			mdelay(1000);
 		}
 
-		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, 1);
 	}
 
 skip_bat_animation:
@@ -776,7 +771,7 @@ int board_late_init(void)
 #endif
 
 #if defined(CONFIG_DISPLAY_OUT)
-	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
+	bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, 1);
 #endif
 
 	/* Temp check gpio to update */
