@@ -83,6 +83,92 @@ extern void display_rgb(int module, unsigned int fbbase,
 		.lcd_mpu_type 	= 0,                                \
 	};
 
+#define SPI_CS 			PAD_GPIO_D + 21//GPIOD21
+#define SPI_CLK 		PAD_GPIO_D + 1//GPIOD1
+#define SPI_DI 			PAD_GPIO_D + 16//GPIOD16
+
+
+#define IO_OUTPUT(_io)		NX_GPIO_SetOutputEnable	(PAD_GET_GROUP(_io), PAD_GET_BITNO(_io), CTRUE )
+#define IO_HIGH(_io)		NX_GPIO_SetOutputValue 	(PAD_GET_GROUP(_io), PAD_GET_BITNO(_io), CTRUE )
+#define IO_LOW(_io)			NX_GPIO_SetOutputValue 	(PAD_GET_GROUP(_io), PAD_GET_BITNO(_io), CFALSE)
+
+void SPI_SendData(unsigned char i)
+{
+   unsigned char n;
+   
+   for(n=0; n<8; n++)
+   {
+		if(i&0x80)
+			IO_HIGH(SPI_DI);
+		else
+			IO_LOW(SPI_DI);
+
+		i<<= 1;
+
+		IO_LOW(SPI_CLK);
+		udelay(1);
+		IO_HIGH(SPI_CLK);
+		udelay(1);
+   }
+}
+
+void SPI_WriteCommm(unsigned char i)
+{
+    IO_LOW(SPI_CS);
+
+    IO_LOW(SPI_DI);
+
+	IO_LOW(SPI_CLK);
+	udelay(1);
+	IO_HIGH(SPI_CLK);
+	udelay(1);
+
+	SPI_SendData(i);
+
+    IO_HIGH(SPI_CS);
+}
+
+void SPI_WriteDataa(unsigned char i)
+{
+    IO_LOW(SPI_CS);
+
+    IO_HIGH(SPI_DI);
+
+	IO_LOW(SPI_CLK);
+	IO_HIGH(SPI_CLK);
+
+	SPI_SendData(i);
+
+    IO_HIGH(SPI_CS);
+}
+
+void init_lcd(void)
+{
+	IO_OUTPUT(SPI_CS);
+	IO_OUTPUT(SPI_CLK);
+	IO_OUTPUT(SPI_DI);
+
+	SPI_WriteCommm(0x01);
+	mdelay(10);
+
+	SPI_WriteCommm(0xC8);SPI_WriteDataa(0xFF);SPI_WriteDataa(0x93);SPI_WriteDataa(0x42);
+	SPI_WriteCommm(0xB4);SPI_WriteDataa(0x02);
+	SPI_WriteCommm(0xB0);SPI_WriteDataa(0xC0);    //RGB
+	SPI_WriteCommm(0xF6);SPI_WriteDataa(0x00);SPI_WriteDataa(0x00);SPI_WriteDataa(0x06); //RGB
+	SPI_WriteCommm(0x36);SPI_WriteDataa(0xC8);
+	SPI_WriteCommm(0x3A);SPI_WriteDataa(0x66);
+	SPI_WriteCommm(0xC0);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x0F);
+	SPI_WriteCommm(0xC1);SPI_WriteDataa(0x01);
+	SPI_WriteCommm(0xC5);SPI_WriteDataa(0xC8);
+	SPI_WriteCommm(0xE0);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x08);SPI_WriteDataa(0x05);SPI_WriteDataa(0x08);SPI_WriteDataa(0x1A);SPI_WriteDataa(0x0C);SPI_WriteDataa(0x42);SPI_WriteDataa(0x7A);SPI_WriteDataa(0x54);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x23);SPI_WriteDataa(0x25);SPI_WriteDataa(0x0F);
+	SPI_WriteCommm(0xE1);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x2f);SPI_WriteDataa(0x29);SPI_WriteDataa(0x08);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x05);SPI_WriteDataa(0x42);SPI_WriteDataa(0x55);SPI_WriteDataa(0x53);SPI_WriteDataa(0x06);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x38);SPI_WriteDataa(0x3A);SPI_WriteDataa(0x0f);
+
+//	SPI_WriteCommm(0x20);
+	SPI_WriteCommm(0x11);
+	mdelay(20);
+	SPI_WriteCommm(0x29);
+//	SPI_WriteCommm(0x2C);
+}
 
 int bd_display(void)
 {

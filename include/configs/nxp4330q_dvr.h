@@ -565,7 +565,7 @@
 #endif
 
 #if	defined(CONFIG_DISPLAY_OUT)
-	#define	CONFIG_PWM			/* backlight */
+//	#define	CONFIG_PWM			/* backlight */
 	/* display out device */
 	#define	CONFIG_DISPLAY_OUT_RGB
 
