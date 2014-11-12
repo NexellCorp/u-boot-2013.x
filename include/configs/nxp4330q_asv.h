@@ -477,8 +477,8 @@
  * #> fatload mmc 0  0x.....	"file"
  *
  */
-//#define	CONFIG_CMD_MMC
-//#define CONFIG_ENV_IS_IN_MMC
+#define	CONFIG_CMD_MMC
+#define CONFIG_ENV_IS_IN_MMC
 
 #if defined(CONFIG_CMD_MMC)
 	#define	CONFIG_MMC
@@ -486,11 +486,11 @@
 	#define HAVE_BLOCK_DEVICE
 
 	#define	CONFIG_MMC0_NEXELL					/* 0 = MMC0 */
-	#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
-	#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
+	//#define	CONFIG_MMC1_NEXELL					/* 1 = MMC1 */
+	//#define	CONFIG_MMC2_NEXELL					/* 2 = MMC2 */
 	#define	CONFIG_MMC0_ATTACH			TRUE	/* 0 = MMC0 */
-	#define	CONFIG_MMC1_ATTACH			TRUE	/* 1 = MMC1 */
-	#define	CONFIG_MMC2_ATTACH			TRUE	/* 2 = MMC2 */
+	#define	CONFIG_MMC1_ATTACH			FALSE	/* 1 = MMC1 */
+	#define	CONFIG_MMC2_ATTACH			FALSE	/* 2 = MMC2 */
 
 	#define CONFIG_MMC0_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
 	#define CONFIG_MMC1_CLK_DELAY       DW_MMC_DRIVE_DELAY(0) | DW_MMC_SAMPLE_DELAY(0) | DW_MMC_DRIVE_PHASE(2)| DW_MMC_SAMPLE_PHASE(1)
