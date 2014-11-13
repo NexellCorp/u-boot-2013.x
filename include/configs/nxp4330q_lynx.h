@@ -534,6 +534,13 @@
 #endif
 
 /*-----------------------------------------------------------------------
+ * UPDATE SDCARD
+ */
+#if defined(CONFIG_CMD_MMC) && defined(CONFIG_CMD_FAT)
+#define CONFIG_CMD_UPDATE_SDCARD
+#endif
+
+/*-----------------------------------------------------------------------
  * FASTBOOT
  */
 #define CONFIG_FASTBOOT
@@ -550,12 +557,6 @@
 			"flash=mmc,1:cache:ext4:0x02CF00000,0x21000000;"	\
 			"flash=mmc,1:userdata:ext4:0x4df00000,0x0;"
 #endif
-
-/*-----------------------------------------------------------------------
- * UPDATE SDCARD
- */
-#define CONFIG_CMD_UPDATE_SDCARD
-
 
 /*-----------------------------------------------------------------------
  * Logo command
