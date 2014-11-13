@@ -355,7 +355,7 @@
  * #> fatls   usb 0 "directory"
  * #> fatload usb 0  0x.....	"file"
  */
-//#define CONFIG_CMD_USB
+#define CONFIG_CMD_USB
 #if defined(CONFIG_CMD_USB)
 	#define CONFIG_USB_EHCI_NEXELL
 	#define CONFIG_USB_EHCI_MODE
