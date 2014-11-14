@@ -67,15 +67,15 @@
 #define	NXE2000_DEF_DDC4_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.5V DDR		*/
 #define	NXE2000_DEF_DDC5_ON					1		/* VAL = 0: Off, 1: On, default(OTP) = On */	/* 1.5V SYS		*/
 
-#define	NXE2000_DEF_LDO1_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V GPS		*/
-#define	NXE2000_DEF_LDO2_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V CAM1	*/
+#define	NXE2000_DEF_LDO1_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V GPS		*/
+#define	NXE2000_DEF_LDO2_ON					0		/* VAL = 0: Off, 1: On */	/* 1.8V CAM1	*/
 #define	NXE2000_DEF_LDO3_ON					1		/* VAL = 0: Off, 1: On */	/* 1.8V SYS1,	Boot On   */
 #define	NXE2000_DEF_LDO4_ON					1		/* VAL = 0: Off, 1: On */	/* 1.9V SYS,	Boot On   */
-#define	NXE2000_DEF_LDO5_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V CAM		*/
+#define	NXE2000_DEF_LDO5_ON					0		/* VAL = 0: Off, 1: On */	/* 2.8V CAM		*/
 #define	NXE2000_DEF_LDO6_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V ALIVE,	Boot On   */
 #define	NXE2000_DEF_LDO7_ON					1		/* VAL = 0: Off, 1: On */	/* 2.8V VID,	Boot On   */
-#define	NXE2000_DEF_LDO8_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V WIFI	*/
-#define	NXE2000_DEF_LDO9_ON					1		/* VAL = 0: Off, 1: On */	/* 3.3V HUB		*/
+#define	NXE2000_DEF_LDO8_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V WIFI	*/
+#define	NXE2000_DEF_LDO9_ON					0		/* VAL = 0: Off, 1: On */	/* 3.3V HUB		*/
 #define	NXE2000_DEF_LDO10_ON				1		/* VAL = 0: Off, 1: On */	/* 1.2V HSIC	*/
 #define	NXE2000_DEF_LDORTC1_ON				1		/* VAL = 0: Off, 1: On */	/* 1.8V ALIVE,	Boot On   */
 #define	NXE2000_DEF_LDORTC2_ON				1		/* VAL = 0: Off, 1: On */	/* 1.0V ALIVE,	Boot On   */
