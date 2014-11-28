@@ -148,6 +148,81 @@ void init_lcd(void)
 	IO_OUTPUT(SPI_CLK);
 	IO_OUTPUT(SPI_DI);
 
+#if 0
+SPI_WriteCommm(0x01);
+	mdelay(10);
+
+SPI_WriteCommm(0xC8);       //Set EXTC
+  SPI_WriteDataa(0xFF);
+  SPI_WriteDataa(0x93);
+  SPI_WriteDataa(0x42);
+  
+  SPI_WriteCommm(0x36);       //Memory Access Control
+  SPI_WriteDataa(0xc8); //MY,MX,MV,ML,BGR,MH
+
+  
+  SPI_WriteCommm(0x3A);       //Pixel Format Set
+  SPI_WriteDataa(0x05); //DPI [2:0],DBI [2:0]
+  
+  SPI_WriteCommm(0xC0);       //Power Control 1
+  SPI_WriteDataa(0x15); //VRH[5:0]
+  SPI_WriteDataa(0x15); //VC[3:0]
+  
+  SPI_WriteCommm(0xC1);       //Power Control 2
+  SPI_WriteDataa(0x01); //SAP[2:0],BT[3:0]
+  
+  SPI_WriteCommm(0xC5);       //VCOM
+  SPI_WriteDataa(0xEC);//0xFA
+ //test=test+2;
+  
+  SPI_WriteCommm(0xB1);      
+  SPI_WriteDataa(0x00);     
+  SPI_WriteDataa(0x1B);
+  SPI_WriteCommm(0xB4);      
+  SPI_WriteDataa(0x02);
+  
+  SPI_WriteCommm(0xE0);
+  SPI_WriteDataa(0x0F);//P01-VP63   
+  SPI_WriteDataa(0x13);//P02-VP62   
+  SPI_WriteDataa(0x17);//P03-VP61   
+  SPI_WriteDataa(0x04);//P04-VP59   
+  SPI_WriteDataa(0x13);//P05-VP57   
+  SPI_WriteDataa(0x07);//P06-VP50   
+  SPI_WriteDataa(0x40);//P07-VP43   
+  SPI_WriteDataa(0x39);//P08-VP27,36
+  SPI_WriteDataa(0x4F);//P09-VP20   
+  SPI_WriteDataa(0x06);//P10-VP13   
+  SPI_WriteDataa(0x0D);//P11-VP6    
+  SPI_WriteDataa(0x0A);//P12-VP4    
+  SPI_WriteDataa(0x1F);//P13-VP2    
+  SPI_WriteDataa(0x22);//P14-VP1    
+  SPI_WriteDataa(0x00);//P15-VP0    
+  
+  SPI_WriteCommm(0xE1);
+  SPI_WriteDataa(0x00);//P01
+  SPI_WriteDataa(0x21);//P02
+  SPI_WriteDataa(0x24);//P03
+  SPI_WriteDataa(0x03);//P04
+  SPI_WriteDataa(0x0F);//P05
+  SPI_WriteDataa(0x05);//P06
+  SPI_WriteDataa(0x38);//P07
+  SPI_WriteDataa(0x32);//P08
+  SPI_WriteDataa(0x49);//P09
+  SPI_WriteDataa(0x00);//P10
+  SPI_WriteDataa(0x09);//P11
+  SPI_WriteDataa(0x08);//P12
+  SPI_WriteDataa(0x32);//P13
+  SPI_WriteDataa(0x35);//P14
+  SPI_WriteDataa(0x0F);//P15
+  
+  SPI_WriteCommm(0x11);//Exit Sleep
+  mdelay(120);
+  SPI_WriteCommm(0x29);//Display On
+	SPI_WriteCommm(0x2C);   //write data
+#endif
+
+
+#if 1
 	SPI_WriteCommm(0x01);
 	mdelay(10);
 
@@ -157,17 +232,183 @@ void init_lcd(void)
 	SPI_WriteCommm(0xF6);SPI_WriteDataa(0x00);SPI_WriteDataa(0x00);SPI_WriteDataa(0x06); //RGB
 	SPI_WriteCommm(0x36);SPI_WriteDataa(0xC8);
 	SPI_WriteCommm(0x3A);SPI_WriteDataa(0x66);
-	SPI_WriteCommm(0xC0);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x0F);
+	SPI_WriteCommm(0xC0);SPI_WriteDataa(0x12);SPI_WriteDataa(0x12);   // c0 0f 0f
 	SPI_WriteCommm(0xC1);SPI_WriteDataa(0x01);
-	SPI_WriteCommm(0xC5);SPI_WriteDataa(0xC8);
-	SPI_WriteCommm(0xE0);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x08);SPI_WriteDataa(0x05);SPI_WriteDataa(0x08);SPI_WriteDataa(0x1A);SPI_WriteDataa(0x0C);SPI_WriteDataa(0x42);SPI_WriteDataa(0x7A);SPI_WriteDataa(0x54);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x23);SPI_WriteDataa(0x25);SPI_WriteDataa(0x0F);
-	SPI_WriteCommm(0xE1);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x2f);SPI_WriteDataa(0x29);SPI_WriteDataa(0x08);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x05);SPI_WriteDataa(0x42);SPI_WriteDataa(0x55);SPI_WriteDataa(0x53);SPI_WriteDataa(0x06);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x38);SPI_WriteDataa(0x3A);SPI_WriteDataa(0x0f);
+	SPI_WriteCommm(0xC5);SPI_WriteDataa(0xcc);   //c8
+	
+	//SPI_WriteCommm(0xE0);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x08);SPI_WriteDataa(0x05);SPI_WriteDataa(0x08);SPI_WriteDataa(0x1A);SPI_WriteDataa(0x0C);SPI_WriteDataa(0x42);SPI_WriteDataa(0x7A);SPI_WriteDataa(0x54);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x23);SPI_WriteDataa(0x25);SPI_WriteDataa(0x0F);
+	//SPI_WriteCommm(0xE1);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x00);SPI_WriteDataa(0x2f);SPI_WriteDataa(0x29);SPI_WriteDataa(0x08);SPI_WriteDataa(0x0F);SPI_WriteDataa(0x05);SPI_WriteDataa(0x42);SPI_WriteDataa(0x55);SPI_WriteDataa(0x53);SPI_WriteDataa(0x06);SPI_WriteDataa(0x08);SPI_WriteDataa(0x08);SPI_WriteDataa(0x38);SPI_WriteDataa(0x3A);SPI_WriteDataa(0x0f);
 
 //	SPI_WriteCommm(0x20);
+ /*   SPI_WriteCommm(0xE0);  // Positive Gamma Correction
+
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x1C);
+    SPI_WriteDataa(0x1B);
+    SPI_WriteDataa(0x09);
+    SPI_WriteDataa(0x0D);
+    SPI_WriteDataa(0x08);
+
+    SPI_WriteDataa(0x4B);
+    SPI_WriteDataa(0xB8);
+    SPI_WriteDataa(0x3B);
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x10);
+
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x20);
+    SPI_WriteDataa(0x20);
+    SPI_WriteDataa(0x08);
+
+    SPI_WriteCommm(0xE1);  // Negative Gamma Correction
+
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x23);
+    SPI_WriteDataa(0x24);
+    SPI_WriteDataa(0x06);
+    SPI_WriteDataa(0x12);
+
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x34);
+    SPI_WriteDataa(0x47);
+    SPI_WriteDataa(0x44);
+    SPI_WriteDataa(0x07);
+
+    SPI_WriteDataa(0x0F);
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x1F);
+    SPI_WriteDataa(0x1F);
+    SPI_WriteDataa(0x07);*/
+
+	SPI_WriteCommm(0xE0);
+  SPI_WriteDataa(0x0F);//P01-VP63   
+  SPI_WriteDataa(0x13);//P02-VP62   
+  SPI_WriteDataa(0x17);//P03-VP61   
+  SPI_WriteDataa(0x04);//P04-VP59   
+  SPI_WriteDataa(0x13);//P05-VP57   
+  SPI_WriteDataa(0x07);//P06-VP50   
+  SPI_WriteDataa(0x40);//P07-VP43   
+  SPI_WriteDataa(0x39);//P08-VP27,36
+  SPI_WriteDataa(0x4F);//P09-VP20   
+  SPI_WriteDataa(0x06);//P10-VP13   
+  SPI_WriteDataa(0x0D);//P11-VP6    
+  SPI_WriteDataa(0x0A);//P12-VP4    
+  SPI_WriteDataa(0x1F);//P13-VP2    
+  SPI_WriteDataa(0x22);//P14-VP1    
+  SPI_WriteDataa(0x00);//P15-VP0    
+  
+  SPI_WriteCommm(0xE1);
+  SPI_WriteDataa(0x00);//P01
+  SPI_WriteDataa(0x21);//P02
+  SPI_WriteDataa(0x24);//P03
+  SPI_WriteDataa(0x03);//P04
+  SPI_WriteDataa(0x0F);//P05
+  SPI_WriteDataa(0x05);//P06
+  SPI_WriteDataa(0x38);//P07
+  SPI_WriteDataa(0x32);//P08
+  SPI_WriteDataa(0x49);//P09
+  SPI_WriteDataa(0x00);//P10
+  SPI_WriteDataa(0x09);//P11
+  SPI_WriteDataa(0x08);//P12
+  SPI_WriteDataa(0x32);//P13
+  SPI_WriteDataa(0x35);//P14
+  SPI_WriteDataa(0x0F);//P15
+
 	SPI_WriteCommm(0x11);
 	mdelay(20);
 	SPI_WriteCommm(0x29);
 //	SPI_WriteCommm(0x2C);
+#endif
+#if 0
+SPI_WriteCommm(0x01);
+	mdelay(10);
+
+   SPI_WriteCommm(0xB9);  // Set EXTC
+    SPI_WriteDataa(0xFF);
+    SPI_WriteDataa(0x93);
+    SPI_WriteDataa(0x42);
+
+    SPI_WriteCommm(0x36);  // Memory Access Control
+
+    //SPI_WriteDataa(0x08);// MY,MX,MV,ML,BGR,MH bit
+    SPI_WriteDataa(0x00);// MY,MX,MV,ML,BGR,MH bit
+
+    SPI_WriteCommm(0x3A);  // Pixel Format Set
+    SPI_WriteDataa(0x66);// DPI[2:0]&DBI[2:0]=16 bits / pixel
+
+    SPI_WriteCommm(0xB1);  // Display Waveform Cycle
+    SPI_WriteDataa(0x00);// DIVA[1:0],division ratio，0x00=Fosc
+    SPI_WriteDataa(0x10);// RTNA[4:0]，Clock per Line，0x10=16 clocks
+
+    SPI_WriteCommm(0xB6);  // Display Function Control
+    SPI_WriteDataa(0x0A);// PTG[1:0],PT[1:0] bit
+    SPI_WriteDataa(0xE2);// REV,GS,SS,SM,ISC[3:0] bit
+    SPI_WriteDataa(0x1D);// NL[5:0],0x1D=240 lines
+
+    SPI_WriteCommm(0xC0);  // Power Control 1
+    SPI_WriteDataa(0x28);// Set the VREG1OUT level,VRH[5:0],0x28=4.85V
+    SPI_WriteDataa(0x0A);// Sets VCI1 level,VC[3:0],0x2A=2.80V
+
+    SPI_WriteCommm(0xC1);  // Power Control 2
+    SPI_WriteDataa(0x02);// SAP[2:0], BT[3:0] VGH/VGL=6/-3
+
+    SPI_WriteCommm(0xC5);  // VCOM Control 1
+
+    SPI_WriteDataa(0x31);// VMH[6:0],0x31=3.925V
+
+    SPI_WriteDataa(0x3C);// VML[6:0],0x3C=-1.000V
+
+    SPI_WriteCommm(0xB8);  // Oscillator Control
+    SPI_WriteDataa(0x0A);// FOSC[3:0],0x0A=93Hz
+
+    SPI_WriteCommm(0x26);  // Gamma Set
+    SPI_WriteDataa(0x01);// GC[7:0],Gamma curve 2.2
+
+    SPI_WriteCommm(0xC7);  // VCOM Control 2
+    SPI_WriteDataa(0xBF);// VMF[6:0],VCOM offset voltage,0xBF=VMH+31,VML+31
+
+    SPI_WriteCommm(0xE0);  // Positive Gamma Correction
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x1C);
+    SPI_WriteDataa(0x1B);
+    SPI_WriteDataa(0x09);
+    SPI_WriteDataa(0x0D);
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x4B);
+    SPI_WriteDataa(0xB8);
+    SPI_WriteDataa(0x3B);
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x10);
+    SPI_WriteDataa(0x08);
+    SPI_WriteDataa(0x20);
+    SPI_WriteDataa(0x20);
+    SPI_WriteDataa(0x08);
+
+    SPI_WriteCommm(0xE1);  // Negative Gamma Correction
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x23);
+    SPI_WriteDataa(0x24);
+    SPI_WriteDataa(0x06);
+    SPI_WriteDataa(0x12);
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x34);
+    SPI_WriteDataa(0x47);
+    SPI_WriteDataa(0x44);
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x0F);
+    SPI_WriteDataa(0x07);
+    SPI_WriteDataa(0x1F);
+    SPI_WriteDataa(0x1F);
+    SPI_WriteDataa(0x07);
+
+    SPI_WriteCommm(0x11);  // Exit Sleep
+    mdelay(80);
+    SPI_WriteCommm(0x11);  // Exit Sleep
+    mdelay(80);
+    SPI_WriteCommm(0x29);  // Display On
+
+    SPI_WriteCommm(0x2C);
+#endif
 }
 
 int bd_display(void)
