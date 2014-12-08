@@ -636,6 +636,8 @@ int board_late_init(void)
 		dy = sy + (bh+4)*3;
 		str_dy = dy;
 
+		printf(".");
+
 		pmic_reg_read(p_chrg, NXE2000_REG_CHGCTL1, &back_reg);
 		temp_reg = back_reg | (1 << NXE2000_POS_CHGCTL1_CHGCMP_DIS);
 		//temp_reg |= (1 << NXE2000_POS_CHGCTL1_VUSBCHGEN);
@@ -680,6 +682,7 @@ int board_late_init(void)
 
 		while(!ctrlc())
 		{
+			printf(".");
 			if (nxp_rtc_get() > (time_pwr_prev + 4))
 			{
 				time_pwr_prev = nxp_rtc_get();
@@ -705,6 +708,7 @@ int board_late_init(void)
 
 				nxp_gpio_set_int_clear(CFG_KEY_POWER);
 
+#if 0
 				p_fg->fg->fg_battery_check(p_fg, p_bat);
 
 				if(p_muic)
@@ -724,11 +728,13 @@ int board_late_init(void)
 				{
 					shutdown_ilim_uV = NXE2000_DEF_LOWBAT_BATTERY_VOL;
 				}
+#endif
 
 				if (power_key_depth > 1)
 				{
 					if (pb->bat->voltage_uV >= shutdown_ilim_uV)
 					{
+						printf("\n");
 						break;
 					}
 				}
@@ -746,6 +752,7 @@ int board_late_init(void)
 				else
 				{
 					dy = sy + (bh+4)*3;
+					printf("\n");
 					lcd_draw_boot_logo(CONFIG_FB_ADDR, CFG_DISP_PRI_RESOL_WIDTH, CFG_DISP_PRI_RESOL_HEIGHT, CFG_DISP_PRI_SCREEN_PIXEL_BYTE);
 					i = 0;
 				}
@@ -765,11 +772,13 @@ int board_late_init(void)
 
 			if(!power_depth)
 			{
+				printf("\n");
 				goto enter_shutdown;
 			}
 
 			mdelay(1000);
 		}
+		printf("\n");
 		bd_display_run(CONFIG_CMD_LOGO_WALLPAPERS, CFG_LCD_PRI_PWM_DUTYCYCLE, 1);
 	}
 
